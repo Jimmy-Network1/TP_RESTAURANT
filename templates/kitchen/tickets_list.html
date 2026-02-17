@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Tickets cuisine{% endblock %}
+
+{% block content %}
+<h1>Tickets cuisine</h1>
+<p><a href="{% url 'kitchen:tickets_new' %}">+ Ajouter</a></p>
+{% if tickets %}
+<ul>
+    {% for ticket in tickets %}
+    <li>
+        Commande #{{ ticket.order_id }} — {{ ticket.get_status_display }}
+        <a href="{% url 'kitchen:tickets_edit' ticket.pk %}">Modifier</a>
+        <a href="{% url 'kitchen:tickets_delete' ticket.pk %}">Supprimer</a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucun ticket.</p>
+{% endif %}
+{% endblock %}

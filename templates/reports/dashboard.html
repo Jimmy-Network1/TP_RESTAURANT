@@ -4,6 +4,26 @@
 
 {% block content %}
 <h1>Rapports</h1>
+<p>
+    <a href="{% url 'reports:export_sales' %}">Exporter ventes (CSV)</a> |
+    <a href="{% url 'reports:export_payments' %}">Exporter paiements (CSV)</a>
+</p>
+<h3>Résumé du jour</h3>
+<ul>
+    <li>CA du jour : {{ total_sales }} FCFA</li>
+    <li>Commandes : {{ orders_count }}</li>
+    <li>Articles vendus : {{ total_items }}</li>
+</ul>
+<h3>Top plats</h3>
+{% if top_dishes %}
+<ul>
+    {% for dish in top_dishes %}
+    <li>{{ dish.dish__name }} — {{ dish.total }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucun plat vendu.</p>
+{% endif %}
 {% if snapshots %}
 <ul>
     {% for snapshot in snapshots %}

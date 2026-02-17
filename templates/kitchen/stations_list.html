@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Postes cuisine{% endblock %}
+
+{% block content %}
+<h1>Postes cuisine</h1>
+<p><a href="{% url 'kitchen:stations_new' %}">+ Ajouter</a></p>
+{% if stations %}
+<ul>
+    {% for station in stations %}
+    <li>
+        {{ station.name }}
+        <a href="{% url 'kitchen:stations_edit' station.pk %}">Modifier</a>
+        <a href="{% url 'kitchen:stations_delete' station.pk %}">Supprimer</a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucun poste.</p>
+{% endif %}
+{% endblock %}

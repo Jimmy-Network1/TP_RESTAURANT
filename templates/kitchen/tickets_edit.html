@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier un ticket{% endblock %}
+
+{% block content %}
+<h1>Modifier un ticket</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <h3>Plats</h3>
+    {{ formset.management_form }}
+    {% for item_form in formset %}
+        {{ item_form.as_p }}
+    {% endfor %}
+    <button type="submit">Enregistrer</button>
+</form>
+{% endblock %}

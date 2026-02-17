@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Supprimer un poste{% endblock %}
+
+{% block content %}
+<h1>Supprimer un poste</h1>
+<p>Confirmer la suppression de "{{ station.name }}" ?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Oui, supprimer</button>
+    <a href="{% url 'kitchen:stations' %}">Annuler</a>
+</form>
+{% endblock %}

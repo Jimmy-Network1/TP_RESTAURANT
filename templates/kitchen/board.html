@@ -4,6 +4,11 @@
 
 {% block content %}
 <h1>Cuisine</h1>
+<p>
+    <a href="{% url 'kitchen:tickets' %}">Tickets</a> |
+    <a href="{% url 'kitchen:recipes' %}">Recettes</a> |
+    <a href="{% url 'kitchen:stations' %}">Postes</a>
+</p>
 {% if tickets %}
 <ul>
     {% for ticket in tickets %}

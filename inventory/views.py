@@ -1,5 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 
+from accounts.decorators import role_required
+from accounts.models import UserProfile
 from .forms import (
     IngredientForm,
     PurchaseOrderForm,
@@ -10,11 +12,13 @@ from .forms import (
 from .models import Ingredient, PurchaseOrder, StockMovement, Supplier
 
 
+@role_required([UserProfile.ROLE_ADMIN, UserProfile.ROLE_CHEF])
 def ingredients_list(request):
     ingredients = Ingredient.objects.select_related('supplier').all().order_by('name')
     return render(request, 'inventory/ingredients_list.html', {'ingredients': ingredients})
 
 
+@role_required([UserProfile.ROLE_ADMIN, UserProfile.ROLE_CHEF])
 def ingredients_new(request):
     if request.method == 'POST':
         form = IngredientForm(request.POST)
@@ -26,6 +30,7 @@ def ingredients_new(request):
     return render(request, 'inventory/ingredients_new.html', {'form': form})
 
 
+@role_required([UserProfile.ROLE_ADMIN, UserProfile.ROLE_CHEF])
 def ingredients_edit(request, pk):
     ingredient = get_object_or_404(Ingredient, pk=pk)
     if request.method == 'POST':
@@ -38,6 +43,7 @@ def ingredients_edit(request, pk):
     return render(request, 'inventory/ingredients_edit.html', {'form': form, 'ingredient': ingredient})
 
 
+@role_required([UserProfile.ROLE_ADMIN])
 def ingredients_delete(request, pk):
     ingredient = get_object_or_404(Ingredient, pk=pk)
     if request.method == 'POST':
@@ -45,11 +51,13 @@ def ingredients_delete(request, pk):
         return redirect('inventory:ingredients')
     return render(request, 'inventory/ingredients_delete.html', {'ingredient': ingredient})
 
+@role_required([UserProfile.ROLE_ADMIN, UserProfile.ROLE_CHEF])
 def movements_list(request):
     movements = StockMovement.objects.select_related('ingredient').all().order_by('-created_at')
     return render(request, 'inventory/movements_list.html', {'movements': movements})
 
 
+@role_required([UserProfile.ROLE_ADMIN, UserProfile.ROLE_CHEF])
 def movements_new(request):
     if request.method == 'POST':
         form = StockMovementForm(request.POST)
@@ -60,11 +68,13 @@ def movements_new(request):
         form = StockMovementForm()
     return render(request, 'inventory/movements_new.html', {'form': form})
 
+@role_required([UserProfile.ROLE_ADMIN, UserProfile.ROLE_CHEF])
 def suppliers_list(request):
     suppliers = Supplier.objects.all().order_by('name')
     return render(request, 'inventory/suppliers_list.html', {'suppliers': suppliers})
 
 
+@role_required([UserProfile.ROLE_ADMIN])
 def suppliers_new(request):
     if request.method == 'POST':
         form = SupplierForm(request.POST)
@@ -76,6 +86,7 @@ def suppliers_new(request):
     return render(request, 'inventory/suppliers_new.html', {'form': form})
 
 
+@role_required([UserProfile.ROLE_ADMIN])
 def suppliers_edit(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     if request.method == 'POST':
@@ -88,6 +99,7 @@ def suppliers_edit(request, pk):
     return render(request, 'inventory/suppliers_edit.html', {'form': form, 'supplier': supplier})
 
 
+@role_required([UserProfile.ROLE_ADMIN])
 def suppliers_delete(request, pk):
     supplier = get_object_or_404(Supplier, pk=pk)
     if request.method == 'POST':
@@ -96,11 +108,13 @@ def suppliers_delete(request, pk):
     return render(request, 'inventory/suppliers_delete.html', {'supplier': supplier})
 
 
+@role_required([UserProfile.ROLE_ADMIN, UserProfile.ROLE_CHEF])
 def purchase_orders_list(request):
     purchase_orders = PurchaseOrder.objects.select_related('supplier').all().order_by('-created_at')
     return render(request, 'inventory/purchase_orders_list.html', {'purchase_orders': purchase_orders})
 
 
+@role_required([UserProfile.ROLE_ADMIN, UserProfile.ROLE_CHEF])
 def purchase_orders_new(request):
     if request.method == 'POST':
         form = PurchaseOrderForm(request.POST)
@@ -120,6 +134,7 @@ def purchase_orders_new(request):
     )
 
 
+@role_required([UserProfile.ROLE_ADMIN, UserProfile.ROLE_CHEF])
 def purchase_orders_edit(request, pk):
     purchase_order = get_object_or_404(PurchaseOrder, pk=pk)
     if request.method == 'POST':
@@ -139,6 +154,7 @@ def purchase_orders_edit(request, pk):
     )
 
 
+@role_required([UserProfile.ROLE_ADMIN])
 def purchase_orders_delete(request, pk):
     purchase_order = get_object_or_404(PurchaseOrder, pk=pk)
     if request.method == 'POST':

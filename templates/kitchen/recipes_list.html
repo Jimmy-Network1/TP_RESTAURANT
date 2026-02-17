@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Recettes{% endblock %}
+
+{% block content %}
+<h1>Recettes</h1>
+<p><a href="{% url 'kitchen:recipes_new' %}">+ Ajouter</a></p>
+{% if recipes %}
+<ul>
+    {% for recipe in recipes %}
+    <li>
+        {{ recipe.dish.name }} — {{ recipe.total_time_minutes }} min
+        <a href="{% url 'kitchen:recipes_edit' recipe.pk %}">Modifier</a>
+        <a href="{% url 'kitchen:recipes_delete' recipe.pk %}">Supprimer</a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucune recette.</p>
+{% endif %}
+{% endblock %}

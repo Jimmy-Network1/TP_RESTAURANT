@@ -4,5 +4,13 @@
 
 {% block content %}
 <h1>Rôles</h1>
-<p>Page rôles utilisateurs (placeholder).</p>
+{% if profiles %}
+<ul>
+    {% for profile in profiles %}
+    <li>{{ profile.user.username }} — {{ profile.get_role_display }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucun utilisateur.</p>
+{% endif %}
 {% endblock %}
