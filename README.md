@@ -1,6 +1,6 @@
 # 🍽️ Restaurant Web - Système de Gestion de Restaurant
 
-Application Django complète pour la gestion d'un restaurant : commandes, cuisine, stock, réservations et rapports.
+Application Django complète pour la gestion d'un restaurant : commandes, cuisine, stock, réservations, rapports, rôles et authentification.
 
 ## 📋 Structure du projet
 
@@ -51,6 +51,16 @@ python manage.py runserver
 
 Accéder à : http://localhost:8000
 
+## ✅ État actuel (V1)
+
+- CRUD Menu (catégories, plats, variantes)
+- CRUD Sales (tables, commandes, paiements)
+- CRUD Inventory (ingrédients, fournisseurs, mouvements, bons de commande)
+- CRUD Kitchen (postes, tickets, recettes)
+- CRUD Reservations (réservations)
+- Dashboard Reports (CA du jour, commandes, top plats)
+- Authentification + profils rôles (admin/chef/serveur/caissier/livreur)
+
 ## 📊 Fonctionnalités
 
 - **7 modules intégrés** : Accounts, Menu, Sales, Kitchen, Inventory, Reports, Reservations
@@ -75,3 +85,15 @@ Les variables d'environnement sont dans `.env`:
 - DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT
 
 Voir `.env.example` pour un template.
+
+## ▶️ Démarrage rapide
+
+```bash
+source venv/bin/activate
+./venv/bin/python manage.py migrate
+./venv/bin/python manage.py createsuperuser
+./venv/bin/python manage.py runserver
+```
+
+Accéder à : http://127.0.0.1:8000  
+Admin : http://127.0.0.1:8000/admin
