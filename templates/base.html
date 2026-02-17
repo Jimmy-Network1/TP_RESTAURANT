@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Restaurant Web{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <a href="{% url 'home' %}">🍽️ Restaurant Web</a>
+        </div>
+        <ul class="navbar-links">
+            <li><a href="#">Menu</a></li>
+            <li><a href="#">Ventes</a></li>
+            <li><a href="#">Cuisine</a></li>
+            <li><a href="#">Stock</a></li>
+            <li><a href="#">Réservations</a></li>
+            <li><a href="#">Rapports</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
