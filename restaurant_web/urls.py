@@ -17,12 +17,19 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('accounts/', include('accounts.urls')),
+    path('menu/', include('menu.urls')),
+    path('sales/', include('sales.urls')),
+    path('kitchen/', include('kitchen.urls')),
+    path('inventory/', include('inventory.urls')),
+    path('reports/', include('reports.urls')),
+    path('reservations/', include('reservations.urls')),
 ]
 
 if settings.DEBUG:

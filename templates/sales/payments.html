@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Paiement{% endblock %}
+
+{% block content %}
+<h1>Paiement</h1>
+<p><a href="{% url 'sales:payments_new' %}">+ Encaisser</a></p>
+{% if payments %}
+<ul>
+    {% for payment in payments %}
+    <li>Commande #{{ payment.order_id }} — {{ payment.get_method_display }} — {{ payment.amount }} FCFA</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucun paiement.</p>
+{% endif %}
+{% endblock %}

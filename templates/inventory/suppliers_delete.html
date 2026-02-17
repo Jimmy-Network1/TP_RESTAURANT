@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Supprimer un fournisseur{% endblock %}
+
+{% block content %}
+<h1>Supprimer un fournisseur</h1>
+<p>Confirmer la suppression de "{{ supplier.name }}" ?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Oui, supprimer</button>
+    <a href="{% url 'inventory:suppliers' %}">Annuler</a>
+</form>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Tables{% endblock %}
+
+{% block content %}
+<h1>Tables</h1>
+<p><a href="{% url 'sales:tables_new' %}">+ Ajouter</a></p>
+{% if tables %}
+<ul>
+    {% for table in tables %}
+    <li>
+        {{ table.name }} — {{ table.zone }} — {{ table.capacity }} places — {{ table.get_status_display }}
+        <a href="{% url 'sales:tables_edit' table.pk %}">Modifier</a>
+        <a href="{% url 'sales:tables_delete' table.pk %}">Supprimer</a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucune table.</p>
+{% endif %}
+{% endblock %}

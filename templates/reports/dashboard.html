@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Rapports{% endblock %}
+
+{% block content %}
+<h1>Rapports</h1>
+{% if snapshots %}
+<ul>
+    {% for snapshot in snapshots %}
+    <li>{{ snapshot.get_period_type_display }} — {{ snapshot.period_start }} → {{ snapshot.period_end }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucun rapport.</p>
+{% endif %}
+{% endblock %}

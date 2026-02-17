@@ -13,12 +13,14 @@
             <a href="{% url 'home' %}">🍽️ Restaurant Web</a>
         </div>
         <ul class="navbar-links">
-            <li><a href="#">Menu</a></li>
-            <li><a href="#">Ventes</a></li>
-            <li><a href="#">Cuisine</a></li>
-            <li><a href="#">Stock</a></li>
-            <li><a href="#">Réservations</a></li>
-            <li><a href="#">Rapports</a></li>
+            <li><a href="{% url 'menu:categories' %}">Catégories</a></li>
+            <li><a href="{% url 'menu:dishes' %}">Plats</a></li>
+            <li><a href="{% url 'sales:tables' %}">Tables</a></li>
+            <li><a href="{% url 'sales:orders' %}">Commandes</a></li>
+            <li><a href="{% url 'kitchen:board' %}">Cuisine</a></li>
+            <li><a href="{% url 'inventory:ingredients' %}">Stock</a></li>
+            <li><a href="{% url 'reservations:list' %}">Réservations</a></li>
+            <li><a href="{% url 'reports:dashboard' %}">Rapports</a></li>
         </ul>
     </nav>
 

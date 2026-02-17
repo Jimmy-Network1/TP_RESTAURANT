@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Réservations{% endblock %}
+
+{% block content %}
+<h1>Réservations</h1>
+<p><a href="{% url 'reservations:new' %}">+ Ajouter</a></p>
+{% if reservations %}
+<ul>
+    {% for reservation in reservations %}
+    <li>
+        {{ reservation.customer_name }} — {{ reservation.reservation_datetime }} — {{ reservation.party_size }} pers — {{ reservation.get_status_display }}
+        <a href="{% url 'reservations:edit' reservation.pk %}">Modifier</a>
+        <a href="{% url 'reservations:delete' reservation.pk %}">Supprimer</a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucune réservation.</p>
+{% endif %}
+{% endblock %}

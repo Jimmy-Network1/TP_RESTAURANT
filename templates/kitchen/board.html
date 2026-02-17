@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Cuisine{% endblock %}
+
+{% block content %}
+<h1>Cuisine</h1>
+{% if tickets %}
+<ul>
+    {% for ticket in tickets %}
+    <li>Commande #{{ ticket.order_id }} — {{ ticket.get_status_display }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucun ticket.</p>
+{% endif %}
+{% endblock %}

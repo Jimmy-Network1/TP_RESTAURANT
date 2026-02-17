@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Commandes{% endblock %}
+
+{% block content %}
+<h1>Commandes</h1>
+<p><a href="{% url 'sales:orders_new' %}">+ Créer</a></p>
+{% if orders %}
+<ul>
+    {% for order in orders %}
+    <li>
+        #{{ order.id }} — {{ order.get_order_type_display }} — {{ order.get_status_display }} — {{ order.total_amount }} FCFA
+        <a href="{% url 'sales:orders_edit' order.pk %}">Modifier</a>
+        <a href="{% url 'sales:orders_delete' order.pk %}">Supprimer</a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucune commande.</p>
+{% endif %}
+{% endblock %}

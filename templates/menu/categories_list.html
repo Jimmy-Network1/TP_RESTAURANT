@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Catégories{% endblock %}
+
+{% block content %}
+<h1>Catégories</h1>
+<p><a href="{% url 'menu:categories_new' %}">+ Ajouter</a></p>
+{% if categories %}
+<ul>
+    {% for category in categories %}
+    <li>
+        {{ category.name }}
+        <a href="{% url 'menu:categories_edit' category.pk %}">Modifier</a>
+        <a href="{% url 'menu:categories_delete' category.pk %}">Supprimer</a>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucune catégorie.</p>
+{% endif %}
+{% endblock %}
