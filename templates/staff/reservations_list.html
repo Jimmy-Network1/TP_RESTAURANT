@@ -1,0 +1,35 @@
+{% extends "base_staff.html" %}
+{% block title %}Réservations — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+    <h2>Réservations</h2>
+</div>
+<table class="table">
+    <thead><tr><th>Nom</th><th>Date</th><th>Heure</th><th>Personnes</th><th>Statut</th><th></th></tr></thead>
+    <tbody>
+    {% for res in reservations %}
+        <tr>
+            <td>{{ res.name }}</td>
+            <td>{{ res.date }}</td>
+            <td>{{ res.time }}</td>
+            <td>{{ res.people }}</td>
+            <td><span class="badge {% if res.status == 'confirmée' %}badge-success{% elif res.status == 'annulée' %}badge-danger{% else %}badge-warning{% endif %}">{{ res.status }}</span></td>
+            <td class="table-actions">
+                <form method="post" action="{% url 'reservations:edit' res.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="confirmée">
+                    <button class="btn-outline" type="submit">Confirmer</button>
+                </form>
+                <form method="post" action="{% url 'reservations:edit' res.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="annulée">
+                    <button class="btn-outline" type="submit">Annuler</button>
+                </form>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5" class="empty">Aucune réservation.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

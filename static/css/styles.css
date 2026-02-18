@@ -1,48 +1,8 @@
-* {
-    box-sizing: border-box;
-}
-
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #f7f7f7;
-    color: #222;
-}
-
-.navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 20px;
-    background: #1f2937;
-}
-
-.navbar-brand a {
-    color: #fff;
-    text-decoration: none;
-    font-weight: 700;
-}
-
-.navbar-links {
-    list-style: none;
-    display: flex;
-    gap: 16px;
-    margin: 0;
-    padding: 0;
-}
-
-.navbar-links a {
-    color: #e5e7eb;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.navbar-links a:hover {
-    color: #fff;
-}
-
-.container {
-    max-width: 1000px;
-    margin: 24px auto;
-    padding: 0 16px;
-}
+@import url("reset.css");
+@import url("variables.css");
+@import url("components.css");
+@import url("forms.css");
+@import url("tables.css");
+@import url("public.css");
+@import url("staff.css");
+@import url("print.css");

@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.http import HttpResponseBadRequest
 
 from .forms import OrderForm, OrderItemFormSet, PaymentForm, TableForm
 from .models import Order, OrderItem, Payment, Table
@@ -106,3 +107,18 @@ def payments_new(request):
 def invoices(request):
     orders = Order.objects.all().order_by('-created_at')
     return render(request, 'sales/invoices.html', {'orders': orders})
+
+
+def order_status(request, pk, status):
+    """Met à jour le statut d'une commande depuis un bouton rapide."""
+    order = get_object_or_404(Order, pk=pk)
+    valid_statuses = {choice[0] for choice in Order.STATUS_CHOICES}
+
+    if status not in valid_statuses:
+        return HttpResponseBadRequest("Statut invalide")
+
+    if request.method == 'POST':
+        order.status = status
+        order.save(update_fields=['status', 'updated_at'])
+    # Redirige vers la page précédente si disponible, sinon vers la liste.
+    return redirect(request.META.get('HTTP_REFERER') or reverse('sales:orders'))

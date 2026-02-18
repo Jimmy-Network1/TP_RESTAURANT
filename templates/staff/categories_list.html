@@ -1,0 +1,25 @@
+{% extends "base_staff.html" %}
+{% block title %}Catégories — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+    <h2>Catégories</h2>
+    <a class="btn" href="{% url 'staff:category_form' %}">Ajouter</a>
+</div>
+<table class="table">
+    <thead><tr><th>Nom</th><th>Description</th><th></th></tr></thead>
+    <tbody>
+    {% for cat in categories %}
+        <tr>
+            <td>{{ cat.name }}</td>
+            <td>{{ cat.description }}</td>
+            <td class="table-actions">
+                <a class="btn-outline" href="{% url 'staff:category_form' cat.id %}">Éditer</a>
+                <a class="btn-outline" href="{% url 'menu:categories_delete' cat.id %}">Supprimer</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="3" class="empty">Aucune catégorie.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

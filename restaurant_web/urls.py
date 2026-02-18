@@ -18,11 +18,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import TemplateView
-
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    path('', include(('restaurant_web.public_urls', 'public'), namespace='public')),
     path('accounts/', include('accounts.urls')),
     path('menu/', include('menu.urls')),
     path('sales/', include('sales.urls')),

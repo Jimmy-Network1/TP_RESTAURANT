@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ dish.name }} — Saveur 237{% endblock %}
+{% block content %}
+<div class="card" style="display:grid; gap:14px;">
+    <div class="section-title">
+        <h1>{{ dish.name }}</h1>
+        <span class="dish-price">{{ dish.price }} FCFA</span>
+    </div>
+    <img src="{{ dish.image|default:'https://placehold.co/800x400' }}" alt="{{ dish.name }}" style="border-radius:14px;">
+    <p class="dish-desc" style="margin-top:4px;">{{ dish.description }}</p>
+
+    {% if dish.allergens %}
+    <div class="pill" style="background:rgba(210,42,53,0.12); color:var(--red); border-color:rgba(210,42,53,0.22);">
+        Allergènes : {{ dish.allergens }}
+    </div>
+    {% endif %}
+
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <div class="quantity">
+            <button type="button" data-minus>-</button>
+            <span data-qty>1</span>
+            <button type="button" data-plus>+</button>
+        </div>
+        <span class="badge {% if dish.available %}badge-success{% else %}badge-danger{% endif %}">
+            {% if dish.available %}Disponible{% else %}Indisponible{% endif %}
+        </span>
+        <button class="btn" data-add data-id="{{ dish.id }}">+ Ajouter au panier</button>
+    </div>
+</div>
+{% endblock %}

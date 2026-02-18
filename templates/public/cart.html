@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Panier — Saveur 237{% endblock %}
+{% block content %}
+<h1>Votre panier</h1>
+<div class="cart-items">
+    {% comment %} context: cart_items=[{'id':1,'name':..., 'price':..., 'qty':...}] {% endcomment %}
+    {% for item in cart_items %}
+    <div class="cart-line" data-line data-id="{{ item.id }}" data-price="{{ item.price }}">
+        <div>
+            <div class="title">{{ item.name }}</div>
+            <small class="dish-desc">{{ item.price }} FCFA</small>
+        </div>
+        <div class="quantity">
+            <button type="button" data-minus aria-label="Moins">-</button>
+            <span data-qty>{{ item.qty }}</span>
+            <button type="button" data-plus aria-label="Plus">+</button>
+        </div>
+        <button class="btn-outline" data-remove>Retirer</button>
+    </div>
+    {% empty %}
+    <div class="empty">Panier vide.</div>
+    {% endfor %}
+</div>
+
+<div class="summary" style="margin-top:12px;">
+    <div class="summary-row"><span>Sous-total</span><span data-total>0 FCFA</span></div>
+    <div class="summary-row summary-total"><span>Total</span><span data-total>0 FCFA</span></div>
+</div>
+
+<div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+    <a class="btn-outline" href="{% url 'public:menu' %}">Continuer vos choix</a>
+    <a class="btn" href="{% url 'public:checkout' %}">Passer commande</a>
+</div>
+{% endblock %}

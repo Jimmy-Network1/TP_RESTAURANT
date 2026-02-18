@@ -1,0 +1,28 @@
+:root {
+    --brown: #3b241c;      /* base cacao */
+    --brown-dark: #2a1813; /* pour contrastes forts */
+    --green: #0a9c64;      /* vert feuille plus vif */
+    --red: #d22a35;        /* rouge piment */
+    --yellow: #ffd75b;     /* jaune plus lumineux */
+    --white: #ffffff;
+    --bg: #f6f2ec;
+    --text: #281c17;
+    --muted: #78655c;
+    --card: #fffdf8;
+    --border: #e3d7cb;
+    --shadow: 0 18px 48px rgba(43, 24, 19, 0.16);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --transition: all 180ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg: #1c1613;
+        --text: #f3e7dc;
+        --muted: #b7a9a0;
+        --card: #261d18;
+        --border: #3b2d26;
+        --shadow: 0 12px 28px rgba(0,0,0,0.35);
+    }
+}

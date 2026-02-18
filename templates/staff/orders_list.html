@@ -1,0 +1,35 @@
+{% extends "base_staff.html" %}
+{% block title %}Commandes — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+    <h2>Commandes</h2>
+    <div class="filters">
+        <button class="active" data-filter="all">Toutes</button>
+        <button data-filter="pending">Attente</button>
+        <button data-filter="prep">Prépa</button>
+        <button data-filter="ready">Prêtes</button>
+        <button data-filter="paid">Payées</button>
+    </div>
+</div>
+<table class="table">
+    <thead><tr><th>#</th><th>Client</th><th>Type</th><th>Total</th><th>Statut</th><th></th></tr></thead>
+    <tbody>
+        {% comment %} context: orders list {% endcomment %}
+        {% for order in orders %}
+        <tr data-status="{{ order.status }}">
+            <td>#{{ order.id }}</td>
+            <td>{{ order.customer }}</td>
+            <td>{{ order.mode }}</td>
+            <td>{{ order.total }} FCFA</td>
+            <td><span class="status-pill status-{{ order.status }}">{{ order.status }}</span></td>
+            <td class="table-actions">
+                <a class="btn-outline" href="{% url 'staff:order_detail' order.id %}">Voir</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="empty">Aucune commande.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% include "partials/_pagination.html" %}
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base_staff.html" %}
+{% block title %}Catégorie — Saveur 237{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px;">
+    <h2>{% if category %}Modifier{% else %}Nouvelle{% endif %} catégorie</h2>
+    <form class="form" method="post">
+        {% csrf_token %}
+        <label>Nom<input name="name" value="{{ category.name|default:'' }}" required></label>
+        <label>Description<textarea name="description">{{ category.description }}</textarea></label>
+        <button class="btn">Enregistrer</button>
+    </form>
+</div>
+{% endblock %}

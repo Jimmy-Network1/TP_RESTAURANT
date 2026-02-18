@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Commande confirmée — Saveur 237{% endblock %}
+{% block content %}
+<div class="card" style="text-align:center; display:grid; gap:10px;">
+    <h1>Merci !</h1>
+    <p>Commande <strong>#{{ order.number }}</strong> reçue.</p>
+    <p>Statut : <span class="badge-warning">{{ order.status|default:"En attente" }}</span></p>
+    <p>Estimation : {{ order.eta|default:"30 min" }}</p>
+    <a class="btn" href="{% url 'public:menu' %}">Retour au menu</a>
+</div>
+{% endblock %}

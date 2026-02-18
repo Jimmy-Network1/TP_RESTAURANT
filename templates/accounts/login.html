@@ -1,8 +1,30 @@
 {% extends "base.html" %}
-
-{% block title %}Connexion{% endblock %}
-
+{% block title %}Connexion staff — Saveur 237{% endblock %}
 {% block content %}
-<h1>Connexion</h1>
-<p>Page Login (placeholder).</p>
+<div class="card" style="max-width:460px; margin:32px auto; display:grid; gap:12px;">
+    <h1>Connexion</h1>
+    <form class="form" method="post">
+        {% csrf_token %}
+        {% include "partials/_messages.html" %}
+        <label>Identifiant / Email
+            <input name="username" required>
+        </label>
+        <label>Mot de passe
+            <input type="password" name="password" required>
+        </label>
+        <label>Rôle
+            <select name="role" required>
+                <option value="client">Client</option>
+                <option value="cuisinier">Cuisinier</option>
+                <option value="coursier">Coursier</option>
+                <option value="gerant">Gérant</option>
+            </select>
+        </label>
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="remember"> Se souvenir</label>
+        </div>
+        <button class="btn" type="submit">Se connecter</button>
+    </form>
+    <p class="dish-desc">Les rôles supplémentaires pourront être ajoutés plus tard.</p>
+</div>
 {% endblock %}

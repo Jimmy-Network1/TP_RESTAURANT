@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Saveur 237 - Cuisine locale{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero-content">
+        <span class="pill">Cuisine locale • Douala</span>
+        <h1>Saveur 237</h1>
+        <p>Plats camerounais revisités dans une ambiance chaleureuse. Commandez, réservez ou passez nous voir.</p>
+        <div class="hero-actions">
+            <a class="btn" href="{% url 'menu:list' %}">Commander maintenant</a>
+            <a class="btn-outline" href="{% url 'public:reservations' %}">Réserver</a>
+        </div>
+    </div>
+</section>
+
+<section class="section-title">
+    <h2>Plats populaires</h2>
+    <a href="{% url 'menu:list' %}" class="btn-outline">Tout voir</a>
+</section>
+<div class="menu-grid">
+    {% comment %} context: popular_dishes = [{'name':..., 'price':..., 'image':..., 'available':True}] {% endcomment %}
+    {% for dish in popular_dishes %}
+    <article class="dish-card">
+        <img src="{{ dish.image|default:'https://placehold.co/400x250' }}" alt="{{ dish.name }}">
+        <div class="dish-head">
+            <h3>{{ dish.name }}</h3>
+            <span class="dish-price">{{ dish.price }} FCFA</span>
+        </div>
+        <p class="dish-desc">{{ dish.description }}</p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="badge {% if dish.available %}badge-success{% else %}badge-muted{% endif %}">
+                {% if dish.available %}Disponible{% else %}Indispo{% endif %}
+            </span>
+            <button class="btn" data-add>+ Ajouter</button>
+        </div>
+    </article>
+    {% empty %}
+    <div class="empty">Aucun plat populaire pour le moment.</div>
+    {% endfor %}
+</div>
+
+<section style="margin-top:18px;" class="section-title">
+    <h2>Catégories</h2>
+</section>
+<div class="grid grid-3">
+    {% comment %} context: categories=[{'name':..., 'count':...}] {% endcomment %}
+    {% for cat in categories %}
+    <div class="card">
+        <div class="section-title">
+            <strong>{{ cat.name }}</strong>
+            <span class="badge-muted">{{ cat.count }} plats</span>
+        </div>
+        <p class="dish-desc">Découvrez nos spécialités {{ cat.name|lower }}.</p>
+        <a class="btn-outline" href="{% url 'menu:list' %}?cat={{ cat.slug }}">Voir</a>
+    </div>
+    {% endfor %}
+</div>
+
+<section style="margin-top:22px;" class="grid grid-2">
+    <div class="card">
+        <div class="section-title"><h2>Horaires</h2></div>
+        <div class="hours">
+            <span>Lun-Dim : 11h - 23h</span>
+            <span>Service continu</span>
+        </div>
+    </div>
+    <div class="card">
+        <div class="section-title"><h2>Contact</h2></div>
+        <div class="contact-block">
+            <div><strong>Téléphone</strong><br>+237 123 456 789</div>
+            <div><strong>Adresse</strong><br>Bonapriso, Douala</div>
+            <div><strong>Réservations</strong><br><a href="{% url 'public:reservations' %}">Formulaire</a></div>
+        </div>
+    </div>
+</section>
+
+<section style="margin-top:22px;">
+    <div class="section-title"><h2>Avis</h2></div>
+    <div class="card">
+        <div class="avatar-list">
+            <div class="avatar">A</div>
+            <div class="avatar">M</div>
+            <div class="avatar">S</div>
+        </div>
+        <p class="dish-desc">“Cuisine authentique, service rapide, on adore les grillades.”</p>
+    </div>
+</section>
+{% endblock %}

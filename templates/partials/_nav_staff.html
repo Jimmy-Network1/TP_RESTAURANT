@@ -1,0 +1,9 @@
+<div class="topbar">
+    <div>
+        <strong>Saveur 237 • Staff</strong>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+        <span class="badge-muted">Connecté : {{ request.user.username|default:'serveur' }}</span>
+        <a class="btn-outline" href="{% url 'accounts:logout' %}">Déconnexion</a>
+    </div>
+</div>

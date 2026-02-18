@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Réservation — Saveur 237{% endblock %}
+{% block content %}
+<h1>Réserver une table</h1>
+<form class="form card" method="post">
+    {% csrf_token %}
+    <label>Nom<input name="name" required></label>
+    <label>Téléphone<input name="phone" required></label>
+    <div class="form-row">
+        <label>Date<input type="date" name="date" required></label>
+        <label>Heure<input type="time" name="time" required></label>
+    </div>
+    <label>Personnes<input type="number" name="people" min="1" value="2" required></label>
+    <button class="btn">Envoyer la demande</button>
+</form>
+
+<section style="margin-top:22px;" id="contact">
+    <div class="card">
+        <div class="section-title"><h2>Contact & Accès</h2></div>
+        <div class="contact-block">
+            <div><strong>Adresse</strong><br>Bonapriso, Douala</div>
+            <div><strong>Téléphone</strong><br><a href="tel:+237123456789">+237 123 456 789</a></div>
+            <div><strong>WhatsApp</strong><br><a href="https://wa.me/237123456789">wa.me/237123456789</a></div>
+        </div>
+        <div class="card" style="margin-top:12px; min-height:200px; background: #f3eee7; border-style:dashed;">
+            <p class="dish-desc">Carte simple / map intégrable ici.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

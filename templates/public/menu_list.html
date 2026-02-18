@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Menu — Saveur 237{% endblock %}
+{% block content %}
+<div class="sticky-bar">
+    <div class="grid" style="gap:8px;">
+        <div class="filters" role="tablist" aria-label="Catégories">
+            <button class="chip-filter active" data-filter="all">Tout</button>
+            {% for cat in categories %}
+            <button class="chip-filter" data-filter="{{ cat.slug }}">{{ cat.name }}</button>
+            {% endfor %}
+        </div>
+        {% if request.user.is_staff %}
+        <div style="text-align:right;">
+            <a class="btn-outline" href="{% url 'menu:dishes_new' %}">+ Ajouter un plat</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="menu-grid" id="menu-list">
+    {% comment %} context: dishes=[{'category_slug':..., 'name':..., 'price':..., 'description':..., 'image':..., 'available':True}] {% endcomment %}
+    {% for dish in dishes %}
+    <article class="dish-card" data-category="{{ dish.category_slug }}">
+        <img src="{{ dish.image|default:'https://placehold.co/400x250' }}" alt="{{ dish.name }}">
+        <div class="dish-head">
+            <h3>{{ dish.name }}</h3>
+            <span class="dish-price">{{ dish.price }} FCFA</span>
+        </div>
+        <p class="dish-desc">{{ dish.description }}</p>
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="badge {% if dish.available %}badge-success{% else %}badge-danger{% endif %}">
+                {% if dish.available %}Disponible{% else %}Indispo{% endif %}
+            </span>
+            <button class="btn" data-add data-id="{{ dish.id }}">+ Ajouter</button>
+        </div>
+    </article>
+    {% empty %}
+    <div class="empty">Aucun plat.</div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+// simple filter by data-category
+const chips = document.querySelectorAll('.chip-filter');
+const dishes = document.querySelectorAll('[data-category]');
+chips.forEach(chip => {
+ chip.addEventListener('click', ()=>{
+   chips.forEach(c=>c.classList.remove('active'));
+   chip.classList.add('active');
+   const cat = chip.dataset.filter;
+   dishes.forEach(d=>{
+     const match = cat === 'all' || d.dataset.category === cat;
+     d.style.display = match ? '' : 'none';
+   });
+ });
+});
+</script>
+{% endblock %}
