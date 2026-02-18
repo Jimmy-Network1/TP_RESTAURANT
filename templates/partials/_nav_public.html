@@ -1,28 +1,63 @@
 {% load static %}
-<header class="nav-public">
-  <div class="container">
-    <div class="nav-bar">
-      <a class="logo" href="{% url 'public:home' %}" style="display:flex;align-items:center;gap:8px;">
-        <img src="{% static 'logo/logo.png' %}" alt="Saveur 237" style="width:36px;height:36px;border-radius:8px;object-fit:cover;">
-        <span>Saveur 237</span>
+<header class="nav-modern">
+  <div class="container nav-wrap">
+    <a class="nav-logo" href="{% url 'home' %}">
+      <img src="{% static 'logo/logo.png' %}" alt="Saveur 237">
+      <span>Saveur 237</span>
+    </a>
+
+    <nav class="nav-center" aria-label="Navigation principale">
+      <a class="nav-link" href="{% url 'public:menu' %}">Menu</a>
+      <a class="nav-link" href="{% url 'public:reservations' %}">Réserver</a>
+      <a class="nav-link" href="#contact">Contact</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a class="cart-btn" href="{% url 'public:cart' %}">
+        🛒 Panier
+        <span class="cart-badge" data-cart-count="{{ cart_count|default:0 }}">{{ cart_count|default:0 }}</span>
       </a>
-      <nav class="nav-links" aria-label="Navigation principale">
-        <a href="{% url 'public:menu' %}">Menu</a>
-        <a href="{% url 'public:reservations' %}">Réserver</a>
-        <a href="tel:+237123456789" class="pill">Appeler</a>
-        <a class="cart-indicator" href="{% url 'public:cart' %}">
-          Panier <span data-cart-count="{{ cart_count|default:0 }}">0</span>
-        </a>
-      </nav>
-      <div class="hamburger" data-burger aria-label="Menu mobile" role="button" tabindex="0">
+
+      {% if request.user.is_authenticated %}
+        {% with request.user.groups.all.0.name|default:"CLIENT" as role %}
+        <div class="user-pill" data-dropdown>
+          <span class="user-name">{{ request.user.username }}</span>
+          <span class="badge-success" style="text-transform:uppercase;">{{ role }}</span>
+          <span class="chevron">▼</span>
+          <div class="dropdown" role="menu">
+            <a href="{% url 'accounts:profile' %}">Profil</a>
+            <a href="{% url 'reports:dashboard' %}">Statistiques</a>
+            {% if role|upper == "GERANT" or role|upper == "ADMIN" %}
+              <a href="{% url 'reports:dashboard' %}">Dashboard</a>
+            {% endif %}
+            <a href="{% url 'accounts:logout' %}">Déconnexion</a>
+          </div>
+        </div>
+        {% endwith %}
+      {% else %}
+        <a class="btn-outline" href="{% url 'accounts:login' %}">Connexion</a>
+        <a class="btn" href="{% url 'accounts:register' %}">Inscription</a>
+      {% endif %}
+
+      <button class="hamburger" data-burger aria-label="Menu mobile">
         <span></span><span></span><span></span>
-      </div>
+      </button>
     </div>
-    <div class="nav-links-mobile" data-mobile-menu>
-      <a href="{% url 'public:menu' %}">Menu</a>
-      <a href="{% url 'public:reservations' %}">Réserver</a>
-      <a href="tel:+237123456789">Appeler</a>
-      <a href="{% url 'public:cart' %}">Panier (<span data-cart-count="{{ cart_count|default:0 }}">0</span>)</a>
-    </div>
+  </div>
+
+  <div class="nav-mobile" data-mobile-menu>
+    <a class="nav-link" href="{% url 'public:menu' %}">Menu</a>
+    <a class="nav-link" href="{% url 'public:reservations' %}">Réserver</a>
+    <a class="nav-link" href="#contact">Contact</a>
+    <a class="nav-link" href="{% url 'public:cart' %}">Panier (<span data-cart-count="{{ cart_count|default:0 }}">{{ cart_count|default:0 }}</span>)</a>
+    {% if request.user.is_authenticated %}
+      <span class="pill">Bonjour {{ request.user.username }}</span>
+      <a href="{% url 'accounts:profile' %}">Profil</a>
+      <a href="{% url 'reports:dashboard' %}">Statistiques</a>
+      <a href="{% url 'accounts:logout' %}">Déconnexion</a>
+    {% else %}
+      <a href="{% url 'accounts:login' %}">Connexion</a>
+      <a href="{% url 'accounts:register' %}">Inscription</a>
+    {% endif %}
   </div>
 </header>

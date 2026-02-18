@@ -1,16 +1,16 @@
 :root {
-    --brown: #3b241c;      /* base cacao */
-    --brown-dark: #2a1813; /* pour contrastes forts */
-    --green: #0a9c64;      /* vert feuille plus vif */
-    --red: #d22a35;        /* rouge piment */
-    --yellow: #ffd75b;     /* jaune plus lumineux */
+    --brown: #3E2723;
+    --brown-dark: #2a1813;
+    --green: #008751;
+    --red: #CE1126;
+    --yellow: #FCD116;
     --white: #ffffff;
-    --bg: #f6f2ec;
-    --text: #281c17;
-    --muted: #78655c;
-    --card: #fffdf8;
-    --border: #e3d7cb;
-    --shadow: 0 18px 48px rgba(43, 24, 19, 0.16);
+    --bg: #f7f5f2;
+    --text: #231612;
+    --muted: #6c5a54;
+    --card: #fffdf9;
+    --border: #e5d9cf;
+    --shadow: 0 18px 48px rgba(46, 29, 25, 0.16);
     --radius: 14px;
     --radius-sm: 10px;
     --transition: all 180ms ease;

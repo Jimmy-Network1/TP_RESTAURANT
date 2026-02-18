@@ -1,0 +1,46 @@
+{% extends "auth/base_auth.html" %}
+{% load static %}
+{% block title %}Connexion — Saveur 237{% endblock %}
+{% block content %}
+<section class="auth-panel">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <img src="{% static 'logo/logo.png' %}" alt="Saveur 237">
+      <div>
+        <p class="auth-kicker">Restaurant chic</p>
+        <h1>Connexion</h1>
+      </div>
+    </div>
+    <p class="auth-sub">Accédez à votre espace en choisissant votre rôle.</p>
+    {% include "partials/_messages.html" %}
+    <form class="form auth-form" method="post">
+        {% csrf_token %}
+        <label>Identifiant / Email
+            <input name="username" placeholder="nomutilisateur ou email" required>
+        </label>
+        <label>Mot de passe
+            <div class="password-field">
+                <input type="password" name="password" placeholder="••••••••" required data-password>
+                <button type="button" class="ghost-btn" data-toggle><span aria-hidden="true">👁</span></button>
+            </div>
+        </label>
+        <label>Rôle
+            <select name="role" required>
+                <option value="gerant">Gérant</option>
+                <option value="serveur">Serveur</option>
+                <option value="coursier">Coursier</option>
+                <option value="client">Client</option>
+            </select>
+        </label>
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="remember"> Se souvenir</label>
+        </div>
+        <button class="btn auth-btn" type="submit">Se connecter</button>
+    </form>
+    <div class="auth-footer">
+        <span>Pas de compte ? <a href="{% url 'accounts:register' %}">Créer un compte</a></span>
+        <a class="btn-outline" href="{% url 'public:home' %}">Retour</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

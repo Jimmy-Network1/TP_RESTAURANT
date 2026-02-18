@@ -24,7 +24,11 @@
         <span class="badge {% if dish.available %}badge-success{% else %}badge-danger{% endif %}">
             {% if dish.available %}Disponible{% else %}Indisponible{% endif %}
         </span>
-        <button class="btn" data-add data-id="{{ dish.id }}">+ Ajouter au panier</button>
+        <form method="post" action="{% url 'public:cart_add' dish.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="qty" value="1" data-qty-input>
+            <button class="btn" type="submit">+ Ajouter au panier</button>
+        </form>
     </div>
 </div>
 {% endblock %}

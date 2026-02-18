@@ -3,19 +3,73 @@
 {% block title %}Commandes{% endblock %}
 
 {% block content %}
-<h1>Commandes</h1>
-<p><a href="{% url 'sales:orders_new' %}">+ Créer</a></p>
-{% if orders %}
-<ul>
-    {% for order in orders %}
-    <li>
-        #{{ order.id }} — {{ order.get_order_type_display }} — {{ order.get_status_display }} — {{ order.total_amount }} FCFA
-        <a href="{% url 'sales:orders_edit' order.pk %}">Modifier</a>
-        <a href="{% url 'sales:orders_delete' order.pk %}">Supprimer</a>
-    </li>
+<div class="page-narrow">
+<div class="topbar">
+    <div>
+        <p class="pill muted">Commandes</p>
+        <h1 style="margin:6px 0 0;">Suivi des commandes</h1>
+        <p class="muted">Sur place, livraison, emporter.</p>
+    </div>
+    <a class="btn" href="{% url 'sales:orders_new' %}">+ Créer</a>
+</div>
+
+<div class="stats-grid" style="margin-bottom:8px;">
+    <div class="card stat-card"><p class="label muted">Total</p><h2>{{ stats.total }}</h2></div>
+    <div class="card stat-card"><p class="label muted">Envoyées</p><h2>{{ stats.sent }}</h2></div>
+    <div class="card stat-card"><p la class="label muted">Préparation</p><h2>{{ stats.preparing }}</h2></div>
+    <div class="card stat-card"><p class="label muted">Prêtes</p><h2>{{ stats.ready }}</h2></div>
+    <div class="card stat-card"><p class="label muted">Servies</p><h2>{{ stats.served }}</h2></div>
+    <div class="card stat-card"><p class="label muted">Annulées</p><h2>{{ stats.canceled }}</h2></div>
+</div>
+
+<div class="filters" style="margin-bottom:8px;">
+    <a class="chip-filter {% if not status %}active{% endif %}" href="{% url 'sales:orders' %}">Toutes</a>
+    {% for key, label in orders.model.STATUS_CHOICES %}
+    <a class="chip-filter {% if status == key %}active{% endif %}" href="?status={{ key }}">{{ label }}</a>
     {% endfor %}
-</ul>
+</div>
+
+{% if orders %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Type</th>
+                <th>Statut</th>
+                <th>Table / Client</th>
+                <th>Total</th>
+                <th>Créée</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr data-status="{{ order.status }}">
+                <td>#{{ order.id }}</td>
+                <td>{{ order.get_order_type_display }}</td>
+                <td><span class="badge badge-muted">{{ order.get_status_display }}</span></td>
+                <td>
+                    {% if order.table %}Table {{ order.table.name }}{% else %}{{ order.customer_name|default:"—" }}{% endif %}
+                    {% if order.customer_phone %}<br><span class="muted">{{ order.customer_phone }}</span>{% endif %}
+                </td>
+                <td>{{ order.total_amount }} FCFA</td>
+                <td>{{ order.created_at|date:"d/m H:i" }}</td>
+                <td style="text-align:right; white-space:nowrap;">
+                    <a class="btn-outline" href="{% url 'sales:orders_edit' order.pk %}">Modifier</a>
+                    <a class="btn-outline" href="{% url 'sales:orders_delete' order.pk %}">Supprimer</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% else %}
-<p>Aucune commande.</p>
+<div class="card empty-state">
+    <h3>Aucune commande</h3>
+    <p class="muted">Créez votre première commande pour commencer le suivi.</p>
+    <a class="btn" href="{% url 'sales:orders_new' %}">+ Créer</a>
+</div>
 {% endif %}
+</div>
 {% endblock %}

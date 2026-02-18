@@ -8,6 +8,10 @@
     to   { transform: scale(1); opacity: 1; }
 }
 
+/* Typo directives */
+h1, h2, h3, h4, h5, h6, .menu-title { font-family: 'Playfair Display', 'Times New Roman', serif; letter-spacing: -0.01em; }
+body, p, li { font-family: 'Roboto', 'Inter', system-ui, sans-serif; }
+
 .container {
     width: 100%;
     max-width: 1180px;
@@ -139,6 +143,30 @@
 .chip-filter.active {
     border-color: var(--green);
     box-shadow: 0 0 0 4px rgba(0,135,81,0.12);
+}
+
+.search-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+    width: 100%;
+    flex-wrap: wrap;
+}
+.search-bar input[type="search"] {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    min-width: 220px;
+    background: var(--card);
+}
+.search-bar button {
+    padding: 10px 14px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--brown);
+    background: var(--brown);
+    color: #fff;
+    cursor: pointer;
 }
 
 .sticky-bar {

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Inscription — Saveur 237{% endblock %}
+{% block content %}
+<div class="auth-page">
+<div class="auth-shell">
+  <div class="auth-hero">
+      <h2>Créez votre compte client</h2>
+      <p>Suivez vos commandes, gardez votre historique et gagnez du temps lors du checkout.</p>
+      <p class="dish-desc">Les comptes staff (gérant, serveur, coursier) sont créés par le gérant.</p>
+  </div>
+  <div class="auth-panel">
+    <div class="auth-card">
+        <div class="auth-header">
+            <img src="{% static 'logo/logo1.png' %}" alt="Saveur 237">
+            <div>
+                <h1 style="margin:0;">Inscription</h1>
+                <p class="dish-desc" style="margin:4px 0 0;">Renseignez vos informations pour suivre vos commandes.</p>
+            </div>
+        </div>
+
+        <form class="form" method="post">
+            {% csrf_token %}
+            <label>Nom complet
+                <input type="text" name="full_name" placeholder="Votre nom" required>
+            </label>
+            <label>Nom d’utilisateur
+                <input type="text" name="username" placeholder="nomutilisateur" required>
+            </label>
+            <label>Email
+                <input type="email" name="email" placeholder="vous@example.com" required>
+            </label>
+            <label>Téléphone (optionnel)
+                <input type="tel" name="phone" placeholder="+237 ...">
+            </label>
+            <label>Rôle
+                <select name="role" required>
+                    <option value="client" selected>Client</option>
+                    <option value="gerant" disabled>Gérant (via gérant)</option>
+                    <option value="serveur" disabled>Serveur (via gérant)</option>
+                    <option value="coursier" disabled>Coursier (via gérant)</option>
+                </select>
+            </label>
+            <label>Mot de passe
+                <input type="password" name="password1" minlength="8" placeholder="••••••••" required>
+                <small class="help">Min 8 caractères, 1 majuscule, 1 chiffre.</small>
+            </label>
+            <label>Confirmer le mot de passe
+                <input type="password" name="password2" placeholder="••••••••" required>
+            </label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="remember"> Se souvenir de moi</label>
+            </div>
+            <button class="btn" type="submit" style="width:100%;">Créer mon compte</button>
+        </form>
+
+        <div class="auth-actions">
+            <span class="dish-desc">Déjà un compte ? <a href="{% url 'accounts:login' %}">Se connecter</a></span>
+            <a class="btn-outline" href="{% url 'public:home' %}">Retour</a>
+        </div>
+
+        <div class="card" style="background: rgba(206,17,38,0.05); border:1px dashed rgba(206,17,38,0.3);">
+            <strong>Staff via gérant</strong>
+            <p class="dish-desc">Pour gérant / serveur / coursier, demandez au gérant de créer le compte.</p>
+        </div>
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}

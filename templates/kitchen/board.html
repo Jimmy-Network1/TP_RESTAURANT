@@ -3,14 +3,118 @@
 {% block title %}Cuisine{% endblock %}
 
 {% block content %}
-<h1>Cuisine</h1>
+<div class="topbar">
+    <div>
+        <p class="pill muted">Cuisine</p>
+        <h1 style="margin:6px 0 0;">Board de préparation</h1>
+        <p class="muted">Suivi des tickets en cours : attente, cuisson, prêt.</p>
+    </div>
+    <div class="filters">
+        <button class="active" data-filter="all">Tous</button>
+        <button data-filter="pending">En attente</button>
+        <button data-filter="preparing">En préparation</button>
+        <button data-filter="ready">Prêts</button>
+    </div>
+</div>
+
+<div class="stats-grid" style="margin-bottom:12px;">
+    <div class="card stat-card">
+        <p class="label muted">Tickets totaux</p>
+        <h2>{{ stats.total }}</h2>
+    </div>
+    <div class="card stat-card">
+        <p class="label muted">En attente</p>
+        <h2>{{ stats.pending }}</h2>
+    </div>
+    <div class="card stat-card">
+        <p class="label muted">En préparation</p>
+        <h2>{{ stats.preparing }}</h2>
+    </div>
+    <div class="card stat-card">
+        <p class="label muted">Prêts</p>
+        <h2>{{ stats.ready }}</h2>
+    </div>
+</div>
+
 {% if tickets %}
-<ul>
-    {% for ticket in tickets %}
-    <li>Commande #{{ ticket.order_id }} — {{ ticket.get_status_display }}</li>
-    {% endfor %}
-</ul>
+<div class="kanban">
+    <div class="kanban-column" data-col="pending">
+        <div class="kanban-header">En attente ({{ pending|length }})</div>
+        {% for t in pending %}
+        <article class="ticket-card" data-status="pending">
+            <header>
+                <div>
+                    <strong>Cmd #{{ t.order_id }}</strong>
+                    <p class="muted">Créé le {{ t.created_at|date:"d/m H:i" }}</p>
+                </div>
+                <span class="badge badge-warning">{{ t.get_status_display }}</span>
+            </header>
+            <ul class="ticket-items">
+                {% for item in t.items.all %}
+                <li>{{ item.dish.name }} <span class="muted">x{{ item.quantity }}</span></li>
+                {% empty %}
+                <li class="muted">Pas de détail.</li>
+                {% endfor %}
+            </ul>
+            {% if t.note %}<p class="note">Note : {{ t.note }}</p>{% endif %}
+        </article>
+        {% empty %}
+        <p class="muted small">Aucun ticket en attente.</p>
+        {% endfor %}
+    </div>
+    <div class="kanban-column" data-col="preparing">
+        <div class="kanban-header">En préparation ({{ preparing|length }})</div>
+        {% for t in preparing %}
+        <article class="ticket-card" data-status="preparing">
+            <header>
+                <div>
+                    <strong>Cmd #{{ t.order_id }}</strong>
+                    <p class="muted">Début {{ t.started_at|date:"d/m H:i"|default:"—" }}</p>
+                </div>
+                <span class="badge badge-success">{{ t.get_status_display }}</span>
+            </header>
+            <ul class="ticket-items">
+                {% for item in t.items.all %}
+                <li>{{ item.dish.name }} <span class="muted">x{{ item.quantity }}</span></li>
+                {% empty %}
+                <li class="muted">Pas de détail.</li>
+                {% endfor %}
+            </ul>
+            {% if t.note %}<p class="note">Note : {{ t.note }}</p>{% endif %}
+        </article>
+        {% empty %}
+        <p class="muted small">Aucun ticket en préparation.</p>
+        {% endfor %}
+    </div>
+    <div class="kanban-column" data-col="ready">
+        <div class="kanban-header">Prêts ({{ ready|length }})</div>
+        {% for t in ready %}
+        <article class="ticket-card" data-status="ready">
+            <header>
+                <div>
+                    <strong>Cmd #{{ t.order_id }}</strong>
+                    <p class="muted">Prêt {{ t.ready_at|date:"d/m H:i"|default:"—" }}</p>
+                </div>
+                <span class="badge badge-success">{{ t.get_status_display }}</span>
+            </header>
+            <ul class="ticket-items">
+                {% for item in t.items.all %}
+                <li>{{ item.dish.name }} <span class="muted">x{{ item.quantity }}</span></li>
+                {% empty %}
+                <li class="muted">Pas de détail.</li>
+                {% endfor %}
+            </ul>
+            {% if t.note %}<p class="note">Note : {{ t.note }}</p>{% endif %}
+        </article>
+        {% empty %}
+        <p class="muted small">Aucun ticket prêt.</p>
+        {% endfor %}
+    </div>
+</div>
 {% else %}
-<p>Aucun ticket.</p>
+<div class="card empty-state">
+    <h3>Cuisine calme pour l’instant</h3>
+    <p class="muted">Aucun ticket en file. Ils apparaîtront ici dès qu’une commande est envoyée.</p>
+</div>
 {% endif %}
 {% endblock %}

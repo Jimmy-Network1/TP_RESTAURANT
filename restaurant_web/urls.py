@@ -18,8 +18,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from restaurant_web import public_views
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', public_views.home, name='home'),
     path('', include(('restaurant_web.public_urls', 'public'), namespace='public')),
     path('accounts/', include('accounts.urls')),
     path('menu/', include('menu.urls')),

@@ -44,10 +44,25 @@ def tables_delete(request, pk):
 
 def orders_list(request):
     status = request.GET.get('status')
-    orders = Order.objects.select_related('table').all().order_by('-created_at')
+    orders = (
+        Order.objects.select_related('table', 'assigned_delivery', 'created_by')
+        .prefetch_related('items__dish')
+        .all()
+        .order_by('-created_at')
+    )
     if status:
         orders = orders.filter(status=status)
-    return render(request, 'sales/orders_list.html', {'orders': orders})
+    stats = {
+        'total': orders.count(),
+        'draft': orders.filter(status=Order.STATUS_DRAFT).count(),
+        'sent': orders.filter(status=Order.STATUS_SENT).count(),
+        'preparing': orders.filter(status=Order.STATUS_PREPARING).count(),
+        'ready': orders.filter(status=Order.STATUS_READY).count(),
+        'served': orders.filter(status=Order.STATUS_SERVED).count(),
+        'closed': orders.filter(status=Order.STATUS_CLOSED).count(),
+        'canceled': orders.filter(status=Order.STATUS_CANCELED).count(),
+    }
+    return render(request, 'sales/orders_list.html', {'orders': orders, 'stats': stats, 'status': status})
 
 
 def orders_new(request):

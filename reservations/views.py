@@ -23,6 +23,12 @@ def reservation_new(request):
 def reservation_edit(request, pk):
     reservation = get_object_or_404(Reservation, pk=pk)
     if request.method == 'POST':
+        # mise à jour rapide du statut si fourni
+        status = request.POST.get('status')
+        if status:
+            reservation.status = status
+            reservation.save(update_fields=['status'])
+            return redirect('reservations:list')
         form = ReservationForm(request.POST, instance=reservation)
         if form.is_valid():
             form.save()

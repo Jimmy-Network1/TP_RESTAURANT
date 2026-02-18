@@ -5,26 +5,29 @@
 <div class="cart-items">
     {% comment %} context: cart_items=[{'id':1,'name':..., 'price':..., 'qty':...}] {% endcomment %}
     {% for item in cart_items %}
-    <div class="cart-line" data-line data-id="{{ item.id }}" data-price="{{ item.price }}">
+    <form method="post" action="{% url 'public:cart_update' %}" data-ajax-url="{% url 'public:cart_update' %}" class="cart-line cart-update-form" data-line data-id="{{ item.id }}" data-price="{{ item.price }}">
+        {% csrf_token %}
+        <input type="hidden" name="id" value="{{ item.id }}">
         <div>
             <div class="title">{{ item.name }}</div>
-            <small class="dish-desc">{{ item.price }} FCFA</small>
+            <small class="dish-desc">Prix unitaire : {{ item.price }} FCFA</small>
         </div>
         <div class="quantity">
-            <button type="button" data-minus aria-label="Moins">-</button>
+            <button type="submit" name="action" value="minus" aria-label="Moins">-</button>
             <span data-qty>{{ item.qty }}</span>
-            <button type="button" data-plus aria-label="Plus">+</button>
+            <button type="submit" name="action" value="plus" aria-label="Plus">+</button>
         </div>
-        <button class="btn-outline" data-remove>Retirer</button>
-    </div>
+        <div class="line-total" data-line-total>{{ item.price|floatformat:2|add:""|add:""|default:"0"|floatformat:2 }}</div>
+        <button class="btn-outline" type="submit" name="action" value="remove">Retirer</button>
+    </form>
     {% empty %}
     <div class="empty">Panier vide.</div>
     {% endfor %}
 </div>
 
 <div class="summary" style="margin-top:12px;">
-    <div class="summary-row"><span>Sous-total</span><span data-total>0 FCFA</span></div>
-    <div class="summary-row summary-total"><span>Total</span><span data-total>0 FCFA</span></div>
+    <div class="summary-row"><span>Sous-total</span><span data-total>{{ cart_total|default:0 }} FCFA</span></div>
+    <div class="summary-row summary-total"><span>Total</span><span data-total>{{ cart_total|default:0 }} FCFA</span></div>
 </div>
 
 <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
