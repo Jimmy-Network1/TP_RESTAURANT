@@ -1,0 +1,34 @@
+{% extends "base_staff.html" %}
+{% block title %}Client livraison{% endblock %}
+{% block content %}
+<div class="section-title">
+    <div>
+        <p class="kicker">Livraison</p>
+        <h2>{{ customer.customer_name|default:"Client" }}</h2>
+        <p class="muted">{{ phone }} • {{ customer.delivery_address|default:"Adresse inconnue" }}</p>
+    </div>
+    <a class="btn-outline" href="{% url 'delivery:clients' %}">← Clients</a>
+</div>
+
+<div class="card">
+    <div class="section-title"><h3>Historique commandes</h3></div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>#</th><th>Total</th><th>Date</th><th>Statut</th><th>Livreur</th></tr></thead>
+            <tbody>
+                {% for o in orders %}
+                <tr>
+                    <td>#{{ o.id }}</td>
+                    <td>{{ o.total_amount|default:o.subtotal }} FCFA</td>
+                    <td>{{ o.created_at|date:"d/m H:i" }}</td>
+                    <td><span class="badge badge-muted">{{ o.get_status_display }}</span></td>
+                    <td>{{ o.assigned_delivery|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="empty">Aucune commande.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

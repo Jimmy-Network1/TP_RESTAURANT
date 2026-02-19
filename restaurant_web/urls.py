@@ -28,6 +28,7 @@ urlpatterns = [
     path('sales/', include('sales.urls')),
     path('kitchen/', include('kitchen.urls')),
     path('inventory/', include('inventory.urls')),
+    path('delivery/', include('delivery.urls')),
     # reports supprimé/à reconstruire
     path('reservations/', include('reservations.urls')),
 ]

@@ -1,0 +1,51 @@
+{% extends "base_staff.html" %}
+{% block title %}Attribuer un livreur — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+    <div>
+        <p class="kicker">Livraison</p>
+        <h2>Attribuer un livreur</h2>
+        <p class="muted">Sélectionnez une commande et un coursier.</p>
+    </div>
+    <a class="btn-outline" href="{% url 'delivery:deliveries' %}">← Livraisons</a>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <h3>Commandes à livrer</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead><tr><th></th><th>#</th><th>Client</th><th>Adresse</th></tr></thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td><input type="radio" name="order" value="{{ order.id }}" form="assign-form"></td>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.customer_name|default:"—" }}</td>
+                        <td>{{ order.delivery_address|default:"—" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="empty">Aucune commande.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Livreurs</h3>
+        <form id="assign-form" method="post" class="form">
+            {% csrf_token %}
+            <label>Livreur
+                <select name="courier" required class="form-control">
+                    <option value="">Choisir</option>
+                    {% for c in couriers %}
+                    <option value="{{ c.id }}">{{ c.username }} — {{ c.first_name }} {{ c.last_name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <button class="btn" type="submit">Assigner</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
