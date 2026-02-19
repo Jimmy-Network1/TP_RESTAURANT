@@ -1,17 +1,80 @@
 {% extends "base_staff.html" %}
 
-{% block title %}Modifier une commande{% endblock %}
+{% block title %}Modifier commande — Saveur 237{% endblock %}
 
 {% block content %}
-<h1>Modifier une commande</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <h3>Articles</h3>
-    {{ formset.management_form }}
-    {% for item_form in formset %}
-        {{ item_form.as_p }}
-    {% endfor %}
-    <button type="submit">Enregistrer</button>
-</form>
+<div class="section-title">
+    <div>
+        <p class="kicker">POS</p>
+        <h2>Modifier commande #{{ order.id }}</h2>
+        <p class="muted">Ajustez les articles puis renvoyez en cuisine si besoin.</p>
+    </div>
+    <a class="btn-outline" href="{% url 'sales:orders' %}">← Retour</a>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <form method="post" class="form">
+            {% csrf_token %}
+            <div class="grid grid-2">
+                <label>Type{{ form.order_type.errors|default:"" }}{{ form.order_type }}</label>
+                <label>Table (sur place){{ form.table.errors|default:"" }}{{ form.table }}</label>
+            </div>
+            <div class="grid grid-2">
+                <label>Client{{ form.customer_name.errors|default:"" }}{{ form.customer_name }}</label>
+                <label>Téléphone{{ form.customer_phone.errors|default:"" }}{{ form.customer_phone }}</label>
+            </div>
+            <label>Adresse livraison{{ form.delivery_address.errors|default:"" }}{{ form.delivery_address }}</label>
+
+            <div class="card" style="background:rgba(0,135,81,0.04); margin:10px 0;">
+                <div class="section-title"><h3>Articles</h3></div>
+                {{ formset.management_form }}
+                <div class="grid" style="gap:10px;">
+                    {% for form_item in formset %}
+                    <div class="card" style="padding:12px; border:1px solid var(--border);">
+                        <div class="grid grid-3">
+                            <label>Plat{{ form_item.dish.errors|default:"" }}{{ form_item.dish }}</label>
+                            <label>Qté{{ form_item.quantity.errors|default:"" }}{{ form_item.quantity }}</label>
+                            <label>PU{{ form_item.unit_price.errors|default:"" }}{{ form_item.unit_price }}</label>
+                        </div>
+                        <label>Note{{ form_item.note.errors|default:"" }}{{ form_item.note }}</label>
+                        {% if form_item.can_delete %}<label>{{ form_item.DELETE }} Supprimer</label>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label>Remise{{ form.discount_amount.errors|default:"" }}{{ form.discount_amount }}</label>
+                <label>Taxes{{ form.tax_amount.errors|default:"" }}{{ form.tax_amount }}</label>
+                <label>Pourboire{{ form.tip_amount.errors|default:"" }}{{ form.tip_amount }}</label>
+            </div>
+
+            <div class="table-actions" style="margin-top:12px;">
+                <button class="btn" type="submit" name="action" value="save">Sauvegarder</button>
+                <button class="btn-outline" type="submit" name="action" value="send">Envoyer en cuisine</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <div class="section-title"><h3>Ajouter rapidement</h3></div>
+        <div class="kitchen-grid">
+            {% for dish in dishes %}
+            <div class="ticket-card" data-add-dish="{{ dish.id }}">
+                <header>
+                    <strong>{{ dish.name }}</strong>
+                    <span class="badge badge-warning">{{ dish.price }} FCFA</span>
+                </header>
+                <p class="muted small">{{ dish.description|truncatewords:12 }}</p>
+                <div class="table-actions">
+                    <button class="btn-outline" type="button" data-quick-add="{{ dish.id }}">+ Ajouter</button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty">Aucun plat actif.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -69,6 +69,11 @@ body, p, li { font-family: 'Roboto', 'Inter', system-ui, sans-serif; }
 .badge-danger  { background: rgba(206,17,38,0.12); color: var(--red); }
 .badge-warning { background: rgba(252,209,22,0.18); color: #b07a00; }
 .badge-muted   { background: rgba(107,94,88,0.15); color: var(--muted); }
+.badge-draft { background: rgba(62,39,35,0.08); color: var(--brown); }
+.badge-sent { background: rgba(252,209,22,0.18); color: #b07a00; }
+.badge-preparing { background: rgba(0,135,81,0.12); color: var(--green); }
+.badge-ready { background: rgba(0,135,81,0.18); color: var(--green); }
+.badge-closed { background: rgba(107,94,88,0.18); color: var(--muted); }
 
 .card {
     background: var(--card);

@@ -6,6 +6,7 @@ from django.db.models import Count
 
 from .forms import OrderForm, OrderItemFormSet, PaymentForm, TableForm, TableTransferForm
 from .models import Order, OrderItem, Payment, Table
+from menu.models import Dish
 
 
 def tables_list(request):
@@ -117,6 +118,7 @@ def tables_transfer(request):
 
 def orders_list(request):
     status = request.GET.get('status')
+    q = request.GET.get('q', '').strip()
     orders = (
         Order.objects.select_related('table', 'assigned_delivery', 'created_by')
         .prefetch_related('items__dish')
@@ -125,6 +127,12 @@ def orders_list(request):
     )
     if status:
         orders = orders.filter(status=status)
+    if q:
+        orders = orders.filter(
+            models.Q(id__icontains=q)
+            | models.Q(customer_name__icontains=q)
+            | models.Q(table__name__icontains=q)
+        )
     stats = {
         'total': orders.count(),
         'draft': orders.filter(status=Order.STATUS_DRAFT).count(),
@@ -135,7 +143,11 @@ def orders_list(request):
         'closed': orders.filter(status=Order.STATUS_CLOSED).count(),
         'canceled': orders.filter(status=Order.STATUS_CANCELED).count(),
     }
-    return render(request, 'sales/orders_list.html', {'orders': orders, 'stats': stats, 'status': status})
+    return render(
+        request,
+        'sales/orders_list.html',
+        {'orders': orders, 'stats': stats, 'status': status, 'q': q},
+    )
 
 
 def orders_new(request):
@@ -150,7 +162,12 @@ def orders_new(request):
     else:
         form = OrderForm()
         formset = OrderItemFormSet()
-    return render(request, 'sales/orders_new.html', {'form': form, 'formset': formset})
+    dishes = Dish.objects.filter(is_active=True).order_by('name')
+    return render(
+        request,
+        'sales/orders_new.html',
+        {'form': form, 'formset': formset, 'dishes': dishes},
+    )
 
 
 def orders_edit(request, pk):
@@ -165,7 +182,20 @@ def orders_edit(request, pk):
     else:
         form = OrderForm(instance=order)
         formset = OrderItemFormSet(instance=order)
-    return render(request, 'sales/orders_edit.html', {'form': form, 'formset': formset, 'order': order})
+    dishes = Dish.objects.filter(is_active=True).order_by('name')
+    return render(
+        request,
+        'sales/orders_edit.html',
+        {'form': form, 'formset': formset, 'order': order, 'dishes': dishes},
+    )
+
+
+def order_detail(request, pk):
+    order = get_object_or_404(
+        Order.objects.select_related('table', 'assigned_delivery', 'created_by').prefetch_related('items__dish'),
+        pk=pk,
+    )
+    return render(request, 'sales/order_detail.html', {'order': order})
 
 
 def orders_delete(request, pk):
