@@ -2,7 +2,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.http import HttpResponseBadRequest
 from django.contrib import messages
-from django.db.models import Count
+from django.db import models
+from django.db.models import Count, Sum
+from django.utils import timezone
 
 from .forms import OrderForm, OrderItemFormSet, PaymentForm, TableForm, TableTransferForm
 from .models import Order, OrderItem, Payment, Table
@@ -207,8 +209,17 @@ def orders_delete(request, pk):
 
 
 def payments(request):
+    method = request.GET.get('method', '')
     payments = Payment.objects.select_related('order').all().order_by('-created_at')
-    return render(request, 'sales/payments.html', {'payments': payments})
+    if method:
+        payments = payments.filter(method=method)
+    total = payments.aggregate(total=Sum('amount'))['total'] or 0
+    methods_totals = payments.values('method').annotate(total=Sum('amount'))
+    return render(
+        request,
+        'sales/payments.html',
+        {'payments': payments, 'method': method, 'total': total, 'methods_totals': methods_totals},
+    )
 
 
 def payments_new(request):
@@ -222,9 +233,44 @@ def payments_new(request):
     return render(request, 'sales/payments_new.html', {'form': form})
 
 
+def payment_collect(request, order_id):
+    order = get_object_or_404(Order, pk=order_id)
+    if request.method == 'POST':
+        form = PaymentForm(request.POST)
+        form.fields['order'].queryset = Order.objects.filter(pk=order_id)
+        if form.is_valid():
+            form.save()
+            order.status = Order.STATUS_CLOSED
+            order.save(update_fields=['status', 'updated_at'])
+            messages.success(request, "Paiement enregistré.")
+            return redirect('sales:orders')
+    else:
+        form = PaymentForm(initial={'order': order})
+        form.fields['order'].queryset = Order.objects.filter(pk=order_id)
+    return render(request, 'sales/payment_collect.html', {'form': form, 'order': order})
+
+
+def cashdesk(request):
+    today = timezone.localdate()
+    todays_payments = Payment.objects.filter(created_at__date=today)
+    total = todays_payments.aggregate(total=Sum('amount'))['total'] or 0
+    counts = todays_payments.count()
+    by_method = todays_payments.values('method').annotate(total=Sum('amount'), count=Count('id'))
+    return render(
+        request,
+        'sales/cashdesk.html',
+        {'total': total, 'counts': counts, 'by_method': by_method, 'today': today},
+    )
+
+
 def invoices(request):
     orders = Order.objects.all().order_by('-created_at')
     return render(request, 'sales/invoices.html', {'orders': orders})
+
+
+def invoice_detail(request, pk):
+    order = get_object_or_404(Order.objects.prefetch_related('items__dish', 'payments'), pk=pk)
+    return render(request, 'sales/invoice_detail.html', {'order': order})
 
 
 def order_status(request, pk, status):

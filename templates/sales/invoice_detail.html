@@ -1,0 +1,50 @@
+{% extends "base_staff.html" %}
+{% block title %}Facture #{{ order.id }} — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+    <div>
+        <p class="kicker">Facture</p>
+        <h2>Commande #{{ order.id }}</h2>
+        <p class="muted">
+            {% if order.table %}Table {{ order.table.name }}{% else %}{{ order.customer_name|default:"Client"}}{% endif %}
+            • {{ order.created_at|date:"d/m/Y H:i" }}
+        </p>
+    </div>
+    <div class="table-actions">
+        <a class="btn-outline" href="{% url 'sales:payments' %}">Historique</a>
+        <a class="btn" href="{% url 'sales:payment_collect' order.pk %}">Aller au paiement</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Article</th><th>Qté</th><th>PU</th><th>Sous-total</th></tr></thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td>{{ item.dish.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.unit_price }} FCFA</td>
+                    <td>{{ item.unit_price|floatformat:0|add:item.quantity|default:item.unit_price }} FCFA</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="empty">Aucun article.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <ul class="ticket-items" style="margin-top:12px;">
+        <li><span>Sous-total</span><strong>{{ order.subtotal }} FCFA</strong></li>
+        <li><span>Taxes</span><strong>{{ order.tax_amount }} FCFA</strong></li>
+        <li><span>Remise</span><strong>{{ order.discount_amount }} FCFA</strong></li>
+        <li><span>Total</span><strong>{{ order.total_amount }} FCFA</strong></li>
+    </ul>
+
+    <div class="table-actions" style="margin-top:12px;">
+        <button class="btn-outline" type="button" onclick="window.print()">Imprimer</button>
+        <a class="btn" href="{% url 'sales:payment_collect' order.pk %}">Aller au paiement</a>
+    </div>
+</div>
+{% endblock %}
