@@ -1,14 +1,62 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.http import HttpResponseBadRequest
+from django.contrib import messages
+from django.db.models import Count
 
-from .forms import OrderForm, OrderItemFormSet, PaymentForm, TableForm
+from .forms import OrderForm, OrderItemFormSet, PaymentForm, TableForm, TableTransferForm
 from .models import Order, OrderItem, Payment, Table
 
 
 def tables_list(request):
+    zone = request.GET.get('zone', '').strip()
     tables = Table.objects.all().order_by('name')
-    return render(request, 'sales/tables_list.html', {'tables': tables})
+    if zone:
+        tables = tables.filter(zone__iexact=zone)
+
+    zones = (
+        Table.objects.exclude(zone="")
+        .values_list('zone', flat=True)
+        .distinct()
+        .order_by('zone')
+    )
+    stats = {
+        'total': tables.count(),
+        'free': tables.filter(status=Table.STATUS_FREE).count(),
+        'occupied': tables.filter(status=Table.STATUS_OCCUPIED).count(),
+        'reserved': tables.filter(status=Table.STATUS_RESERVED).count(),
+    }
+    return render(
+        request,
+        'sales/tables_list.html',
+        {
+            'tables': tables,
+            'zones': zones,
+            'zone': zone,
+            'stats': stats,
+        },
+    )
+
+
+def table_detail(request, pk):
+    table = get_object_or_404(Table, pk=pk)
+    active_orders = (
+        table.orders.exclude(status__in=[Order.STATUS_CLOSED, Order.STATUS_CANCELED])
+        .order_by('-created_at')
+        .prefetch_related('items__dish')
+    )
+    history = table.orders.order_by('-created_at')[:5]
+    reservations = table.reservations.order_by('-reservation_datetime')[:5]
+    return render(
+        request,
+        'sales/table_detail.html',
+        {
+            'table': table,
+            'active_orders': active_orders,
+            'history': history,
+            'reservations': reservations,
+        },
+    )
 
 
 def tables_new(request):
@@ -40,6 +88,31 @@ def tables_delete(request, pk):
         table.delete()
         return redirect('sales:tables')
     return render(request, 'sales/tables_delete.html', {'table': table})
+
+
+def tables_transfer(request):
+    form = TableTransferForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        src = form.cleaned_data['source']
+        dst = form.cleaned_data['destination']
+        action = form.cleaned_data['action']
+        qs = Order.objects.filter(
+            table=src,
+            status__in=[
+                Order.STATUS_DRAFT,
+                Order.STATUS_SENT,
+                Order.STATUS_PREPARING,
+                Order.STATUS_READY,
+                Order.STATUS_SERVED,
+            ],
+        )
+        moved = qs.update(table=dst)
+        if action == 'merge':
+            # nothing else specific for now, same effect
+            pass
+        messages.success(request, f"{moved} commande(s) transférée(s) de {src.name} vers {dst.name}.")
+        return redirect('sales:tables')
+    return render(request, 'sales/tables_transfer.html', {'form': form})
 
 
 def orders_list(request):

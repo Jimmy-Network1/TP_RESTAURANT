@@ -41,3 +41,18 @@ if (optionsContainer && addOptionBtn) {
         optionsContainer.appendChild(createOptionRow());
     });
 }
+
+// Zone filters for tables plan
+const zoneButtons = document.querySelectorAll('[data-zone-filter]');
+const tableCards = document.querySelectorAll('[data-zone]');
+zoneButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const zone = btn.dataset.zoneFilter;
+        zoneButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        tableCards.forEach(card => {
+            const match = zone === 'all' || card.dataset.zone.toLowerCase() === zone.toLowerCase();
+            card.style.display = match ? '' : 'none';
+        });
+    });
+});

@@ -239,6 +239,58 @@
 .table tbody td:first-child { border-top-left-radius: var(--radius); border-bottom-left-radius: var(--radius); }
 .table tbody td:last-child { border-top-right-radius: var(--radius); border-bottom-right-radius: var(--radius); }
 
+.tables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+.table-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    box-shadow: var(--shadow);
+    display: grid;
+    gap: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.table-card:hover { box-shadow: 0 12px 28px rgba(0,0,0,0.12); transform: translateY(-2px); }
+.table-card header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+.badge-free { background: rgba(0,135,81,0.12); color: var(--green); }
+.badge-occupied { background: rgba(206,17,38,0.12); color: var(--red); }
+.badge-reserved { background: rgba(252,209,22,0.18); color: #b07a00; }
+.badge-cleaning { background: rgba(62,39,35,0.08); color: var(--brown); }
+.table-meta { color: var(--muted); font-size: 0.95rem; }
+.table-actions { display: flex; gap: 6px; }
+
+.zone-filters {
+    display: inline-flex;
+    gap: 8px;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--card);
+}
+.zone-filters button {
+    border: none;
+    background: transparent;
+    padding: 8px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.zone-filters button.active {
+    background: rgba(0,135,81,0.12);
+    color: var(--green);
+    font-weight: 700;
+}
+
 @media (max-width: 900px) {
     .staff-shell { grid-template-columns: 1fr; }
     .sidebar { position: sticky; top: 0; z-index: 10; display: flex; overflow-x: auto; }

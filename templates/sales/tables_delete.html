@@ -3,11 +3,21 @@
 {% block title %}Supprimer une table{% endblock %}
 
 {% block content %}
-<h1>Supprimer une table</h1>
-<p>Confirmer la suppression de "{{ table.name }}" ?</p>
-<form method="post">
-    {% csrf_token %}
-    <button type="submit">Oui, supprimer</button>
-    <a href="{% url 'sales:tables' %}">Annuler</a>
-</form>
+<div class="section-title">
+    <div>
+        <p class="kicker">Salle</p>
+        <h2>Supprimer {{ table.name }}</h2>
+        <p class="muted">Cette action est définitive.</p>
+    </div>
+    <a class="btn-outline" href="{% url 'sales:tables' %}">Annuler</a>
+</div>
+
+<div class="card">
+    <p>Confirmer la suppression de la table « {{ table.name }} » ?</p>
+    <form method="post" class="table-actions" style="margin-top:12px;">
+        {% csrf_token %}
+        <button class="btn" type="submit">Oui, supprimer</button>
+        <a class="btn-outline" href="{% url 'sales:tables' %}">Non</a>
+    </form>
+</div>
 {% endblock %}

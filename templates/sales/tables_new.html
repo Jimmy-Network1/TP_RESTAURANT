@@ -1,12 +1,27 @@
 {% extends "base_staff.html" %}
 
-{% block title %}Ajouter une table{% endblock %}
+{% block title %}Créer une table — Saveur 237{% endblock %}
 
 {% block content %}
-<h1>Ajouter une table</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Enregistrer</button>
-</form>
+<div class="section-title">
+    <div>
+        <p class="kicker">Salle</p>
+        <h2>Créer une table</h2>
+        <p class="muted">Configurez une nouvelle table pour le plan.</p>
+    </div>
+    <a class="btn-outline" href="{% url 'sales:tables' %}">← Retour</a>
+</div>
+
+<div class="card">
+    <form method="post" class="form">
+        {% csrf_token %}
+        <div class="grid grid-3">
+            <label>Numéro / nom{{ form.name.errors|default:"" }}{{ form.name }}</label>
+            <label>Zone{{ form.zone.errors|default:"" }}{{ form.zone }}</label>
+            <label>Capacité{{ form.capacity.errors|default:"" }}{{ form.capacity }}</label>
+        </div>
+        <label>Statut{{ form.status.errors|default:"" }}{{ form.status }}</label>
+        <button class="btn" type="submit">Créer</button>
+    </form>
+</div>
 {% endblock %}

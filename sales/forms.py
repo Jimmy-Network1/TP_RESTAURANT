@@ -46,3 +46,22 @@ class PaymentForm(forms.ModelForm):
     class Meta:
         model = Payment
         fields = ['order', 'method', 'amount']
+
+
+class TableTransferForm(forms.Form):
+    ACTION_CHOICES = [
+        ('transfer', 'Transférer la commande'),
+        ('merge', 'Fusionner les tables'),
+    ]
+
+    source = forms.ModelChoiceField(queryset=Table.objects.all(), label="Table source")
+    destination = forms.ModelChoiceField(queryset=Table.objects.all(), label="Table destination")
+    action = forms.ChoiceField(choices=ACTION_CHOICES, initial='transfer', label="Action")
+
+    def clean(self):
+        cleaned = super().clean()
+        src = cleaned.get('source')
+        dst = cleaned.get('destination')
+        if src and dst and src == dst:
+            self.add_error('destination', "Choisissez une table différente.")
+        return cleaned
