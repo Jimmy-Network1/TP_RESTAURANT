@@ -1,21 +1,78 @@
 {% extends "base_staff.html" %}
-
-{% block title %}Ingrédients{% endblock %}
-
+{% block title %}Stock — Saveur 237{% endblock %}
 {% block content %}
-<h1>Ingrédients</h1>
-<p><a href="{% url 'inventory:ingredients_new' %}">+ Ajouter</a></p>
-{% if ingredients %}
-<ul>
-    {% for ingredient in ingredients %}
-    <li>
-        {{ ingredient.name }} — {{ ingredient.quantity_in_stock }} {{ ingredient.get_unit_display }} — {{ ingredient.supplier|default:"-" }}
-        <a href="{% url 'inventory:ingredients_edit' ingredient.pk %}">Modifier</a>
-        <a href="{% url 'inventory:ingredients_delete' ingredient.pk %}">Supprimer</a>
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>Aucun ingrédient.</p>
-{% endif %}
+<div class="section-title">
+    <div>
+        <p class="kicker">Inventaire</p>
+        <h2>Liste du stock</h2>
+        <p class="muted">Suivi des ingrédients et produits.</p>
+    </div>
+    <div class="table-actions">
+        <a class="btn" href="{% url 'inventory:ingredients_new' %}">+ Ajouter article</a>
+        <a class="btn-outline" href="{% url 'inventory:alerts' %}">Alertes</a>
+    </div>
+</div>
+
+<div class="stats-grid" style="margin-bottom:12px;">
+    <div class="card stat-card"><p class="label muted">Articles</p><h2>{{ stats.total }}</h2></div>
+    <div class="card stat-card"><p class="label muted">Actifs</p><h2>{{ stats.active }}</h2></div>
+    <div class="card stat-card"><p class="label muted">Stock faible</p><h2>{{ stats.low }}</h2></div>
+</div>
+
+<div class="card">
+    <form class="grid" method="get" style="grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:12px;">
+        <label>Recherche
+            <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Nom, catégorie, fournisseur">
+        </label>
+        <label>Statut
+            <select name="status" class="form-control">
+                <option value="">Tous</option>
+                <option value="low" {% if status=='low' %}selected{% endif %}>Stock faible</option>
+            </select>
+        </label>
+        <div><button class="btn" type="submit">Filtrer</button></div>
+    </form>
+
+    <div class="table-responsive" style="margin-top:12px;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Article</th>
+                    <th>Qté</th>
+                    <th>Unité</th>
+                    <th>Seuil</th>
+                    <th>Statut</th>
+                    <th>Fournisseur</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ing in ingredients %}
+                {% with low=ing.quantity_in_stock|floatformat:2 <= ing.alert_threshold|floatformat:2 %}
+                <tr>
+                    <td><strong>{{ ing.name }}</strong><p class="muted small">{{ ing.category }}</p></td>
+                    <td>{{ ing.quantity_in_stock }}</td>
+                    <td>{{ ing.get_unit_display }}</td>
+                    <td>{{ ing.alert_threshold }}</td>
+                    <td>
+                        {% if ing.quantity_in_stock <= ing.alert_threshold %}
+                          <span class="badge badge-danger">Stock faible</span>
+                        {% else %}
+                          <span class="badge badge-success">OK</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ ing.supplier|default:"—" }}</td>
+                    <td class="table-actions">
+                        <a class="btn-outline" href="{% url 'inventory:ingredients_edit' ing.pk %}">✏️</a>
+                        <a class="btn-outline" href="{% url 'inventory:ingredients_delete' ing.pk %}">🗑</a>
+                    </td>
+                </tr>
+                {% endwith %}
+                {% empty %}
+                <tr><td colspan="7" class="empty">Aucun article trouvé.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

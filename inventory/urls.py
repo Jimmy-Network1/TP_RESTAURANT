@@ -19,4 +19,5 @@ urlpatterns = [
     path('purchase-orders/new/', views.purchase_orders_new, name='purchase_orders_new'),
     path('purchase-orders/<int:pk>/edit/', views.purchase_orders_edit, name='purchase_orders_edit'),
     path('purchase-orders/<int:pk>/delete/', views.purchase_orders_delete, name='purchase_orders_delete'),
+    path('alerts/', views.alerts, name='alerts'),
 ]

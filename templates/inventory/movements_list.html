@@ -1,17 +1,49 @@
 {% extends "base_staff.html" %}
 
-{% block title %}Mouvements de stock{% endblock %}
+{% block title %}Mouvements de stock — Saveur 237{% endblock %}
 
 {% block content %}
-<h1>Mouvements de stock</h1>
-<p><a href="{% url 'inventory:movements_new' %}">+ Ajouter</a></p>
-{% if movements %}
-<ul>
-    {% for movement in movements %}
-    <li>{{ movement.ingredient.name }} — {{ movement.get_movement_type_display }} — {{ movement.quantity }}</li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>Aucun mouvement.</p>
-{% endif %}
+<div class="section-title">
+    <div>
+        <p class="kicker">Inventaire</p>
+        <h2>Mouvements de stock</h2>
+        <p class="muted">Historique des entrées / sorties.</p>
+    </div>
+    <a class="btn" href="{% url 'inventory:movements_new' %}">+ Ajouter mouvement</a>
+</div>
+
+<div class="card">
+    <form class="grid" method="get" style="grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap:12px;">
+        <label>Du <input class="form-control" type="date" name="from" value="{{ date_from }}"></label>
+        <label>Au <input class="form-control" type="date" name="to" value="{{ date_to }}"></label>
+        <div><button class="btn" type="submit">Filtrer</button></div>
+    </form>
+
+    <div class="table-responsive" style="margin-top:12px;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Produit</th>
+                    <th>Quantité</th>
+                    <th>Date</th>
+                    <th>Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for move in movements %}
+                <tr>
+                    <td>{{ move.get_movement_type_display }}</td>
+                    <td>{{ move.ingredient.name }}</td>
+                    <td>{{ move.quantity }}</td>
+                    <td>{{ move.created_at|date:"d/m/Y H:i" }}</td>
+                    <td>{{ move.note }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="empty">Aucun mouvement.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

@@ -1,12 +1,37 @@
 {% extends "base_staff.html" %}
 
-{% block title %}Modifier un ingrédient{% endblock %}
+{% block title %}Modifier un article — Inventaire{% endblock %}
 
 {% block content %}
-<h1>Modifier un ingrédient</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Enregistrer</button>
-</form>
+<div class="section-title">
+    <div>
+        <p class="kicker">Inventaire</p>
+        <h2>Modifier {{ ingredient.name }}</h2>
+        <p class="muted">Mettez à jour quantités et seuils.</p>
+    </div>
+    <a class="btn-outline" href="{% url 'inventory:ingredients' %}">← Retour</a>
+</div>
+
+<div class="card">
+    <form method="post" class="form">
+        {% csrf_token %}
+        <div class="grid grid-2">
+            <label>Nom{{ form.name.errors|default:"" }}{{ form.name }}</label>
+            <label>Catégorie{{ form.category.errors|default:"" }}{{ form.category }}</label>
+        </div>
+        <div class="grid grid-3">
+            <label>Quantité{{ form.quantity_in_stock.errors|default:"" }}{{ form.quantity_in_stock }}</label>
+            <label>Unité{{ form.unit.errors|default:"" }}{{ form.unit }}</label>
+            <label>Seuil d’alerte{{ form.alert_threshold.errors|default:"" }}{{ form.alert_threshold }}</label>
+        </div>
+        <div class="grid grid-3">
+            <label>Coût unitaire{{ form.unit_cost.errors|default:"" }}{{ form.unit_cost }}</label>
+            <label>Fournisseur{{ form.supplier.errors|default:"" }}{{ form.supplier }}</label>
+            <label>Lieu de stockage{{ form.storage_location.errors|default:"" }}{{ form.storage_location }}</label>
+        </div>
+        <label>Date d’expiration{{ form.expiry_date.errors|default:"" }}{{ form.expiry_date }}</label>
+        <label>Actif {{ form.is_active }}</label>
+        <button class="btn" type="submit">Mettre à jour</button>
+    </form>
+</div>
 {% endblock %}

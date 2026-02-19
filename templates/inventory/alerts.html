@@ -1,0 +1,41 @@
+{% extends "base_staff.html" %}
+{% block title %}Alertes stock faible — Inventaire{% endblock %}
+{% block content %}
+<div class="section-title">
+    <div>
+        <p class="kicker">Inventaire</p>
+        <h2>Alertes stock faible</h2>
+        <p class="muted">Articles à réapprovisionner en priorité.</p>
+    </div>
+    <a class="btn-outline" href="{% url 'inventory:ingredients' %}">← Retour stock</a>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Article</th>
+                    <th>Qté</th>
+                    <th>Seuil</th>
+                    <th>Statut</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ing in low_stock %}
+                <tr>
+                    <td><strong>{{ ing.name }}</strong><p class="muted small">{{ ing.category }}</p></td>
+                    <td>{{ ing.quantity_in_stock }} {{ ing.get_unit_display }}</td>
+                    <td>{{ ing.alert_threshold }}</td>
+                    <td><span class="badge badge-danger">Stock faible</span></td>
+                    <td><a class="btn-outline" href="{% url 'inventory:ingredients_edit' ing.pk %}">Ajouter stock</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="empty">Aucune alerte.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
