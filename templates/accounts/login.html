@@ -1,55 +1,38 @@
-{% extends "base.html" %}
+{% extends "accounts/base_accounts.html" %}
 {% load static %}
 {% block title %}Connexion — Saveur 237{% endblock %}
 {% block content %}
-<div class="auth-page">
-<div class="auth-shell">
-  <div class="auth-hero">
-      <h2>Saveur 237</h2>
-      <p>Connectez-vous pour gérer vos commandes, tables ou suivre vos livraisons. Interface épurée, sécurisée.</p>
-      <ul class="dish-desc" style="margin:0; padding-left:18px; color:var(--text);">
-        <li>Gérant : tableau de bord</li>
-        <li>Serveur / Coursier : commandes en temps réel</li>
-        <li>Client : suivi de vos commandes</li>
-      </ul>
-  </div>
-  <div class="auth-panel">
-    <div class="auth-card">
-        <div class="auth-header">
-            <img src="{% static 'logo/logo.png' %}" alt="Saveur 237">
-            <div>
-                <h1 style="margin:0;">Connexion</h1>
-                <p class="dish-desc" style="margin:4px 0 0;">Choisissez votre rôle et accédez à votre espace.</p>
-            </div>
-        </div>
-        <form class="form" method="post">
-            {% csrf_token %}
-            {% include "partials/_messages.html" %}
-            <label>Identifiant / Email
-                <input name="username" placeholder="nomutilisateur ou email" required>
-            </label>
-            <label>Mot de passe
-                <input type="password" name="password" placeholder="••••••••" required>
-            </label>
-            <label>Rôle
-                <select name="role" required>
-                    <option value="gerant">Gérant</option>
-                    <option value="serveur">Serveur</option>
-                    <option value="coursier">Coursier</option>
-                    <option value="client">Client</option>
-                </select>
-            </label>
-            <div class="checkbox-group">
-                <label><input type="checkbox" name="remember"> Se souvenir</label>
-            </div>
-            <button class="btn" type="submit" style="width:100%;">Se connecter</button>
-        </form>
-        <div class="auth-actions">
-            <span class="dish-desc">Pas de compte ? <a href="{% url 'accounts:register' %}">Créer un compte</a></span>
-            <a class="btn-outline" href="{% url 'public:home' %}">Retour</a>
-        </div>
+<div class="auth-wrapper">
+  <div class="card auth-card shadow-sm">
+    <div class="text-center mb-3">
+      <img src="{% static 'logo/logo.png' %}" alt="Saveur 237" class="auth-logo">
+      <h3 class="fw-bold mt-2">Connexion</h3>
+      <p class="text-muted">Accédez à votre espace</p>
     </div>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Email ou nom d’utilisateur</label>
+        <input type="text" name="username_or_email" value="{{ form.username_or_email.value|stringformat:'s' }}" class="form-control {% if form.username_or_email.errors %}is-invalid{% endif %}" required>
+        {% for err in form.username_or_email.errors %}<div class="invalid-feedback">{{ err }}</div>{% endfor %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Mot de passe</label>
+        <div class="input-group">
+          <input type="password" name="password" class="form-control {% if form.password.errors %}is-invalid{% endif %}" data-password required>
+          <button class="btn btn-outline-secondary" type="button" data-toggle><span class="small">👁</span></button>
+          {% for err in form.password.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+        </div>
+      </div>
+      {% for err in form.non_field_errors %}<div class="alert alert-danger">{{ err }}</div>{% endfor %}
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <a href="#" class="small text-decoration-none">Mot de passe oublié ?</a>
+      </div>
+      <button class="btn btn-primary w-100 mb-2" type="submit">Se connecter</button>
+      <div class="text-center small">
+        Pas de compte ? <a href="{% url 'accounts:register' %}">Créer un compte</a>
+      </div>
+    </form>
   </div>
-</div>
 </div>
 {% endblock %}

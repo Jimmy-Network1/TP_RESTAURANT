@@ -1,0 +1,26 @@
+body {
+    background: #f5f7fb !important;
+}
+
+.auth-wrapper {
+    min-height: 80vh;
+    display: grid;
+    place-items: center;
+}
+.auth-card {
+    max-width: 420px;
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid #e9edf5;
+}
+.auth-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+.table-hover tbody tr:hover {
+    background: #f8fafc;
+}
+.badge.bg-success { background-color: #28a745 !important; }
+.badge.bg-danger { background-color: #dc3545 !important; }

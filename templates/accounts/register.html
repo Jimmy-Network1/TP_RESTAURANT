@@ -1,70 +1,60 @@
-{% extends "base.html" %}
+{% extends "accounts/base_accounts.html" %}
 {% load static %}
 {% block title %}Inscription — Saveur 237{% endblock %}
 {% block content %}
-<div class="auth-page">
-<div class="auth-shell">
-  <div class="auth-hero">
-      <h2>Créez votre compte client</h2>
-      <p>Suivez vos commandes, gardez votre historique et gagnez du temps lors du checkout.</p>
-      <p class="dish-desc">Les comptes staff (gérant, serveur, coursier) sont créés par le gérant.</p>
-  </div>
-  <div class="auth-panel">
-    <div class="auth-card">
-        <div class="auth-header">
-            <img src="{% static 'logo/logo1.png' %}" alt="Saveur 237">
-            <div>
-                <h1 style="margin:0;">Inscription</h1>
-                <p class="dish-desc" style="margin:4px 0 0;">Renseignez vos informations pour suivre vos commandes.</p>
-            </div>
-        </div>
-
-        <form class="form" method="post">
-            {% csrf_token %}
-            <label>Nom complet
-                <input type="text" name="full_name" placeholder="Votre nom" required>
-            </label>
-            <label>Nom d’utilisateur
-                <input type="text" name="username" placeholder="nomutilisateur" required>
-            </label>
-            <label>Email
-                <input type="email" name="email" placeholder="vous@example.com" required>
-            </label>
-            <label>Téléphone (optionnel)
-                <input type="tel" name="phone" placeholder="+237 ...">
-            </label>
-            <label>Rôle
-                <select name="role" required>
-                    <option value="client" selected>Client</option>
-                    <option value="gerant" disabled>Gérant (via gérant)</option>
-                    <option value="serveur" disabled>Serveur (via gérant)</option>
-                    <option value="coursier" disabled>Coursier (via gérant)</option>
-                </select>
-            </label>
-            <label>Mot de passe
-                <input type="password" name="password1" minlength="8" placeholder="••••••••" required>
-                <small class="help">Min 8 caractères, 1 majuscule, 1 chiffre.</small>
-            </label>
-            <label>Confirmer le mot de passe
-                <input type="password" name="password2" placeholder="••••••••" required>
-            </label>
-            <div class="checkbox-group">
-                <label><input type="checkbox" name="remember"> Se souvenir de moi</label>
-            </div>
-            <button class="btn" type="submit" style="width:100%;">Créer mon compte</button>
-        </form>
-
-        <div class="auth-actions">
-            <span class="dish-desc">Déjà un compte ? <a href="{% url 'accounts:login' %}">Se connecter</a></span>
-            <a class="btn-outline" href="{% url 'public:home' %}">Retour</a>
-        </div>
-
-        <div class="card" style="background: rgba(206,17,38,0.05); border:1px dashed rgba(206,17,38,0.3);">
-            <strong>Staff via gérant</strong>
-            <p class="dish-desc">Pour gérant / serveur / coursier, demandez au gérant de créer le compte.</p>
-        </div>
+<div class="auth-wrapper">
+  <div class="card auth-card shadow-sm">
+    <div class="text-center mb-3">
+      <img src="{% static 'logo/logo1.png' %}" alt="Saveur 237" class="auth-logo">
+      <h3 class="fw-bold mt-2">Créer un compte</h3>
+      <p class="text-muted">Rejoignez la plateforme</p>
     </div>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Prénom</label>
+          <input type="text" name="first_name" value="{{ form.first_name.value|stringformat:'s' }}" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}">
+          {% for err in form.first_name.errors %}<div class="invalid-feedback">{{ err }}</div>{% endfor %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Nom</label>
+          <input type="text" name="last_name" value="{{ form.last_name.value|stringformat:'s' }}" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}">
+          {% for err in form.last_name.errors %}<div class="invalid-feedback">{{ err }}</div>{% endfor %}
+        </div>
+      </div>
+      <div class="mb-3 mt-3">
+        <label class="form-label">Email</label>
+        <input type="email" name="email" value="{{ form.email.value|stringformat:'s' }}" class="form-control {% if form.email.errors %}is-invalid{% endif %}" required>
+        {% for err in form.email.errors %}<div class="invalid-feedback">{{ err }}</div>{% endfor %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Nom d’utilisateur</label>
+        <input type="text" name="username" value="{{ form.username.value|stringformat:'s' }}" class="form-control {% if form.username.errors %}is-invalid{% endif %}" required>
+        {% for err in form.username.errors %}<div class="invalid-feedback">{{ err }}</div>{% endfor %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Mot de passe</label>
+        <div class="input-group">
+          <input type="password" name="password1" class="form-control {% if form.password1.errors %}is-invalid{% endif %}" data-password required>
+          <button class="btn btn-outline-secondary" type="button" data-toggle><span class="small">👁</span></button>
+        </div>
+        {% for err in form.password1.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Confirmer le mot de passe</label>
+        <div class="input-group">
+          <input type="password" name="password2" class="form-control {% if form.password2.errors %}is-invalid{% endif %}" data-password required>
+          <button class="btn btn-outline-secondary" type="button" data-toggle><span class="small">👁</span></button>
+        </div>
+        {% for err in form.password2.errors %}<div class="invalid-feedback d-block">{{ err }}</div>{% endfor %}
+      </div>
+      {% for err in form.non_field_errors %}<div class="alert alert-danger">{{ err }}</div>{% endfor %}
+      <button class="btn btn-success w-100 mb-2" type="submit">S’inscrire</button>
+      <div class="text-center small">
+        Déjà un compte ? <a href="{% url 'accounts:login' %}">Se connecter</a>
+      </div>
+    </form>
   </div>
-</div>
 </div>
 {% endblock %}
