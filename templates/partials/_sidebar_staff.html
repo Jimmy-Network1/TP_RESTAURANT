@@ -4,7 +4,6 @@
         <img src="{% static 'logo/logo1.png' %}" alt="Saveur 237" style="width:34px;height:34px;border-radius:8px;object-fit:cover;">
         <span>Saveur 237</span>
     </div>
-    <a href="{% url 'reports:dashboard' %}" class="{% if section == 'dashboard' %}active{% endif %}">Dashboard</a>
     <a href="{% url 'sales:orders' %}" class="{% if section == 'orders' %}active{% endif %}">Commandes</a>
     <a href="{% url 'kitchen:board' %}" class="{% if section == 'kitchen' %}active{% endif %}">Cuisine</a>
     <a href="{% url 'sales:payments' %}" class="{% if section == 'cash' %}active{% endif %}">Caisse</a>
