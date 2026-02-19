@@ -1,6 +1,6 @@
 {% extends "base_staff.html" %}
 
-{% block title %}Cuisine{% endblock %}
+{% block title %}Cuisine — KDS{% endblock %}
 
 {% block content %}
 <div class="topbar">
@@ -41,11 +41,11 @@
     <div class="kanban-column" data-col="pending">
         <div class="kanban-header">En attente ({{ pending|length }})</div>
         {% for t in pending %}
-        <article class="ticket-card" data-status="pending">
+        <article class="ticket-card ticket-pending" data-status="pending">
             <header>
                 <div>
                     <strong>Cmd #{{ t.order_id }}</strong>
-                    <p class="muted">Créé le {{ t.created_at|date:"d/m H:i" }}</p>
+                    <p class="muted">Envoyée {{ t.created_at|date:"H:i" }}</p>
                 </div>
                 <span class="badge badge-warning">{{ t.get_status_display }}</span>
             </header>
@@ -57,58 +57,65 @@
                 {% endfor %}
             </ul>
             {% if t.note %}<p class="note">Note : {{ t.note }}</p>{% endif %}
+            <div class="table-actions">
+                <form method="post" action="{% url 'kitchen:ticket_status' t.pk 'preparing' %}">
+                    {% csrf_token %}<button class="btn" type="submit">Commencer</button>
+                </form>
+                <a class="btn-outline" href="{% url 'kitchen:ticket_detail' t.pk %}">Détails</a>
+            </div>
         </article>
-        {% empty %}
-        <p class="muted small">Aucun ticket en attente.</p>
-        {% endfor %}
+        {% empty %}<p class="muted small">Aucun ticket en attente.</p>{% endfor %}
     </div>
+
     <div class="kanban-column" data-col="preparing">
         <div class="kanban-header">En préparation ({{ preparing|length }})</div>
         {% for t in preparing %}
-        <article class="ticket-card" data-status="preparing">
+        <article class="ticket-card ticket-preparing" data-status="preparing">
             <header>
                 <div>
                     <strong>Cmd #{{ t.order_id }}</strong>
-                    <p class="muted">Début {{ t.started_at|date:"d/m H:i"|default:"—" }}</p>
+                    <p class="muted">Début {{ t.started_at|date:"H:i"|default:"—" }}</p>
                 </div>
                 <span class="badge badge-success">{{ t.get_status_display }}</span>
             </header>
             <ul class="ticket-items">
                 {% for item in t.items.all %}
                 <li>{{ item.dish.name }} <span class="muted">x{{ item.quantity }}</span></li>
-                {% empty %}
-                <li class="muted">Pas de détail.</li>
-                {% endfor %}
+                {% empty %}<li class="muted">Pas de détail.</li>{% endfor %}
             </ul>
             {% if t.note %}<p class="note">Note : {{ t.note }}</p>{% endif %}
+            <div class="table-actions">
+                <form method="post" action="{% url 'kitchen:ticket_status' t.pk 'ready' %}">
+                    {% csrf_token %}<button class="btn" type="submit">Marquer prêt</button>
+                </form>
+                <a class="btn-outline" href="{% url 'kitchen:ticket_detail' t.pk %}">Détails</a>
+            </div>
         </article>
-        {% empty %}
-        <p class="muted small">Aucun ticket en préparation.</p>
-        {% endfor %}
+        {% empty %}<p class="muted small">Aucun ticket en préparation.</p>{% endfor %}
     </div>
+
     <div class="kanban-column" data-col="ready">
         <div class="kanban-header">Prêts ({{ ready|length }})</div>
         {% for t in ready %}
-        <article class="ticket-card" data-status="ready">
+        <article class="ticket-card ticket-ready" data-status="ready">
             <header>
                 <div>
                     <strong>Cmd #{{ t.order_id }}</strong>
-                    <p class="muted">Prêt {{ t.ready_at|date:"d/m H:i"|default:"—" }}</p>
+                    <p class="muted">Prêt {{ t.ready_at|date:"H:i"|default:"—" }}</p>
                 </div>
                 <span class="badge badge-success">{{ t.get_status_display }}</span>
             </header>
             <ul class="ticket-items">
                 {% for item in t.items.all %}
                 <li>{{ item.dish.name }} <span class="muted">x{{ item.quantity }}</span></li>
-                {% empty %}
-                <li class="muted">Pas de détail.</li>
-                {% endfor %}
+                {% empty %}<li class="muted">Pas de détail.</li>{% endfor %}
             </ul>
             {% if t.note %}<p class="note">Note : {{ t.note }}</p>{% endif %}
+            <div class="table-actions">
+                <a class="btn-outline" href="{% url 'kitchen:ticket_detail' t.pk %}">Détails</a>
+            </div>
         </article>
-        {% empty %}
-        <p class="muted small">Aucun ticket prêt.</p>
-        {% endfor %}
+        {% empty %}<p class="muted small">Aucun ticket prêt.</p>{% endfor %}
     </div>
 </div>
 {% else %}
