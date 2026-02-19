@@ -1,0 +1,54 @@
+{% extends "base_staff.html" %}
+{% block title %}Options / Suppléments — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+    <div>
+        <p class="kicker">Suppléments</p>
+        <h2>Options / Extras</h2>
+        <p class="muted">Gérez les variantes liées à vos plats.</p>
+    </div>
+    <a class="btn" href="#">+ Ajouter option</a>
+</div>
+
+<div class="card">
+    <form class="grid" style="grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap:12px; align-items:end; margin-bottom:12px;">
+        <div>
+            <label class="form-label">Recherche</label>
+            <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Nom d'option">
+        </div>
+        <div>
+            <button class="btn" style="width:100%; max-width:180px;">Filtrer</button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Option</th>
+                    <th>Plat lié</th>
+                    <th>Prix suppl.</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in variants %}
+                <tr>
+                    <td><strong>{{ v.name }}</strong></td>
+                    <td>{{ v.dish.name }}</td>
+                    <td><span class="badge-warning">{{ v.extra_price|default:v.extra_price|default_if_none:"0" }} FCFA</span></td>
+                    <td class="table-actions">
+                        <a class="btn-outline" href="#">✏️</a>
+                        <a class="btn-outline" href="#">🗑</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="empty">Aucune option.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% include "partials/_pagination.html" with page_obj=page_obj %}
+</div>
+{% endblock %}

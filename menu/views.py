@@ -1,8 +1,9 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.core.paginator import Paginator
 
 from .forms import CategoryForm, DishForm
-from .models import Category, Dish
+from .models import Category, Dish, DishVariant
 
 
 def categories_list(request):
@@ -42,8 +43,28 @@ def categories_delete(request, pk):
 
 
 def dishes_list(request):
+    categories = Category.objects.all().order_by('name')
+    q = request.GET.get('q', '').strip()
+    cat = request.GET.get('category')
     dishes = Dish.objects.select_related('category').all().order_by('name')
-    return render(request, 'menu/dishes_list.html', {'dishes': dishes})
+    if q:
+        dishes = dishes.filter(name__icontains=q)
+    if cat:
+        dishes = dishes.filter(category_id=cat)
+    paginator = Paginator(dishes, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(
+        request,
+        'menu/dishes_list.html',
+        {
+            'dishes': page_obj.object_list,
+            'page_obj': page_obj,
+            'categories': categories,
+            'q': q,
+            'cat': cat,
+        },
+    )
 
 
 def dishes_new(request):
@@ -75,3 +96,22 @@ def dishes_delete(request, pk):
         dish.delete()
         return redirect('menu:dishes')
     return render(request, 'menu/dishes_delete.html', {'dish': dish})
+
+
+def options_list(request):
+    variants = DishVariant.objects.select_related('dish').all().order_by('name')
+    q = request.GET.get('q', '').strip()
+    if q:
+        variants = variants.filter(name__icontains=q)
+    paginator = Paginator(variants, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(
+        request,
+        'menu/options_list.html',
+        {
+            'variants': page_obj.object_list,
+            'page_obj': page_obj,
+            'q': q,
+        },
+    )

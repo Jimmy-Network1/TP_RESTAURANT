@@ -1,12 +1,50 @@
 {% extends "base_staff.html" %}
 
-{% block title %}Modifier un plat{% endblock %}
+{% block title %}Modifier {{ dish.name }}{% endblock %}
 
 {% block content %}
-<h1>Modifier un plat</h1>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Enregistrer</button>
-</form>
+<div class="section-title">
+    <div>
+        <p class="kicker">Catalogue</p>
+        <h2>Modifier {{ dish.name }}</h2>
+        <p class="muted">Mettez à jour les informations du plat.</p>
+    </div>
+    <a class="btn-outline" href="{% url 'menu:dishes' %}">← Retour</a>
+</div>
+
+<div class="card">
+    <form method="post" enctype="multipart/form-data" class="form" id="dish-form">
+        {% csrf_token %}
+        <div class="grid grid-2">
+            <label>Nom du produit{{ form.name.errors|default:"" }}{{ form.name }}</label>
+            <label>Catégorie{{ form.category.errors|default:"" }}{{ form.category }}</label>
+        </div>
+
+        <div class="grid grid-3">
+            <label>Prix (FCFA){{ form.price.errors|default:"" }}{{ form.price }}</label>
+            <label>Disponibilité{{ form.availability.errors|default:"" }}{{ form.availability }}</label>
+            <label>Actif{{ form.is_active.errors|default:"" }}{{ form.is_active }}</label>
+        </div>
+
+        <label>Description{{ form.description.errors|default:"" }}{{ form.description }}</label>
+        <label>Photo{{ form.photo.errors|default:"" }}{{ form.photo }}</label>
+
+        <div class="card" style="margin-top:14px; background:rgba(0,135,81,0.04);">
+            <div class="section-title"><h3>Suppléments / Options</h3></div>
+            <p class="dish-desc">Ajoutez des options simples (front only). Pour une gestion complète, utilisez la page Options.</p>
+            <div class="options-list" data-options-list>
+                {% for variant in dish.variants.all %}
+                <div class="option-row">
+                    <input type="text" name="variant_name_dummy" value="{{ variant.name }}" placeholder="Nom de l'option" />
+                    <input type="number" step="0.01" name="variant_price_dummy" value="{{ variant.extra_price }}" placeholder="Prix + FCFA" />
+                    <button type="button" class="ghost-btn" data-remove-option aria-label="Supprimer">✕</button>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="btn-outline" type="button" data-add-option>+ Ajouter une option</button>
+        </div>
+
+        <button class="btn" type="submit">Sauvegarder les modifications</button>
+    </form>
+</div>
 {% endblock %}

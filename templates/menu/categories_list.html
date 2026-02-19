@@ -1,21 +1,27 @@
 {% extends "base_staff.html" %}
-
-{% block title %}Catégories{% endblock %}
-
+{% block title %}Catégories — Saveur 237{% endblock %}
 {% block content %}
-<h1>Catégories</h1>
-<p><a href="{% url 'menu:categories_new' %}">+ Ajouter</a></p>
-{% if categories %}
-<ul>
+<div class="section-title">
+    <h2>Catégories</h2>
+    <a class="btn" href="{% url 'menu:categories_new' %}">+ Ajouter catégorie</a>
+</div>
+
+<div class="card">
+    <div class="grid grid-3">
     {% for category in categories %}
-    <li>
-        {{ category.name }}
-        <a href="{% url 'menu:categories_edit' category.pk %}">Modifier</a>
-        <a href="{% url 'menu:categories_delete' category.pk %}">Supprimer</a>
-    </li>
+        <div class="card" style="border:1px solid var(--border);">
+            <div class="section-title">
+                <strong>{{ category.name }}</strong>
+                <div class="table-actions">
+                    <a class="btn-outline" href="{% url 'menu:categories_edit' category.pk %}">✏️</a>
+                    <a class="btn-outline" href="{% url 'menu:categories_delete' category.pk %}">🗑</a>
+                </div>
+            </div>
+            <p class="dish-desc">ID #{{ category.id }}</p>
+        </div>
+    {% empty %}
+        <div class="empty">Aucune catégorie.</div>
     {% endfor %}
-</ul>
-{% else %}
-<p>Aucune catégorie.</p>
-{% endif %}
+    </div>
+</div>
 {% endblock %}
