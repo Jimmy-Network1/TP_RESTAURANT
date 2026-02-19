@@ -1,0 +1,47 @@
+{% extends "base_staff.html" %}
+{% block title %}Statistiques générales — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+    <div>
+        <p class="kicker">Reports</p>
+        <h2>Statistiques générales</h2>
+        <p class="muted">Tendances globales par type et serveur.</p>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <div class="section-title"><h3>CA mensuel</h3></div>
+        <div class="progress"><div class="progress-bar" style="width:70%"></div></div>
+        <p class="muted small">Placeholder graphique simple.</p>
+    </div>
+    <div class="card">
+        <div class="section-title"><h3>Commandes par type</h3></div>
+        <ul class="ticket-items">
+            <li><span>Sur place</span><strong>{{ dine_in|default:"—" }}</strong></li>
+            <li><span>Livraison</span><strong>{{ delivery|default:"—" }}</strong></li>
+            <li><span>À emporter</span><strong>{{ takeaway|default:"—" }}</strong></li>
+        </ul>
+    </div>
+</div>
+
+<div class="card" style="margin-top:14px;">
+    <div class="section-title"><h3>Performance par serveur</h3></div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Serveur</th><th>Commandes</th><th>CA généré</th></tr></thead>
+            <tbody>
+                {% for row in servers %}
+                <tr>
+                    <td>{{ row.name }}</td>
+                    <td>{{ row.orders }}</td>
+                    <td>{{ row.total }} FCFA</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="empty">Pas de données.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base_staff.html" %}
+{% block title %}Top produits — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+    <div>
+        <p class="kicker">Reports</p>
+        <h2>Produits les plus vendus</h2>
+        <p class="muted">Classement par quantités et revenus.</p>
+    </div>
+    <form class="search-bar" method="get">
+        <input type="search" name="q" value="{{ q }}" placeholder="Rechercher un plat">
+        <button class="btn" type="submit">Filtrer</button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Produit</th><th>Catégorie</th><th>Quantité</th><th>Revenus</th></tr></thead>
+            <tbody>
+                {% for row in products %}
+                <tr>
+                    <td>{{ row.name }}</td>
+                    <td>{{ row.category }}</td>
+                    <td>{{ row.qty }}</td>
+                    <td>{{ row.revenue }} FCFA</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="empty">Aucun produit.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

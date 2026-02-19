@@ -1,0 +1,30 @@
+{% extends "base_staff.html" %}
+{% block title %}Export rapports — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+    <div>
+        <p class="kicker">Reports</p>
+        <h2>Export de rapports</h2>
+        <p class="muted">Choisissez période et format.</p>
+    </div>
+</div>
+
+<div class="card">
+    <form class="form">
+        <div class="grid grid-3">
+            <label>Du<input type="date" name="from" class="form-control"></label>
+            <label>Au<input type="date" name="to" class="form-control"></label>
+            <label>Format
+                <select class="form-control" name="format">
+                    <option>PDF</option>
+                    <option>CSV</option>
+                </select>
+            </label>
+        </div>
+        <div class="table-actions" style="margin-top:12px;">
+            <button class="btn" type="button">Exporter</button>
+            <a class="btn-outline" href="{% url 'reports:dashboard' %}">Retour</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

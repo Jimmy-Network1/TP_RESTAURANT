@@ -1,0 +1,44 @@
+{% extends "base_staff.html" %}
+{% block title %}Ventes journalières — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+    <div>
+        <p class="kicker">Reports</p>
+        <h2>Ventes journalières</h2>
+        <p class="muted">Commandes du jour, totaux et moyenne.</p>
+    </div>
+    <a class="btn-outline" href="#">Exporter</a>
+</div>
+
+<div class="card">
+    <form class="grid" method="get" style="grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap:12px;">
+        <label>Date <input class="form-control" type="date" name="date" value="{{ date }}"></label>
+        <div><button class="btn" type="submit">Filtrer</button></div>
+    </form>
+
+    <div class="stats-grid" style="margin-top:12px;">
+        <div class="card stat-card"><p class="label muted">Total paiements</p><h2>{{ total }}</h2></div>
+        <div class="card stat-card"><p class="label muted">Clients</p><h2>{{ clients }}</h2></div>
+        <div class="card stat-card"><p class="label muted">Moyenne/commande</p><h2>{{ avg }}</h2></div>
+    </div>
+
+    <div class="table-responsive" style="margin-top:12px;">
+        <table class="table">
+            <thead><tr><th>#</th><th>Client</th><th>Type</th><th>Paiement</th><th>Total</th></tr></thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.customer_name|default:"—" }}</td>
+                    <td>{{ order.get_order_type_display }}</td>
+                    <td>{{ order.payments.first.method|default:"—" }}</td>
+                    <td>{{ order.total_amount }} FCFA</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="empty">Aucune commande.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

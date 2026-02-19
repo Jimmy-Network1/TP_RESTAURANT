@@ -1,0 +1,51 @@
+{% extends "base_staff.html" %}
+{% block title %}Rapports — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+    <div>
+        <p class="kicker">Reports</p>
+        <h2>Dashboard analytique</h2>
+        <p class="muted">Vue rapide des performances.</p>
+    </div>
+    <div class="table-actions">
+        <a class="btn-outline" href="#">Exporter</a>
+    </div>
+</div>
+
+<div class="stats-grid" style="margin-bottom:12px;">
+    <div class="card stat-card"><p class="label muted">CA jour</p><h2>{{ total_ca }}</h2></div>
+    <div class="card stat-card"><p class="label muted">Commandes</p><h2>{{ orders }}</h2></div>
+    <div class="card stat-card"><p class="label muted">Ticket moyen</p><h2>{{ avg_ticket }}</h2></div>
+    <div class="card stat-card"><p class="label muted">Top plat</p><h2>{{ top_dish|default:"—" }}</h2></div>
+</div>
+
+<div class="card">
+    <div class="section-title">
+        <h3>Évolution (snapshots)</h3>
+        <div class="filters">
+            <a class="chip-filter active" href="#">Jour</a>
+            <a class="chip-filter" href="#">Semaine</a>
+            <a class="chip-filter" href="#">Mois</a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead><tr><th>Période</th><th>CA</th><th>Cmd</th><th>Ticket</th><th>Top plat</th><th>Généré</th></tr></thead>
+            <tbody>
+                {% for r in rows %}
+                <tr>
+                    <td>{{ r.period }} ({{ r.start|date:"d/m" }} - {{ r.end|date:"d/m" }})</td>
+                    <td>{{ r.ca }}</td>
+                    <td>{{ r.orders }}</td>
+                    <td>{{ r.avg_ticket }}</td>
+                    <td>{{ r.top_dish|default:"—" }}</td>
+                    <td>{{ r.created_at|date:"d/m H:i" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="empty">Aucune donnée.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
