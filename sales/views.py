@@ -9,6 +9,8 @@ from django.utils import timezone
 from .forms import OrderForm, OrderItemFormSet, PaymentForm, TableForm, TableTransferForm
 from .models import Order, OrderItem, Payment, Table
 from menu.models import Dish
+from inventory.models import Ingredient
+from kitchen.models import KitchenTicket
 
 
 def tables_list(request):
@@ -271,6 +273,46 @@ def invoices(request):
 def invoice_detail(request, pk):
     order = get_object_or_404(Order.objects.prefetch_related('items__dish', 'payments'), pk=pk)
     return render(request, 'sales/invoice_detail.html', {'order': order})
+
+
+def dashboard(request):
+    metrics = {
+        'sales_today': Payment.objects.filter(created_at__date=timezone.localdate()).aggregate(total=Sum('amount'))[
+            'total'
+        ]
+        or 0,
+        'orders_active': Order.objects.exclude(status__in=[Order.STATUS_CLOSED, Order.STATUS_CANCELED]).count(),
+        'kitchen_pending': KitchenTicket.objects.filter(status=KitchenTicket.STATUS_PENDING).count(),
+        'tables_busy': Table.objects.filter(status=Table.STATUS_OCCUPIED).count(),
+        'tables_total': Table.objects.count(),
+    }
+    notifications = [
+        {'title': 'Commandes prêtes', 'time': 'il y a 2 min', 'message': '2 tickets marqués prêts en cuisine.'},
+        {'title': 'Stock faible', 'time': 'il y a 15 min', 'message': '3 ingrédients sous le seuil.'},
+    ]
+    mini = {
+        'top_product': 'Burger bœuf braisé',
+        'revenue': metrics['sales_today'],
+        'trend': 'En hausse',
+        'trend_percent': 64,
+    }
+    recent_orders = (
+        Order.objects.select_related('table')
+        .order_by('-created_at')
+        .prefetch_related('items')[:8]
+    )
+    recent_payments = Payment.objects.select_related('order').order_by('-created_at')[:8]
+    return render(
+        request,
+        'staff/dashboard.html',
+        {
+            'metrics': metrics,
+            'notifications': notifications,
+            'mini': mini,
+            'recent_orders': recent_orders,
+            'recent_payments': recent_payments,
+        },
+    )
 
 
 def order_status(request, pk, status):

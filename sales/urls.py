@@ -24,4 +24,5 @@ urlpatterns = [
     path('payments/cashdesk/', views.cashdesk, name='cashdesk'),
     path('invoices/', views.invoices, name='invoices'),
     path('invoices/<int:pk>/', views.invoice_detail, name='invoice_detail'),
+    path('dashboard/', views.dashboard, name='dashboard'),
 ]
