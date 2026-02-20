@@ -95,7 +95,11 @@
         {% endif %}
 
         <div style="display:flex;gap:10px;margin-top:12px;">
-          <button class="btn" type="submit">{% if create %}Enregistrer{% else %}Sauvegarder{% endif %}</button>
+          {% if is_manager %}
+            <button class="btn" type="submit">{% if create %}Enregistrer{% else %}Sauvegarder{% endif %}</button>
+          {% else %}
+            <span class="muted">Accès restreint</span>
+          {% endif %}
           <a class="btn-outline" href="{% url 'menu:list' %}">Annuler</a>
         </div>
       </form>

@@ -22,7 +22,9 @@
     </div>
     <div style="display:flex;gap:8px;">
       <a class="btn-outline" href="{% url 'billing:invoices' %}">Retour</a>
-      <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
+      {% if is_cashier or is_manager %}
+        <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
+      {% endif %}
     </div>
   </div>
 
@@ -65,9 +67,13 @@
     </div>
 
     <div style="display:flex;gap:8px;margin-top:12px;">
-      <a class="btn-outline" href="#">Ajouter remise</a>
+      {% if is_manager %}
+        <a class="btn-outline" href="#">Ajouter remise</a>
+      {% endif %}
       <a class="btn-outline" href="#">Generer facture</a>
-      <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
+      {% if is_cashier or is_manager %}
+        <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
+      {% endif %}
     </div>
   </div>
 </div>

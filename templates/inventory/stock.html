@@ -14,8 +14,10 @@
     <p class="muted">Suivi des ingredients et seuils d'alerte.</p>
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <a class="btn-outline" href="{% url 'inventory:alerts' %}">Alertes</a>
-    <a class="btn" href="{% url 'inventory:stock_new' %}">Ajouter article</a>
+    {% if is_manager %}
+      <a class="btn-outline" href="{% url 'inventory:alerts' %}">Alertes</a>
+      <a class="btn" href="{% url 'inventory:stock_new' %}">Ajouter article</a>
+    {% endif %}
   </div>
 </div>
 
@@ -60,7 +62,11 @@
           {% endif %}
         </td>
         <td style="text-align:right;">
-          <a class="btn-outline" href="{% url 'inventory:stock_edit' item.id %}">Modifier</a>
+          {% if is_manager %}
+            <a class="btn-outline" href="{% url 'inventory:stock_edit' item.id %}">Modifier</a>
+          {% else %}
+            <span class="muted">Accès restreint</span>
+          {% endif %}
         </td>
       </tr>
       {% empty %}

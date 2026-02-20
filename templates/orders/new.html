@@ -36,6 +36,26 @@
         {{ form.note }}
       </div>
 
+      <div class="card" style="margin-top:12px;background:#fff;">
+        <strong>Plats</strong>
+        <div class="muted">Saisissez les quantités à commander.</div>
+        {% if is_manager or is_server %}
+          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px;">
+            {% for d in dishes %}
+              <label class="card" style="padding:10px;display:grid;gap:6px;">
+                <div><strong>{{ d.name }}</strong></div>
+                <div class="muted">{{ d.price }} FCFA</div>
+                <input class="form-control" type="number" name="qty_{{ d.id }}" min="0" placeholder="0">
+              </label>
+            {% empty %}
+              <div class="muted">Aucun plat disponible.</div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="muted" style="margin-top:8px;">Accès restreint</div>
+        {% endif %}
+      </div>
+
       <div class="card" style="margin-top:12px;background:#f8f9fb;">
         <strong>Reservation (check-in)</strong>
         <div class="muted">Selectionnez une reservation CONFIRMEE pour la lier a cette table.</div>
@@ -48,8 +68,12 @@
       </div>
 
       <div style="display:flex;gap:10px;margin-top:12px;">
-        <button class="btn-outline" type="submit" name="action" value="draft">Sauver brouillon</button>
-        <button class="btn" type="submit" name="action" value="send">Envoyer cuisine</button>
+        {% if is_manager or is_server %}
+          <button class="btn-outline" type="submit" name="action" value="draft">Sauver brouillon</button>
+          <button class="btn" type="submit" name="action" value="send">Envoyer cuisine</button>
+        {% else %}
+          <span class="muted">Accès restreint</span>
+        {% endif %}
       </div>
     </form>
   </div>

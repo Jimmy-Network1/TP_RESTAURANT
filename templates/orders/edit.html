@@ -26,17 +26,27 @@
         <label>Client</label>
         {{ form.customer }}
       </div>
+      {% if form.status and is_manager %}
       <div>
         <label>Statut</label>
         {{ form.status }}
       </div>
+      {% endif %}
+    </div>
+    <div style="margin-top:12px;">
+      <label>Raison d'annulation (si annulation)</label>
+      <input class="form-control" type="text" name="cancel_reason" placeholder="Ex: client absent, erreur commande">
     </div>
     <div style="margin-top:12px;">
       <label>Note</label>
       {{ form.note }}
     </div>
     <div style="display:flex;gap:8px;margin-top:12px;">
-      <button class="btn" type="submit">Sauvegarder</button>
+      {% if is_manager or is_server or is_cook %}
+        <button class="btn" type="submit">Sauvegarder</button>
+      {% else %}
+        <span class="muted">Accès restreint</span>
+      {% endif %}
       <a class="btn-outline" href="{% url 'orders:detail' order.id %}">Annuler</a>
     </div>
   </form>

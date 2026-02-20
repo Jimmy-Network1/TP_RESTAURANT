@@ -34,7 +34,11 @@
       {{ form.note.errors }}
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button class="btn" type="submit">Enregistrer</button>
+      {% if is_manager %}
+        <button class="btn" type="submit">Enregistrer</button>
+      {% else %}
+        <span class="muted">Accès restreint</span>
+      {% endif %}
       <a class="btn-outline" href="{% url 'inventory:movements' %}">Annuler</a>
     </div>
   </form>

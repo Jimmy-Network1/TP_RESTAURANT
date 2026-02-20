@@ -22,6 +22,11 @@
   </div>
 </div>
 
+{% if not is_manager %}
+  <div class="card" style="margin-top:12px;">
+    <p class="muted">Accès réservé au gérant.</p>
+  </div>
+{% else %}
 <div class="grid" style="grid-template-columns:1.2fr 1fr;gap:12px;margin-top:12px;">
   <div class="card">
     <h4 style="margin-top:0;">Chiffre d'affaires mensuel</h4>
@@ -50,4 +55,5 @@
     </tbody>
   </table>
 </div>
+{% endif %}
 {% endblock %}

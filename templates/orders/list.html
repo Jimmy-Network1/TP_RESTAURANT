@@ -15,7 +15,9 @@
     <h2>Liste des commandes</h2>
     <p class="muted">Source table ou online.</p>
   </div>
-  <a class="btn" href="{% url 'orders:new' %}">Nouvelle commande</a>
+  {% if is_manager or is_server %}
+    <a class="btn" href="{% url 'orders:new' %}">Nouvelle commande</a>
+  {% endif %}
 </div>
 
 <div class="card" style="margin-top:12px;">
@@ -50,7 +52,7 @@
   <table class="ord-table" style="margin-top:12px;">
     <thead>
       <tr>
-        <th>N°</th><th>Source</th><th>Table/Client</th><th>Type</th><th>Statut</th><th>Total</th><th>Heure</th><th style="text-align:right;padding-right:14px;">Actions</th>
+        <th>N°</th><th>Source</th><th>Table/Client</th><th>Type</th><th>Statut</th>{% if is_manager or is_cashier %}<th>Total</th>{% endif %}<th>Heure</th><th style="text-align:right;padding-right:14px;">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -61,9 +63,15 @@
         <td>{% if o.table %}Table {{ o.table.name }}{% else %}{{ o.customer.username|default:'Client' }}{% endif %}</td>
         <td>{{ o.get_order_type_display }}</td>
         <td><span class="pill pill-ok">{{ o.get_status_display }}</span></td>
-        <td>{{ o.total_amount }} FCFA</td>
+        {% if is_manager or is_cashier %}<td>{{ o.total_amount }} FCFA</td>{% endif %}
         <td>{{ o.created_at|date:"H:i" }}</td>
-        <td><div class="actions"><a class="icon-btn" href="{% url 'orders:detail' o.id %}">Voir</a></div></td>
+        <td><div class="actions">
+          {% if is_manager or is_server or is_cook or is_cashier %}
+            <a class="icon-btn" href="{% url 'orders:detail' o.id %}">Voir</a>
+          {% else %}
+            <span class="muted">Accès restreint</span>
+          {% endif %}
+        </div></td>
       </tr>
       {% empty %}
       <tr><td colspan="8">Aucune commande.</td></tr>

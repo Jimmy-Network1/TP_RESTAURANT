@@ -75,7 +75,11 @@
         </td>
         <td>{% if r.table %}{{ r.table.name }}{% else %}-{% endif %}</td>
         <td style="text-align:right;">
-          <a class="btn-outline" href="{% url 'reservations:staff_detail' r.id %}">Gérer</a>
+          {% if is_manager or is_server %}
+            <a class="btn-outline" href="{% url 'reservations:staff_detail' r.id %}">Gérer</a>
+          {% else %}
+            <span class="muted">Accès restreint</span>
+          {% endif %}
         </td>
       </tr>
       {% empty %}

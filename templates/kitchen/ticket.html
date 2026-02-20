@@ -3,11 +3,12 @@
 {% block content %}
 <style>
   .ticket-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
-  .badge-pending{background:rgba(252,209,22,0.25);color:#9b6a00;} 
-  .badge-prep{background:rgba(0,113,188,0.15);color:#0a4f87;} 
-  .badge-ready{background:rgba(0,135,81,0.12);color:var(--green);} 
-  .badge-issue{background:rgba(206,17,38,0.12);color:var(--red);} 
-  .item-row{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:8px 10px;background:#fafafa;}
+  .badge-pending{background:#f1c40f;color:#111;} 
+  .badge-prep{background:#2d74da;color:#fff;} 
+  .badge-ready{background:#008751;color:#fff;} 
+  .badge-issue{background:#ce1126;color:#fff;} 
+  .item-row{display:flex;justify-content:space-between;align-items:center;border:2px solid #111;border-radius:10px;padding:8px 10px;background:#fff;font-size:16px;}
+  .note{border-left:4px solid #ce1126;padding:6px 10px;background:#fff4f4;border-radius:8px;font-weight:700;color:#8a0f1e;}
 </style>
 
 <div class="ticket-head">
@@ -17,9 +18,9 @@
     <p class="muted">{% if order.order_type == 'dine_in' %}TABLE {{ order.table.name }}{% else %}ONLINE — {{ order.get_order_type_display }}{% endif %}</p>
   </div>
   <div style="display:flex;gap:8px;align-items:center;">
-    {% if order.status == 'EN_ATTENTE' %}<span class="badge badge-pending">En attente</span>{% endif %}
-    {% if order.status == 'PREPARATION' %}<span class="badge badge-prep">En préparation</span>{% endif %}
-    {% if order.status == 'PRETE' %}<span class="badge badge-ready">Prête</span>{% endif %}
+    {% if order.status == 'EN_ATTENTE' %}<span class="badge badge-pending">EN ATTENTE</span>{% endif %}
+    {% if order.status == 'PREPARATION' %}<span class="badge badge-prep">EN PRÉPARATION</span>{% endif %}
+    {% if order.status == 'PRETE' %}<span class="badge badge-ready">PRÊTE</span>{% endif %}
   </div>
 </div>
 
@@ -30,24 +31,39 @@
       {% for item in items %}
       <div class="item-row">
         <span>{{ item.dish.name }} x{{ item.quantity }}</span>
-        <strong>{{ item.line_total }} FCFA</strong>
+        {% if item.note %}<span class="note">{{ item.note }}</span>{% endif %}
       </div>
       {% endfor %}
     </div>
+    {% if order.note %}
+      <div class="note" style="margin-top:10px;">{{ order.note }}</div>
+    {% endif %}
   </div>
 
   <div class="card">
     <h4>Actions</h4>
-    <form method="post" action="{% url 'kitchen:action' order.id %}">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="start">
-      <button class="btn-outline" type="submit">Commencer</button>
-    </form>
-    <form method="post" action="{% url 'kitchen:action' order.id %}" style="margin-top:8px;">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="ready">
-      <button class="btn" type="submit">Marquer prête</button>
-    </form>
+    {% if order.status == 'EN_ATTENTE' %}
+      <form method="post" action="{% url 'kitchen:action' order.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="start">
+        {% if is_cook or is_manager %}
+          <button class="btn-outline" type="submit">Commencer</button>
+        {% else %}
+          <span class="muted">Accès restreint</span>
+        {% endif %}
+      </form>
+    {% endif %}
+    {% if order.status == 'PREPARATION' %}
+      <form method="post" action="{% url 'kitchen:action' order.id %}" style="margin-top:8px;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="ready">
+        {% if is_cook or is_manager %}
+          <button class="btn" type="submit">Marquer prête</button>
+        {% else %}
+          <span class="muted">Accès restreint</span>
+        {% endif %}
+      </form>
+    {% endif %}
     <hr style="border:none;border-top:1px solid #eee;margin:12px 0;">
     <form method="post" action="{% url 'kitchen:action' order.id %}">
       {% csrf_token %}

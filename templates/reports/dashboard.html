@@ -28,6 +28,11 @@
   </div>
 </div>
 
+{% if not is_manager %}
+  <div class="card" style="margin-top:12px;">
+    <p class="muted">Accès réservé au gérant.</p>
+  </div>
+{% else %}
 <div class="kpi-grid">
   <div class="kpi sales">
     <span>Total ventes</span>
@@ -72,4 +77,5 @@
     <a class="btn-outline" href="{% url 'reports:export' %}">Export</a>
   </div>
 </div>
+{% endif %}
 {% endblock %}

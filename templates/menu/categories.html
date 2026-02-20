@@ -14,7 +14,9 @@
     <h2>Categories</h2>
     <p class="muted">Organiser le menu par categories.</p>
   </div>
-  <a class="btn" href="#">Ajouter categorie</a>
+  {% if is_manager %}
+    <a class="btn" href="#">Ajouter categorie</a>
+  {% endif %}
 </div>
 
 <div class="grid" style="grid-template-columns:1.2fr 2fr;gap:12px;margin-top:12px;">
@@ -33,7 +35,11 @@
       <div>
         <label>Active {{ form.is_active }}</label>
       </div>
-      <button class="btn" type="submit">Enregistrer</button>
+      {% if is_manager %}
+        <button class="btn" type="submit">Enregistrer</button>
+      {% else %}
+        <span class="muted">Accès restreint</span>
+      {% endif %}
     </form>
   </div>
 
@@ -52,8 +58,12 @@
           </div>
           <div style="display:flex;gap:6px;align-items:center;">
             <span class="pill {% if c.is_active %}pill-ok{% else %}pill-off{% endif %}">{% if c.is_active %}Active{% else %}Inactive{% endif %}</span>
-            <a class="icon-btn" href="#">Edit</a>
-            <a class="icon-btn" href="#">Off</a>
+            {% if is_manager %}
+              <a class="icon-btn" href="#">Edit</a>
+              <a class="icon-btn" href="#">Off</a>
+            {% else %}
+              <span class="muted">Accès restreint</span>
+            {% endif %}
           </div>
         </div>
       {% empty %}

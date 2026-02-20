@@ -18,7 +18,9 @@
     <h2>Liste des produits</h2>
     <p class="muted">Gerer tous les plats, boissons et options du restaurant.</p>
   </div>
-  <a class="btn" href="{% url 'menu:product_new' %}">Ajouter produit</a>
+  {% if is_manager %}
+    <a class="btn" href="{% url 'menu:product_new' %}">Ajouter produit</a>
+  {% endif %}
 </div>
 
 <div class="card" style="margin-top:12px;">
@@ -96,8 +98,12 @@
         </td>
         <td>
           <div class="actions">
-            <a class="icon-btn" href="{% url 'menu:product_edit' dish.pk %}">Edit</a>
-            <a class="icon-btn" href="#">Off</a>
+            {% if is_manager %}
+              <a class="icon-btn" href="{% url 'menu:product_edit' dish.pk %}">Edit</a>
+              <a class="icon-btn" href="#">Off</a>
+            {% else %}
+              <span class="muted">Accès restreint</span>
+            {% endif %}
           </div>
         </td>
       </tr>

@@ -12,6 +12,7 @@
   <div style="display:flex;gap:8px;flex-wrap:wrap;">
     <form method="post">
       {% csrf_token %}
+      <input class="form-control" type="text" name="reason" placeholder="Raison d'annulation (optionnel)" style="margin-bottom:8px;">
       <button class="btn-outline" type="submit">Annuler réservation</button>
     </form>
     <a class="btn" href="{% url 'reservations:client_list' %}">Retour</a>

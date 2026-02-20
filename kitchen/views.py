@@ -8,10 +8,19 @@ from django.views import View
 from django.views.generic import DetailView, ListView
 
 from orders.models import Order, OrderNotification
+from orders.utils import can_transition, log_transition
 
 
-def staff_required(user):
-    return user.is_authenticated and (user.is_staff or user.is_superuser)
+def kitchen_required(user):
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    if user.groups.filter(name__iexact="gerant").exists():
+        return True
+    if user.groups.filter(name__iexact="manager").exists():
+        return True
+    return user.groups.filter(name__iexact="cuisinier").exists()
 
 
 @method_decorator(login_required, name="dispatch")
@@ -20,7 +29,7 @@ class KitchenBoardView(ListView):
     context_object_name = "orders"
 
     def dispatch(self, request, *args, **kwargs):
-        if not staff_required(request.user):
+        if not kitchen_required(request.user):
             return redirect("public:home")
         return super().dispatch(request, *args, **kwargs)
 
@@ -28,12 +37,11 @@ class KitchenBoardView(ListView):
         qs = Order.objects.filter(status__in=[
             Order.STATUS_PENDING,
             Order.STATUS_PREPARING,
-            Order.STATUS_READY,
         ]).order_by("created_at")
         status = self.request.GET.get("status")
         source = self.request.GET.get("source")
         otype = self.request.GET.get("type")
-        if status:
+        if status in [Order.STATUS_PENDING, Order.STATUS_PREPARING]:
             qs = qs.filter(status=status)
         if source == "TABLE":
             qs = qs.filter(order_type=Order.TYPE_DINE_IN)
@@ -52,6 +60,25 @@ class KitchenBoardView(ListView):
         ctx["source_filter"] = self.request.GET.get("source", "")
         ctx["type_filter"] = self.request.GET.get("type", "")
         ctx["now"] = timezone.now()
+        orders = list(self.object_list)
+        kitchen_orders = []
+        bar_orders = []
+        for o in orders:
+            has_drink = False
+            has_food = False
+            for it in o.items.all():
+                cat = (it.dish.category.name or "").lower()
+                if "boisson" in cat:
+                    has_drink = True
+                else:
+                    has_food = True
+            if has_food:
+                kitchen_orders.append(o)
+            if has_drink:
+                bar_orders.append(o)
+        ctx["kitchen_orders"] = kitchen_orders
+        ctx["bar_orders"] = bar_orders
+        ctx["latest_ticket_id"] = Order.objects.filter(status__in=[Order.STATUS_PENDING, Order.STATUS_PREPARING]).order_by("-created_at").values_list("id", flat=True).first() or 0
         return ctx
 
 
@@ -62,7 +89,7 @@ class KitchenTicketView(DetailView):
     context_object_name = "order"
 
     def dispatch(self, request, *args, **kwargs):
-        if not staff_required(request.user):
+        if not kitchen_required(request.user):
             return redirect("public:home")
         return super().dispatch(request, *args, **kwargs)
 
@@ -75,31 +102,41 @@ class KitchenTicketView(DetailView):
 
 @login_required
 def kitchen_action(request, pk):
-    if not staff_required(request.user):
+    if not kitchen_required(request.user):
         return redirect("public:home")
     order = get_object_or_404(Order, pk=pk)
     action = request.POST.get("action")
     if action == "start":
-        order.status = Order.STATUS_PREPARING
-        order.save(update_fields=["status"])
-        messages.success(request, "Commande en préparation.")
-    elif action == "ready":
-        order.status = Order.STATUS_READY
-        order.save(update_fields=["status"])
-        if order.order_type == Order.TYPE_DINE_IN:
-            OrderNotification.objects.create(
-                order=order,
-                target=OrderNotification.TARGET_SERVER,
-                message=f"Commande #{order.id} prête pour table {order.table.name if order.table else '-'}",
-            )
-            messages.success(request, "Commande prête. Serveur notifié.")
+        if can_transition(request.user, order, Order.STATUS_PREPARING):
+            old_status = order.status
+            order.status = Order.STATUS_PREPARING
+            order.save(update_fields=["status"])
+            log_transition(order, request.user, old_status, order.status)
+            messages.success(request, "Commande en préparation.")
         else:
-            OrderNotification.objects.create(
-                order=order,
-                target=OrderNotification.TARGET_DELIVERY,
-                message=f"Commande #{order.id} prête pour {order.get_order_type_display()}",
-            )
-            messages.success(request, "Commande prête. Livraison / pickup notifié.")
+            messages.error(request, "Transition non autorisée.")
+    elif action == "ready":
+        if can_transition(request.user, order, Order.STATUS_READY):
+            old_status = order.status
+            order.status = Order.STATUS_READY
+            order.save(update_fields=["status"])
+            log_transition(order, request.user, old_status, order.status)
+            if order.order_type == Order.TYPE_DINE_IN:
+                OrderNotification.objects.create(
+                    order=order,
+                    target=OrderNotification.TARGET_SERVER,
+                    message=f"Commande #{order.id} prête pour table {order.table.name if order.table else '-'}",
+                )
+                messages.success(request, "Commande prête. Serveur notifié.")
+            else:
+                OrderNotification.objects.create(
+                    order=order,
+                    target=OrderNotification.TARGET_DELIVERY,
+                    message=f"Commande #{order.id} prête pour {order.get_order_type_display()}",
+                )
+                messages.success(request, "Commande prête. Livraison / pickup notifié.")
+        else:
+            messages.error(request, "Transition non autorisée.")
     elif action == "issue":
         note = request.POST.get("note", "")[:200]
         order.kitchen_issue = True
@@ -116,7 +153,7 @@ class KitchenBarView(ListView):
     context_object_name = "orders"
 
     def dispatch(self, request, *args, **kwargs):
-        if not staff_required(request.user):
+        if not kitchen_required(request.user):
             return redirect("public:home")
         return super().dispatch(request, *args, **kwargs)
 
@@ -134,7 +171,7 @@ class KitchenHistoryView(ListView):
     context_object_name = "orders"
 
     def dispatch(self, request, *args, **kwargs):
-        if not staff_required(request.user):
+        if not kitchen_required(request.user):
             return redirect("public:home")
         return super().dispatch(request, *args, **kwargs)
 

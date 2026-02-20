@@ -1,0 +1,24 @@
+{% extends "base_staff.html" %}
+{% block title %}Annuler commande — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(206,17,38,0.12);color:var(--red);">Annulation</p>
+    <h2>Annuler commande #{{ order.id }}</h2>
+    <p class="muted">Raison obligatoire. L'annulation est tracée.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'orders:detail' order.id %}">Retour</a>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <label>Raison d'annulation</label>
+    <input class="form-control" type="text" name="reason" placeholder="Ex: client absent, erreur commande">
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn" type="submit">Confirmer l'annulation</button>
+      <a class="btn-outline" href="{% url 'orders:detail' order.id %}">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

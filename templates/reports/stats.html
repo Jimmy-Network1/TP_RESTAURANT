@@ -10,6 +10,11 @@
   <a class="btn-outline" href="{% url 'reports:dashboard' %}">Retour</a>
 </div>
 
+{% if not is_manager %}
+  <div class="card" style="margin-top:12px;">
+    <p class="muted">Accès réservé au gérant.</p>
+  </div>
+{% else %}
 <div class="card" style="margin-bottom:12px;">
   <div class="menu-filters">
     <a class="chip" href="{% url 'reports:stats' %}?period=month">Mois</a>
@@ -30,4 +35,5 @@
     </ul>
   </div>
 </div>
+{% endif %}
 {% endblock %}
