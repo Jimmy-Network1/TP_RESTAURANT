@@ -62,7 +62,11 @@
           <input class="form-control" name="amount" type="number" step="0.01" placeholder="Ex: 35000" required>
         </div>
         <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-          <button class="btn" type="submit" {% if not session %}disabled{% endif %}>Valider paiement</button>
+          {% if is_cashier or is_manager %}
+            <button class="btn" type="submit" {% if not session %}disabled{% endif %}>Valider paiement</button>
+          {% else %}
+            <span class="muted">Accès réservé au caissier/gerant.</span>
+          {% endif %}
         </div>
       </form>
       <p class="muted" style="margin-top:10px;">Paiement partiel désactivé.</p>

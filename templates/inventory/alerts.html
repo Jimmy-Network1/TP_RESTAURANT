@@ -35,7 +35,9 @@
     <div class="progress"><span style="width:{{ percent_map[item.id]|default:0 }}%"></span></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <span class="badge" style="background:rgba(206,17,38,0.12);color:var(--red);">Stock faible</span>
-      <a class="btn-outline" href="{% url 'inventory:stock_edit' item.id %}">Ajouter stock</a>
+      {% if is_manager %}
+        <a class="btn-outline" href="{% url 'inventory:stock_edit' item.id %}">Ajouter stock</a>
+      {% endif %}
     </div>
   </div>
   {% empty %}

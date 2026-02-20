@@ -55,7 +55,11 @@
           {{ form.is_active.errors }}
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <button class="btn" type="submit">{% if view.object %}Mettre a jour{% else %}Enregistrer{% endif %}</button>
+          {% if is_manager %}
+            <button class="btn" type="submit">{% if view.object %}Mettre a jour{% else %}Enregistrer{% endif %}</button>
+          {% else %}
+            <span class="muted">Accès restreint</span>
+          {% endif %}
           <a class="btn-outline" href="{% url 'inventory:stock' %}">Annuler</a>
         </div>
       </form>

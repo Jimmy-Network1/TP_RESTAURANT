@@ -11,7 +11,9 @@
     <h2>Utilisateurs</h2>
     <p class="muted">Gestion staff et clients.</p>
   </div>
-  <a class="btn" href="{% url 'accounts:staff_new' %}">Créer utilisateur</a>
+  {% if is_manager %}
+    <a class="btn" href="{% url 'accounts:staff_new' %}">Créer utilisateur</a>
+  {% endif %}
 </div>
 
 <div class="card" style="margin-bottom:12px;">
@@ -65,7 +67,11 @@
         <td style="text-align:right;">
           <form method="post" action="{% url 'accounts:user_toggle' u.id %}" style="display:inline;">
             {% csrf_token %}
-            <button class="btn-outline" type="submit">{% if u.is_active %}Désactiver{% else %}Activer{% endif %}</button>
+            {% if is_manager %}
+              <button class="btn-outline" type="submit">{% if u.is_active %}Désactiver{% else %}Activer{% endif %}</button>
+            {% else %}
+              <span class="muted">Accès restreint</span>
+            {% endif %}
           </form>
         </td>
       </tr>

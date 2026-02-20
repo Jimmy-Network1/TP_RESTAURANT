@@ -94,7 +94,10 @@
     </aside>
     <div>
       <div class="topbar">
-        <div>Connecté : {{ request.user.username|default:'staff' }}</div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <a class="btn-outline" href="javascript:history.back()">Retour</a>
+          <div>Connecté : {{ request.user.username|default:'staff' }}</div>
+        </div>
         <div style="display:flex;gap:12px;align-items:center;">
           <a href="{% url 'orders:notifications' %}">Notifications</a>
           <a href="{% url 'accounts:logout' %}">Déconnexion</a>

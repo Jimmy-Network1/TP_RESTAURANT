@@ -10,6 +10,11 @@
   <a class="btn-outline" href="{% url 'reports:dashboard' %}">Retour</a>
 </div>
 
+{% if not is_manager %}
+  <div class="card" style="margin-top:12px;">
+    <p class="muted">Accès réservé au gérant.</p>
+  </div>
+{% else %}
 <div class="card">
   <form>
     <div class="grid">
@@ -43,4 +48,5 @@
     <button class="btn" type="button">Exporter</button>
   </form>
 </div>
+{% endif %}
 {% endblock %}

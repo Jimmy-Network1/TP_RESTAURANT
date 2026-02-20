@@ -20,7 +20,9 @@
     <h2>Factures</h2>
     <p class="muted">Recapitulatif avant encaissement.</p>
   </div>
-  <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
+  {% if is_cashier or is_manager %}
+    <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
+  {% endif %}
 </div>
 
 <div class="bill-summary" style="margin:12px 0;">
@@ -45,7 +47,7 @@
         <th>Facture</th>
         <th>Commande</th>
         <th>Client/Table</th>
-        <th>Total</th>
+        {% if is_cashier or is_manager %}<th>Total</th>{% endif %}
         <th>Mode</th>
         <th style="text-align:right;padding-right:14px;">Actions</th>
       </tr>
@@ -55,7 +57,7 @@
         <td>#F-1024</td>
         <td>#1024</td>
         <td>Table 5</td>
-        <td><strong>32 000 FCFA</strong></td>
+        {% if is_cashier or is_manager %}<td><strong>32 000 FCFA</strong></td>{% endif %}
         <td><span class="pill pill-cash">Especes</span></td>
         <td><div class="actions"><a class="icon-btn" href="{% url 'billing:invoice_detail' 1 %}">Voir</a></div></td>
       </tr>
@@ -63,7 +65,7 @@
         <td>#F-1025</td>
         <td>#1025</td>
         <td>Client: Marc B.</td>
-        <td><strong>58 900 FCFA</strong></td>
+        {% if is_cashier or is_manager %}<td><strong>58 900 FCFA</strong></td>{% endif %}
         <td><span class="pill pill-card">Carte</span></td>
         <td><div class="actions"><a class="icon-btn" href="{% url 'billing:invoice_detail' 1 %}">Voir</a></div></td>
       </tr>
@@ -71,7 +73,7 @@
         <td>#F-1026</td>
         <td>#1026</td>
         <td>Livraison</td>
-        <td><strong>12 000 FCFA</strong></td>
+        {% if is_cashier or is_manager %}<td><strong>12 000 FCFA</strong></td>{% endif %}
         <td><span class="pill pill-momo">Mobile Money</span></td>
         <td><div class="actions"><a class="icon-btn" href="{% url 'billing:invoice_detail' 1 %}">Voir</a></div></td>
       </tr>

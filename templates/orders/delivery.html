@@ -7,7 +7,9 @@
     <h2>Livraisons</h2>
     <p class="muted">Commandes en livraison et suivi.</p>
   </div>
-  <a class="btn" href="{% url 'delivery:assign' %}">Assigner livreur</a>
+  {% if is_manager %}
+    <a class="btn" href="{% url 'delivery:assign' %}">Assigner livreur</a>
+  {% endif %}
 </div>
 
 <div class="card" style="margin-top:12px;">
@@ -25,7 +27,13 @@
           <td>{{ o.delivery_address|default:'-' }}</td>
           <td>{{ o.assigned_delivery.username|default:'-' }}</td>
           <td><span class="pill pill-route">{{ o.get_status_display }}</span></td>
-          <td><a class="icon-btn" href="{% url 'orders:detail' o.id %}">Voir</a></td>
+          <td>
+            {% if is_manager or is_delivery %}
+              <a class="icon-btn" href="{% url 'orders:detail' o.id %}">Voir</a>
+            {% else %}
+              <span class="muted">Accès restreint</span>
+            {% endif %}
+          </td>
         </tr>
       {% empty %}
         <tr><td colspan="6">Aucune livraison.</td></tr>

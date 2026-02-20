@@ -21,25 +21,29 @@
   </div>
   <div class="card">
     <h3>Statut & Table</h3>
-    <form method="post">
-      {% csrf_token %}
-      <div class="form-row">
-        <label>Statut</label>
-        {{ form.status }}
-      </div>
-      <div class="form-row">
-        <label>Raison d'annulation (si annulation)</label>
-        <input class="form-control" type="text" name="cancel_reason" placeholder="Ex: client absent, erreur">
-      </div>
-      <div class="form-row">
-        <label>Table assignée</label>
-        {{ form.table }}
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn" type="submit">Mettre à jour</button>
-        <a class="btn-outline" href="{% url 'reservations:staff_checkin' reservation.id %}">Check-in client</a>
-      </div>
-    </form>
+    {% if is_manager or is_server %}
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-row">
+          <label>Statut</label>
+          {{ form.status }}
+        </div>
+        <div class="form-row">
+          <label>Raison d'annulation (si annulation)</label>
+          <input class="form-control" type="text" name="cancel_reason" placeholder="Ex: client absent, erreur">
+        </div>
+        <div class="form-row">
+          <label>Table assignée</label>
+          {{ form.table }}
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" type="submit">Mettre à jour</button>
+          <a class="btn-outline" href="{% url 'reservations:staff_checkin' reservation.id %}">Check-in client</a>
+        </div>
+      </form>
+    {% else %}
+      <div class="muted">Accès restreint.</div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

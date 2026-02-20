@@ -15,7 +15,9 @@
     <h2>Options / Supplements</h2>
     <p class="muted">Gestion des extras personnalisables.</p>
   </div>
-  <a class="btn" href="#">Ajouter option</a>
+  {% if is_manager %}
+    <a class="btn" href="#">Ajouter option</a>
+  {% endif %}
 </div>
 
 <div class="card" style="margin-top:12px;">
@@ -27,15 +29,19 @@
     <div><button class="btn" type="submit">Filtrer</button></div>
   </form>
 
-  <form method="post" class="form" style="margin-top:12px;">
-    {% csrf_token %}
-    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;">
-      {{ form.dish.label_tag }}{{ form.dish }}
-      {{ form.name.label_tag }}{{ form.name }}
-      {{ form.extra_price.label_tag }}{{ form.extra_price }}
-      <button class="btn" type="submit">Ajouter</button>
-    </div>
-  </form>
+  {% if is_manager %}
+    <form method="post" class="form" style="margin-top:12px;">
+      {% csrf_token %}
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;">
+        {{ form.dish.label_tag }}{{ form.dish }}
+        {{ form.name.label_tag }}{{ form.name }}
+        {{ form.extra_price.label_tag }}{{ form.extra_price }}
+        <button class="btn" type="submit">Ajouter</button>
+      </div>
+    </form>
+  {% else %}
+    <div class="muted" style="margin-top:12px;">Accès restreint</div>
+  {% endif %}
 
   <table class="opt-table" style="margin-top:12px;">
     <thead>
@@ -56,7 +62,15 @@
         <td>{{ opt.dish.name }}</td>
         <td>{{ opt.extra_price }} FCFA</td>
         <td><span class="pill pill-ok">Active</span></td>
-        <td><div class="actions"><a class="icon-btn" href="#">Edit</a><a class="icon-btn" href="#">Off</a></div></td>
+        <td>
+          <div class="actions">
+            {% if is_manager %}
+              <a class="icon-btn" href="#">Edit</a><a class="icon-btn" href="#">Off</a>
+            {% else %}
+              <span class="muted">Accès restreint</span>
+            {% endif %}
+          </div>
+        </td>
       </tr>
       {% empty %}
       <tr><td colspan="6" class="empty">Aucune option.</td></tr>

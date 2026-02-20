@@ -48,28 +48,32 @@
           {% endif %}
         </div>
         <div class="btn-row">
-          {% if o.status == 'PRETE' %}
-            <form method="post" action="{% url 'delivery:detail' o.id %}">
-              {% csrf_token %}
-              <input type="hidden" name="action" value="start">
-              <button class="btn-primary" type="submit">Démarrer livraison</button>
-            </form>
-          {% endif %}
-          {% if o.status == 'EN_ROUTE' %}
-            <form method="post" action="{% url 'delivery:detail' o.id %}">
-              {% csrf_token %}
-              <input type="hidden" name="action" value="delivered">
-              <button class="btn-primary" type="submit">Marquer livrée</button>
-            </form>
-          {% endif %}
-          {% if o.status == 'LIVREE' %}
-            {% if not o.payments.exists %}
-            <form method="post" action="{% url 'delivery:detail' o.id %}">
-              {% csrf_token %}
-              <input type="hidden" name="action" value="paid">
-              <button class="btn-secondary" type="submit">Confirmé payé</button>
-            </form>
+          {% if is_delivery or is_manager %}
+            {% if o.status == 'PRETE' %}
+              <form method="post" action="{% url 'delivery:detail' o.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="start">
+                <button class="btn-primary" type="submit">Démarrer livraison</button>
+              </form>
             {% endif %}
+            {% if o.status == 'EN_ROUTE' %}
+              <form method="post" action="{% url 'delivery:detail' o.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delivered">
+                <button class="btn-primary" type="submit">Marquer livrée</button>
+              </form>
+            {% endif %}
+            {% if o.status == 'LIVREE' %}
+              {% if not o.payments.exists %}
+              <form method="post" action="{% url 'delivery:detail' o.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="paid">
+                <button class="btn-secondary" type="submit">Confirmé payé</button>
+              </form>
+              {% endif %}
+            {% endif %}
+          {% else %}
+            <span class="muted">Accès restreint</span>
           {% endif %}
           <a class="btn-secondary" href="{% url 'delivery:detail' o.id %}">Détail</a>
         </div>

@@ -15,7 +15,9 @@
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;">
     <a class="btn-outline" href="{% url 'inventory:stock' %}">Retour stock</a>
-    <a class="btn" href="{% url 'inventory:movement_new' %}">Ajouter mouvement</a>
+    {% if is_manager %}
+      <a class="btn" href="{% url 'inventory:movement_new' %}">Ajouter mouvement</a>
+    {% endif %}
   </div>
 </div>
 

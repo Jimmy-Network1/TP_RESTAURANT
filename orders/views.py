@@ -94,6 +94,7 @@ def new_view(request):
         return redirect("public:home")
     tables = Table.objects.all()
     reservations = Reservation.objects.filter(status=Reservation.STATUS_CONFIRMED).order_by("reservation_datetime")
+    dishes = Dish.objects.filter(is_active=True).order_by("name")
 
     if request.method == "POST":
         form = OrderForm(request.POST)
@@ -102,7 +103,7 @@ def new_view(request):
                 order = form.save(commit=False)
                 if order.order_type == Order.TYPE_DINE_IN and not order.table:
                     form.add_error("table", "Table obligatoire pour sur place.")
-                    return render(request, "orders/new.html", {"form": form, "tables": tables, "reservations": reservations})
+                    return render(request, "orders/new.html", {"form": form, "tables": tables, "reservations": reservations, "dishes": dishes})
                 action = request.POST.get("action")
                 order.status = Order.STATUS_DRAFT if action == "draft" else Order.STATUS_PENDING
                 order.created_at = timezone.now()
@@ -112,6 +113,33 @@ def new_view(request):
                     status=order.status,
                     actor=request.user if request.user.is_authenticated else None,
                 )
+
+                total = 0
+                for dish in dishes:
+                    raw = request.POST.get(f"qty_{dish.id}", "")
+                    if not raw:
+                        continue
+                    try:
+                        qty = int(raw)
+                    except ValueError:
+                        qty = 0
+                    if qty > 0:
+                        OrderItem.objects.create(
+                            order=order,
+                            dish=dish,
+                            quantity=qty,
+                            unit_price=dish.price,
+                            line_total=dish.price * qty,
+                        )
+                        total += dish.price * qty
+
+                if order.status == Order.STATUS_PENDING and total == 0:
+                    form.add_error(None, "Ajoutez au moins un plat avant d'envoyer en cuisine.")
+                    order.delete()
+                    return render(request, "orders/new.html", {"form": form, "tables": tables, "reservations": reservations, "dishes": dishes})
+
+                order.total_amount = total
+                order.save(update_fields=["total_amount"])
 
                 res_id = request.POST.get("reservation_id")
                 if res_id:
@@ -129,7 +157,7 @@ def new_view(request):
     else:
         form = OrderForm(initial={"order_type": Order.TYPE_DINE_IN})
 
-    return render(request, "orders/new.html", {"form": form, "tables": tables, "reservations": reservations})
+    return render(request, "orders/new.html", {"form": form, "tables": tables, "reservations": reservations, "dishes": dishes})
 
 
 def edit_view(request, pk):

@@ -95,8 +95,7 @@ class LoginView(View):
 
                 login(request, user)
                 messages.success(request, "Connexion reussie.")
-                next_url = request.GET.get("next")
-                return redirect(next_url) if next_url else redirect(user_dashboard_url(user))
+                return redirect("public:home")
             if user and not user.is_active:
                 messages.error(request, "Compte desactive. Contactez le restaurant.")
             else:

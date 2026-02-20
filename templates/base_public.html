@@ -15,6 +15,7 @@
         <img src="{% static 'logo/logo.png' %}" width="36" height="36" alt="Saveur 237">
         <strong class="brand-title">Saveur 237</strong>
       </a>
+      <a class="btn-outline" href="javascript:history.back()">Retour</a>
       <nav class="nav-links">
         {% if not is_staff_role %}
           <a href="{% url 'public:menu' %}">Menu</a>

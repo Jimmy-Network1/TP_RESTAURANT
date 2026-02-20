@@ -15,8 +15,12 @@
   </div>
   <div style="display:flex;gap:8px;">
     <a class="btn-outline" href="{% url 'orders:list' %}">Retour</a>
-    <a class="btn-outline" href="{% url 'orders:split' order.id %}">Split/Fusion</a>
-    <a class="btn" href="{% url 'billing:invoices' %}">Facture / Paiement</a>
+    {% if is_manager %}
+      <a class="btn-outline" href="{% url 'orders:split' order.id %}">Split/Fusion</a>
+    {% endif %}
+    {% if is_cashier or is_manager %}
+      <a class="btn" href="{% url 'billing:invoices' %}">Facture / Paiement</a>
+    {% endif %}
   </div>
 </div>
 
@@ -30,9 +34,11 @@
         <div class="muted">Aucune ligne.</div>
       {% endfor %}
     </div>
+    {% if is_cashier or is_manager %}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
       <strong>Total</strong><strong>{{ total }} FCFA</strong>
     </div>
+    {% endif %}
   </div>
 
   <div class="card">

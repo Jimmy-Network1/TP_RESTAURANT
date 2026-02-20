@@ -35,6 +35,7 @@
     </div>
   </form>
 
+  {% if is_cashier or is_manager %}
   <table class="hist-table" style="margin-top:12px;">
     <thead>
       <tr>
@@ -67,5 +68,8 @@
       {% endfor %}
     </tbody>
   </table>
+  {% else %}
+    <div class="muted">Accès réservé au caissier/gerant.</div>
+  {% endif %}
 </div>
 {% endblock %}
