@@ -1,0 +1,23 @@
+{% extends "base_staff.html" %}
+{% block title %}Bar — KDS{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Bar</p>
+    <h2>Écran Bar</h2>
+    <p class="muted">Tickets boissons uniquement.</p>
+  </div>
+</div>
+
+<div class="grid">
+  {% for o in orders %}
+  <div class="card">
+    <strong>#{{ o.id }}</strong>
+    <p class="muted">{{ o.get_order_type_display }}</p>
+    <a class="btn-outline" href="{% url 'kitchen:ticket' o.id %}">Voir ticket</a>
+  </div>
+  {% empty %}
+  <div class="card">Aucun ticket bar.</div>
+  {% endfor %}
+</div>
+{% endblock %}

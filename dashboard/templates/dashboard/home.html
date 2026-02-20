@@ -1,0 +1,110 @@
+{% extends "base_staff.html" %}
+{% block title %}Dashboard — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .kpi{display:grid;gap:6px;padding:16px;border-radius:14px;color:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.08);} 
+  .kpi.pending{background:linear-gradient(135deg,#f1c40f,#f39c12);} 
+  .kpi.prep{background:linear-gradient(135deg,#0071bc,#0a4f87);} 
+  .kpi.ready{background:linear-gradient(135deg,#008751,#1b9b6a);} 
+  .kpi.tables{background:linear-gradient(135deg,#2c3e50,#34495e);} 
+  .kpi.sales{background:linear-gradient(135deg,#3E2723,#6d4c41);} 
+  .kpi.stock{background:linear-gradient(135deg,#CE1126,#8e0d1f);} 
+  .section{margin-top:12px;}
+  .row{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:8px 10px;background:#fff;}
+</style>
+
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Dashboard</p>
+    <h2>Accueil staff</h2>
+    <p class="muted">Vue opérationnelle adaptée au rôle.</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    {% if is_server %}<a class="btn" href="{% url 'orders:new' %}">Nouvelle commande</a>{% endif %}
+    {% if is_cook %}<a class="btn" href="{% url 'kitchen:board' %}">Aller à cuisine</a>{% endif %}
+    {% if is_cashier %}<a class="btn" href="{% url 'billing:payments' %}">Encaisser</a>{% endif %}
+    {% if is_manager %}<a class="btn" href="{% url 'reports:dashboard' %}">Voir rapports</a>{% endif %}
+    <a class="btn-outline" href="{% url 'tables:plan' %}">Plan des tables</a>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi pending"><span>En attente</span><strong>{{ pending_orders }}</strong></div>
+  <div class="kpi prep"><span>En préparation</span><strong>{{ preparing_orders }}</strong></div>
+  <div class="kpi ready"><span>Prêtes</span><strong>{{ ready_orders }}</strong></div>
+  {% if is_server or is_manager %}
+    <div class="kpi tables"><span>Tables occupées / libres</span><strong>{{ tables_occupied }} / {{ tables_free }}</strong></div>
+  {% endif %}
+  {% if is_cashier or is_manager %}
+    <div class="kpi sales"><span>Ventes du jour</span><strong>{{ sales_today }} FCFA</strong></div>
+  {% endif %}
+  {% if is_manager %}
+    <div class="kpi stock"><span>Stock faible</span><strong>{{ low_stock }}</strong></div>
+  {% endif %}
+</div>
+
+<div class="grid section">
+  <div class="card">
+    <h4>Commandes récentes</h4>
+    <div style="display:grid;gap:8px;">
+      {% for o in recent_orders %}
+        <div class="row">
+          <span>#{{ o.id }} • {{ o.get_order_type_display }}</span>
+          <span>{{ o.get_status_display }}</span>
+        </div>
+      {% empty %}
+        <p class="muted">Aucune commande.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if is_manager or is_delivery %}
+  <div class="card">
+    <h4>Livraisons en cours</h4>
+    <div style="display:grid;gap:8px;">
+      {% for o in deliveries %}
+        <div class="row">
+          <span>#{{ o.id }} • {{ o.delivery_address|default:'-' }}</span>
+          <span>{{ o.get_status_display }}</span>
+        </div>
+      {% empty %}
+        <p class="muted">Aucune livraison en cours.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if is_server or is_manager %}
+  <div class="card">
+    <h4>Réservations du jour</h4>
+    <div style="display:grid;gap:8px;">
+      {% for r in reservations_today %}
+        <div class="row">
+          <span>{{ r.reservation_datetime|date:"H:i" }} • {{ r.customer_name }}</span>
+          <span>{{ r.get_status_display }}</span>
+        </div>
+      {% empty %}
+        <p class="muted">Aucune réservation.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if is_cashier %}
+  <div class="card">
+    <h4>À encaisser</h4>
+    <div style="display:grid;gap:8px;">
+      {% for o in to_cash %}
+        <div class="row">
+          <span>#{{ o.id }}</span>
+          <span>{{ o.total_amount }} FCFA</span>
+        </div>
+      {% empty %}
+        <p class="muted">Rien à encaisser.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

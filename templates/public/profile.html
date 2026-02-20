@@ -1,0 +1,52 @@
+{% extends "base_public.html" %}
+{% block title %}Profil — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <h2>Mon profil</h2>
+    <p class="muted">Gerez vos informations et adresses.</p>
+  </div>
+</div>
+
+<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:12px;">
+  <div class="card">
+    <h3 style="margin-top:0;">Informations personnelles</h3>
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+      <div>
+        <label>Nom complet</label>
+        <input class="form-control" type="text" value="Client Saveur">
+      </div>
+      <div>
+        <label>Telephone</label>
+        <input class="form-control" type="tel" value="+237 6 90 00 00">
+      </div>
+      <div>
+        <label>Email</label>
+        <input class="form-control" type="email" value="client@saveur237.cm">
+      </div>
+    </div>
+    <button class="btn" style="margin-top:12px;">Mettre a jour</button>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Adresses</h3>
+    <div class="cart-list">
+      <div class="cart-item">
+        <div>
+          <strong>Maison</strong>
+          <div class="muted">Bonapriso, Douala</div>
+        </div>
+        <div class="qty"><button>Defaut</button></div>
+      </div>
+      <div class="cart-item">
+        <div>
+          <strong>Bureau</strong>
+          <div class="muted">Akwa, Douala</div>
+        </div>
+        <div class="qty"><button>Defaut</button></div>
+      </div>
+    </div>
+    <button class="btn-outline" style="margin-top:12px;">Ajouter adresse</button>
+  </div>
+</div>
+{% endblock %}

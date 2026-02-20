@@ -1,0 +1,57 @@
+{% extends "base_staff.html" %}
+{% block title %}Attribution — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Livraison</p>
+    <h2>Attribution des livreurs</h2>
+    <p class="muted">Seulement les commandes PRETES sont attribuables.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'delivery:deliveries' %}">Retour</a>
+</div>
+
+<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:12px;">
+  <div class="card">
+    <h4 style="margin-top:0;">Commandes pretes</h4>
+    <form method="post">
+      {% csrf_token %}
+      <div class="cart-list">
+        {% for o in orders %}
+          <label class="cart-item">
+            <div>
+              <strong>#{{ o.id }}</strong>
+              <div class="muted">{{ o.delivery_address|default:'-' }}</div>
+            </div>
+            <input type="radio" name="order_id" value="{{ o.id }}">
+          </label>
+        {% empty %}
+          <div class="muted">Aucune commande prete.</div>
+        {% endfor %}
+      </div>
+      <div style="margin-top:12px;">
+        <label>Livreur</label>
+        <select class="form-control" name="courier_id">
+          {% for c in couriers %}
+            <option value="{{ c.user.id }}" {% if c.status == 'busy' %}disabled{% endif %}>{{ c.user.username }}{% if c.status == 'busy' %} (Occupe){% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn" style="margin-top:12px;">Confirmer attribution</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0;">Livreurs</h4>
+    <div class="cart-list">
+      {% for c in couriers %}
+        <div class="cart-item">
+          <div>{{ c.user.username }}</div>
+          {% if c.status == 'busy' %}<span class="pill pill-off">Occupe</span>{% else %}<span class="pill pill-ok">Disponible</span>{% endif %}
+        </div>
+      {% empty %}
+        <div class="muted">Aucun livreur.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

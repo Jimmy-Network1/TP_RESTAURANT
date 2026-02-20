@@ -18,17 +18,20 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from restaurant_web import public_views
+from django.views.generic import TemplateView
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', public_views.home, name='home'),
-    path('', include(('restaurant_web.public_urls', 'public'), namespace='public')),
+    path('dashboard/', include('dashboard.urls')),
+    path('', include('public.urls')),
     path('accounts/', include('accounts.urls')),
     path('menu/', include('menu.urls')),
-    path('sales/', include('sales.urls')),
+    path('orders/', include('orders.urls')),
+    path('tables/', include('tablesapp.urls')),
     path('kitchen/', include('kitchen.urls')),
+    path('billing/', include('billing.urls')),
     path('inventory/', include('inventory.urls')),
-    path('reports/', include('reports.urls')),
+    path('delivery/', include('delivery.urls')),
+    path('reports/', include(('reports.urls', 'reports'), namespace='reports')),
     path('reservations/', include('reservations.urls')),
 ]
 

@@ -1,0 +1,42 @@
+{% extends "base_staff.html" %}
+{% block title %}Nouveau mouvement — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Stock</p>
+    <h2>Ajouter un mouvement</h2>
+    <p class="muted">Enregistrez une entree, sortie ou ajustement.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'inventory:movements' %}">Retour</a>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-row">
+      <label>Ingredient</label>
+      {{ form.ingredient }}
+      {{ form.ingredient.errors }}
+    </div>
+    <div class="form-row">
+      <label>Type de mouvement</label>
+      {{ form.movement_type }}
+      {{ form.movement_type.errors }}
+    </div>
+    <div class="form-row">
+      <label>Quantite</label>
+      {{ form.quantity }}
+      {{ form.quantity.errors }}
+    </div>
+    <div class="form-row">
+      <label>Motif</label>
+      {{ form.note }}
+      {{ form.note.errors }}
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn" type="submit">Enregistrer</button>
+      <a class="btn-outline" href="{% url 'inventory:movements' %}">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

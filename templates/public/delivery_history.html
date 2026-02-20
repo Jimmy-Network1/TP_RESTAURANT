@@ -1,0 +1,20 @@
+{% extends "base_public.html" %}
+{% block title %}Historique livraisons — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <h2>Historique livraisons</h2>
+    <p class="muted">Vos livraisons terminees.</p>
+  </div>
+</div>
+
+<div class="card">
+  <table style="width:100%;border-collapse:separate;border-spacing:0 8px;">
+    <thead><tr><th>Commande</th><th>Date</th><th>Total</th><th>Statut</th><th></th></tr></thead>
+    <tbody>
+      <tr><td>#1010</td><td>19/02</td><td>18 000</td><td><span class="status status-ok">LIVREE</span></td><td><a class="btn-outline" href="#">Voir</a></td></tr>
+      <tr><td>#1011</td><td>18/02</td><td>24 000</td><td><span class="status status-ok">LIVREE</span></td><td><a class="btn-outline" href="#">Voir</a></td></tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

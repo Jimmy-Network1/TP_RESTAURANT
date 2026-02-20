@@ -1,0 +1,79 @@
+{% extends "base_staff.html" %}
+{% block title %}Utilisateurs — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .role-pill{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700;background:#eee;color:#333;}
+</style>
+
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Accounts</p>
+    <h2>Utilisateurs</h2>
+    <p class="muted">Gestion staff et clients.</p>
+  </div>
+  <a class="btn" href="{% url 'accounts:staff_new' %}">Créer utilisateur</a>
+</div>
+
+<div class="card" style="margin-bottom:12px;">
+  <form method="get" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:end;">
+    <div>
+      <label for="q">Recherche</label>
+      <input id="q" type="text" name="q" value="{{ query }}" class="form-control" placeholder="Nom ou username" />
+    </div>
+    <div>
+      <label for="role">Rôle</label>
+      <select id="role" name="role" class="form-control">
+        <option value="">Tous</option>
+        <option value="client" {% if role_filter == 'client' %}selected{% endif %}>Client</option>
+        <option value="serveur" {% if role_filter == 'serveur' %}selected{% endif %}>Serveur</option>
+        <option value="cuisinier" {% if role_filter == 'cuisinier' %}selected{% endif %}>Cuisinier</option>
+        <option value="caissier" {% if role_filter == 'caissier' %}selected{% endif %}>Caissier</option>
+        <option value="livreur" {% if role_filter == 'livreur' %}selected{% endif %}>Livreur</option>
+        <option value="manager" {% if role_filter == 'manager' %}selected{% endif %}>Manager</option>
+        <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
+      </select>
+    </div>
+    <div>
+      <button class="btn" type="submit">Filtrer</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Rôle</th>
+        <th>Statut</th>
+        <th>Date création</th>
+        <th style="text-align:right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.get_full_name|default:u.username }}</td>
+        <td>{{ u.email|default:'-' }}</td>
+        <td>
+          {% if u.is_superuser %}<span class="role-pill">Admin</span>
+          {% elif u.groups.first %}<span class="role-pill">{{ u.groups.first.name }}</span>
+          {% else %}<span class="role-pill">Client</span>{% endif %}
+        </td>
+        <td>{% if u.is_active %}<span class="badge badge-ready">Actif</span>{% else %}<span class="badge badge-cancel">Inactif</span>{% endif %}</td>
+        <td>{{ u.date_joined|date:"d/m/Y" }}</td>
+        <td style="text-align:right;">
+          <form method="post" action="{% url 'accounts:user_toggle' u.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button class="btn-outline" type="submit">{% if u.is_active %}Désactiver{% else %}Activer{% endif %}</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6">Aucun utilisateur.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

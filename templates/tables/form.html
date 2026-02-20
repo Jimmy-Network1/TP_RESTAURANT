@@ -1,0 +1,79 @@
+{% extends "base_staff.html" %}
+{% block title %}Configurer table — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .form-shell{display:grid;gap:14px;}
+  .switch{position:relative;display:inline-flex;align-items:center;gap:10px;}
+  .switch input{display:none;}
+  .switch .track{width:46px;height:26px;background:#ddd;border-radius:999px;position:relative;transition:background .2s ease;}
+  .switch .thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s ease;box-shadow:0 4px 10px rgba(0,0,0,0.2);} 
+  .switch input:checked + .track{background:var(--green);} 
+  .switch input:checked + .track .thumb{transform:translateX(20px);} 
+</style>
+
+<div class="form-shell">
+  <div class="section-title">
+    <div>
+      <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Salle</p>
+      <h2>{% if view.object %}Modifier la table{% else %}Creer une table{% endif %}</h2>
+      <p class="muted">Configurez les tables physiques pour un service rapide.</p>
+    </div>
+    <a class="btn-outline" href="{% url 'tables:plan' %}">Retour plan</a>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h4 style="margin-top:0;">Informations principales</h4>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-row">
+          <label>Numero de table</label>
+          {{ form.name }}
+          {{ form.name.errors }}
+        </div>
+        <div class="form-row">
+          <label>Nombre de places</label>
+          {{ form.capacity }}
+          {{ form.capacity.errors }}
+        </div>
+        <div class="form-row">
+          <label>Zone</label>
+          {{ form.zone }}
+          {{ form.zone.errors }}
+        </div>
+        <div class="form-row">
+          <label>Statut par defaut</label>
+          {{ form.status }}
+          {{ form.status.errors }}
+        </div>
+        <div class="form-row">
+          <label>Actif</label>
+          <label class="switch">
+            {{ form.active }}
+            <span class="track"><span class="thumb"></span></span>
+            <span class="muted">Table disponible</span>
+          </label>
+          {{ form.active.errors }}
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn" type="submit">{% if view.object %}Mettre a jour{% else %}Ajouter table{% endif %}</button>
+          {% if view.object %}
+            <a class="btn-outline" href="#">Supprimer</a>
+          {% else %}
+            <a class="btn-outline" href="{% url 'tables:plan' %}">Annuler</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Conseils rapides</h4>
+      <ul style="margin:0;padding-left:18px;">
+        <li>Gardez des zones courtes : Terrasse, Interieur, VIP.</li>
+        <li>Le statut par defaut est applique a la creation.</li>
+        <li>Desactivez une table pour maintenance.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

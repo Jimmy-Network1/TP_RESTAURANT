@@ -1,0 +1,30 @@
+{% extends "base_staff.html" %}
+{% block title %}Notifications — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">POS</p>
+    <h2>Notifications</h2>
+    <p class="muted">Tickets prêts et alertes cuisine.</p>
+  </div>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr><th>Heure</th><th>Message</th><th>Destination</th></tr>
+    </thead>
+    <tbody>
+      {% for n in notifications %}
+      <tr>
+        <td>{{ n.created_at|date:"H:i" }}</td>
+        <td>{{ n.message }}</td>
+        <td>{{ n.get_target_display }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="3">Aucune notification.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

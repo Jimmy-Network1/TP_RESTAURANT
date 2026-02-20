@@ -1,0 +1,44 @@
+{% extends "base_staff.html" %}
+{% block title %}Modifier commande — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Orders</p>
+    <h2>Modifier commande #{{ order.id }}</h2>
+    <p class="muted">Cuisine deja notifiee. Modifications journalisees.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'orders:detail' order.id %}">Retour</a>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+      <div>
+        <label>Type</label>
+        {{ form.order_type }}
+      </div>
+      <div>
+        <label>Table</label>
+        {{ form.table }}
+      </div>
+      <div>
+        <label>Client</label>
+        {{ form.customer }}
+      </div>
+      <div>
+        <label>Statut</label>
+        {{ form.status }}
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <label>Note</label>
+      {{ form.note }}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <button class="btn" type="submit">Sauvegarder</button>
+      <a class="btn-outline" href="{% url 'orders:detail' order.id %}">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

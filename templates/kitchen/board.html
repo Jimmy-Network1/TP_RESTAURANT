@@ -1,120 +1,86 @@
 {% extends "base_staff.html" %}
-
-{% block title %}Cuisine{% endblock %}
-
+{% block title %}Cuisine — KDS{% endblock %}
 {% block content %}
-<div class="topbar">
-    <div>
-        <p class="pill muted">Cuisine</p>
-        <h1 style="margin:6px 0 0;">Board de préparation</h1>
-        <p class="muted">Suivi des tickets en cours : attente, cuisson, prêt.</p>
-    </div>
-    <div class="filters">
-        <button class="active" data-filter="all">Tous</button>
-        <button data-filter="pending">En attente</button>
-        <button data-filter="preparing">En préparation</button>
-        <button data-filter="ready">Prêts</button>
-    </div>
+<style>
+  .kds-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .kds-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
+  .ticket-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
+  .ticket{border:2px solid #eee;border-radius:14px;padding:12px;background:#fff;box-shadow:0 10px 24px rgba(0,0,0,0.06);}
+  .ticket h3{margin:0;font-size:20px;}
+  .ticket .meta{font-size:12px;color:#666;}
+  .badge-pending{background:rgba(252,209,22,0.25);color:#9b6a00;} 
+  .badge-prep{background:rgba(0,113,188,0.15);color:#0a4f87;} 
+  .badge-ready{background:rgba(0,135,81,0.12);color:var(--green);} 
+  .badge-cancel{background:rgba(206,17,38,0.12);color:var(--red);} 
+  .item{display:flex;justify-content:space-between;gap:8px;border-bottom:1px dashed #eee;padding:6px 0;}
+  .chip{border:1px solid #e4e4e4;background:#fff;padding:6px 12px;border-radius:999px;font-weight:600;font-size:13px;text-decoration:none;color:#333;}
+  .chip.active{border-color:var(--green);color:var(--green);} 
+</style>
+
+<div class="kds-head">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Cuisine</p>
+    <h2>Cuisine — KDS</h2>
+    <p class="muted">Tickets en temps réel.</p>
+  </div>
+  <div class="kds-stats">
+    <div class="card"><strong>En attente</strong><div class="muted">{{ count_pending }}</div></div>
+    <div class="card"><strong>En préparation</strong><div class="muted">{{ count_preparing }}</div></div>
+    <div class="card"><strong>Prêtes</strong><div class="muted">{{ count_ready }}</div></div>
+  </div>
 </div>
 
-<div class="stats-grid" style="margin-bottom:12px;">
-    <div class="card stat-card">
-        <p class="label muted">Tickets totaux</p>
-        <h2>{{ stats.total }}</h2>
-    </div>
-    <div class="card stat-card">
-        <p class="label muted">En attente</p>
-        <h2>{{ stats.pending }}</h2>
-    </div>
-    <div class="card stat-card">
-        <p class="label muted">En préparation</p>
-        <h2>{{ stats.preparing }}</h2>
-    </div>
-    <div class="card stat-card">
-        <p class="label muted">Prêts</p>
-        <h2>{{ stats.ready }}</h2>
-    </div>
+<div class="card" style="margin:12px 0;">
+  <div class="menu-filters">
+    <a class="chip {% if not status_filter %}active{% endif %}" href="{% url 'kitchen:board' %}">Tous</a>
+    <a class="chip {% if status_filter == 'EN_ATTENTE' %}active{% endif %}" href="{% url 'kitchen:board' %}?status=EN_ATTENTE">En attente</a>
+    <a class="chip {% if status_filter == 'PREPARATION' %}active{% endif %}" href="{% url 'kitchen:board' %}?status=PREPARATION">En préparation</a>
+    <a class="chip {% if status_filter == 'PRETE' %}active{% endif %}" href="{% url 'kitchen:board' %}?status=PRETE">Prête</a>
+    <a class="chip {% if source_filter == 'TABLE' %}active{% endif %}" href="{% url 'kitchen:board' %}?source=TABLE">TABLE</a>
+    <a class="chip {% if source_filter == 'ONLINE' %}active{% endif %}" href="{% url 'kitchen:board' %}?source=ONLINE">ONLINE</a>
+  </div>
 </div>
 
-{% if tickets %}
-<div class="kanban">
-    <div class="kanban-column" data-col="pending">
-        <div class="kanban-header">En attente ({{ pending|length }})</div>
-        {% for t in pending %}
-        <article class="ticket-card" data-status="pending">
-            <header>
-                <div>
-                    <strong>Cmd #{{ t.order_id }}</strong>
-                    <p class="muted">Créé le {{ t.created_at|date:"d/m H:i" }}</p>
-                </div>
-                <span class="badge badge-warning">{{ t.get_status_display }}</span>
-            </header>
-            <ul class="ticket-items">
-                {% for item in t.items.all %}
-                <li>{{ item.dish.name }} <span class="muted">x{{ item.quantity }}</span></li>
-                {% empty %}
-                <li class="muted">Pas de détail.</li>
-                {% endfor %}
-            </ul>
-            {% if t.note %}<p class="note">Note : {{ t.note }}</p>{% endif %}
-        </article>
-        {% empty %}
-        <p class="muted small">Aucun ticket en attente.</p>
-        {% endfor %}
+<div class="ticket-grid">
+  {% for o in orders %}
+  <div class="ticket">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <h3>#{{ o.id }}</h3>
+      {% if o.status == 'EN_ATTENTE' %}<span class="badge badge-pending">En attente</span>{% endif %}
+      {% if o.status == 'PREPARATION' %}<span class="badge badge-prep">En préparation</span>{% endif %}
+      {% if o.status == 'PRETE' %}<span class="badge badge-ready">Prête</span>{% endif %}
     </div>
-    <div class="kanban-column" data-col="preparing">
-        <div class="kanban-header">En préparation ({{ preparing|length }})</div>
-        {% for t in preparing %}
-        <article class="ticket-card" data-status="preparing">
-            <header>
-                <div>
-                    <strong>Cmd #{{ t.order_id }}</strong>
-                    <p class="muted">Début {{ t.started_at|date:"d/m H:i"|default:"—" }}</p>
-                </div>
-                <span class="badge badge-success">{{ t.get_status_display }}</span>
-            </header>
-            <ul class="ticket-items">
-                {% for item in t.items.all %}
-                <li>{{ item.dish.name }} <span class="muted">x{{ item.quantity }}</span></li>
-                {% empty %}
-                <li class="muted">Pas de détail.</li>
-                {% endfor %}
-            </ul>
-            {% if t.note %}<p class="note">Note : {{ t.note }}</p>{% endif %}
-        </article>
-        {% empty %}
-        <p class="muted small">Aucun ticket en préparation.</p>
-        {% endfor %}
+    <div class="meta">
+      {% if o.order_type == 'dine_in' %}TABLE {{ o.table.name }}{% else %}ONLINE — {{ o.get_order_type_display }}{% endif %}
+      • {{ o.created_at|date:"H:i" }} • +{{ o.created_at|timesince }}
     </div>
-    <div class="kanban-column" data-col="ready">
-        <div class="kanban-header">Prêts ({{ ready|length }})</div>
-        {% for t in ready %}
-        <article class="ticket-card" data-status="ready">
-            <header>
-                <div>
-                    <strong>Cmd #{{ t.order_id }}</strong>
-                    <p class="muted">Prêt {{ t.ready_at|date:"d/m H:i"|default:"—" }}</p>
-                </div>
-                <span class="badge badge-success">{{ t.get_status_display }}</span>
-            </header>
-            <ul class="ticket-items">
-                {% for item in t.items.all %}
-                <li>{{ item.dish.name }} <span class="muted">x{{ item.quantity }}</span></li>
-                {% empty %}
-                <li class="muted">Pas de détail.</li>
-                {% endfor %}
-            </ul>
-            {% if t.note %}<p class="note">Note : {{ t.note }}</p>{% endif %}
-        </article>
-        {% empty %}
-        <p class="muted small">Aucun ticket prêt.</p>
-        {% endfor %}
+    <div style="margin-top:8px;">
+      {% for item in o.items.all %}
+        <div class="item"><span>{{ item.dish.name }} x{{ item.quantity }}</span><strong>{{ item.line_total }}</strong></div>
+      {% endfor %}
     </div>
+    {% if o.kitchen_issue %}
+      <div class="badge badge-cancel" style="margin-top:8px;">⚠ Problème signalé</div>
+    {% endif %}
+    {% if o.kitchen_updates.count %}
+      <div class="badge" style="margin-top:8px;">AJOUT / MODIF</div>
+    {% endif %}
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+      <form method="post" action="{% url 'kitchen:action' o.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="start">
+        <button class="btn-outline" type="submit">Commencer</button>
+      </form>
+      <form method="post" action="{% url 'kitchen:action' o.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="ready">
+        <button class="btn" type="submit">Prête</button>
+      </form>
+      <a class="btn-outline" href="{% url 'kitchen:ticket' o.id %}">Détail</a>
+    </div>
+  </div>
+  {% empty %}
+  <div class="card">Aucun ticket.</div>
+  {% endfor %}
 </div>
-{% else %}
-<div class="card empty-state">
-    <h3>Cuisine calme pour l’instant</h3>
-    <p class="muted">Aucun ticket en file. Ils apparaîtront ici dès qu’une commande est envoyée.</p>
-</div>
-{% endif %}
 {% endblock %}

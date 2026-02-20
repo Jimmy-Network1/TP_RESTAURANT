@@ -1,0 +1,61 @@
+{% extends "base_staff.html" %}
+{% block title %}Paiement — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .pay-shell{display:grid;gap:12px;}
+  .pay-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .pay-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+  .pay-card{border:1px solid #eee;border-radius:16px;background:#fff;padding:14px;box-shadow:0 12px 24px rgba(0,0,0,0.06);} 
+  .pay-methods{display:flex;gap:8px;flex-wrap:wrap;}
+  .method{padding:8px 12px;border-radius:12px;border:1px solid #e2e2e2;background:#fff;font-weight:700;cursor:pointer;}
+  .method.cash{border-color:rgba(0,135,81,0.25);color:var(--green);} 
+  .method.card{border-color:rgba(80,120,255,0.25);color:#2d4aa0;} 
+  .method.momo{border-color:rgba(128,70,200,0.25);color:#5a2ea6;} 
+  .totals{display:grid;gap:6px;}
+  .totals div{display:flex;justify-content:space-between;}
+</style>
+
+<div class="pay-shell">
+  <div class="pay-head">
+    <div>
+      <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Paiement</p>
+      <h2>Encaisser une commande</h2>
+      <p class="muted">Commande #1024 • Table 5</p>
+    </div>
+    <a class="btn-outline" href="{% url 'billing:invoices' %}">Retour</a>
+  </div>
+
+  <div class="pay-cards">
+    <div class="pay-card">
+      <h4 style="margin-top:0;">Resume</h4>
+      <div class="totals">
+        <div><span>Total</span><strong>32 000 FCFA</strong></div>
+        <div><span>Montant recu</span><strong>32 000 FCFA</strong></div>
+        <div><span>Reste a payer</span><strong>0 FCFA</strong></div>
+      </div>
+    </div>
+
+    <div class="pay-card">
+      <h4 style="margin-top:0;">Mode de paiement</h4>
+      <div class="pay-methods">
+        <button class="method cash" type="button">Especes</button>
+        <button class="method card" type="button">Carte</button>
+        <button class="method momo" type="button">Mobile Money</button>
+      </div>
+      <div style="margin-top:12px;">
+        <label>Montant recu</label>
+        <input class="form-control" type="number" placeholder="Ex: 35000">
+      </div>
+      <div style="margin-top:12px;">
+        <label>Paiement partiel</label>
+        <input class="form-control" type="number" placeholder="0">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
+        <a class="btn" href="#">Valider paiement</a>
+        <a class="btn-outline" href="#">Imprimer ticket</a>
+        <a class="btn-outline" href="#">Marquer payee</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

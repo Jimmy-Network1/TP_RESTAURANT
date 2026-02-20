@@ -1,0 +1,74 @@
+{% extends "base_staff.html" %}
+{% block title %}Facture — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .invoice-shell{display:grid;gap:12px;}
+  .invoice-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .invoice-card{border:1px solid #eee;border-radius:16px;background:#fff;padding:14px;box-shadow:0 12px 24px rgba(0,0,0,0.06);} 
+  .invoice-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+  .invoice-table td{background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;}
+  .invoice-table td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
+  .invoice-table td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
+  .totals{display:grid;gap:6px;margin-top:10px;}
+  .totals div{display:flex;justify-content:space-between;}
+</style>
+
+<div class="invoice-shell">
+  <div class="invoice-head">
+    <div>
+      <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Facture</p>
+      <h2>Facture #F-1024</h2>
+      <p class="muted">Commande #1024 • Table 5 • 20/02 12:42</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <a class="btn-outline" href="{% url 'billing:invoices' %}">Retour</a>
+      <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
+    </div>
+  </div>
+
+  <div class="invoice-card">
+    <table class="invoice-table">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Quantite</th>
+          <th>Prix unitaire</th>
+          <th>Sous-total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Burger classique</td>
+          <td>2</td>
+          <td>8 000 FCFA</td>
+          <td>16 000 FCFA</td>
+        </tr>
+        <tr>
+          <td>Frites</td>
+          <td>1</td>
+          <td>4 000 FCFA</td>
+          <td>4 000 FCFA</td>
+        </tr>
+        <tr>
+          <td>Coca-Cola</td>
+          <td>2</td>
+          <td>6 000 FCFA</td>
+          <td>12 000 FCFA</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <div><span>Taxes</span><strong>0 FCFA</strong></div>
+      <div><span>Remise</span><strong>0 FCFA</strong></div>
+      <div style="font-size:18px;"><span>Total</span><strong>32 000 FCFA</strong></div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:12px;">
+      <a class="btn-outline" href="#">Ajouter remise</a>
+      <a class="btn-outline" href="#">Generer facture</a>
+      <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base_staff.html" %}
+{% block title %}Commandes livraison — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Orders</p>
+    <h2>Livraisons</h2>
+    <p class="muted">Commandes en livraison et suivi.</p>
+  </div>
+  <a class="btn" href="{% url 'delivery:assign' %}">Assigner livreur</a>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <table class="ord-table">
+    <thead>
+      <tr>
+        <th>Commande</th><th>Client</th><th>Adresse</th><th>Livreur</th><th>Statut</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+        <tr>
+          <td>#{{ o.id }}</td>
+          <td>{{ o.customer.username|default:'Client' }}</td>
+          <td>{{ o.delivery_address|default:'-' }}</td>
+          <td>{{ o.assigned_delivery.username|default:'-' }}</td>
+          <td><span class="pill pill-route">{{ o.get_status_display }}</span></td>
+          <td><a class="icon-btn" href="{% url 'orders:detail' o.id %}">Voir</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6">Aucune livraison.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

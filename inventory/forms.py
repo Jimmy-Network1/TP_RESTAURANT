@@ -1,54 +1,27 @@
 from django import forms
-from django.forms import inlineformset_factory
-
-from .models import Ingredient, PurchaseOrder, PurchaseOrderItem, StockMovement, Supplier
-
-
-class SupplierForm(forms.ModelForm):
-    class Meta:
-        model = Supplier
-        fields = ['name', 'contact_name', 'phone', 'email', 'address', 'notes']
+from .models import Ingredient, StockMovement
 
 
 class IngredientForm(forms.ModelForm):
     class Meta:
         model = Ingredient
-        fields = [
-            'name',
-            'category',
-            'unit',
-            'quantity_in_stock',
-            'alert_threshold',
-            'unit_cost',
-            'supplier',
-            'storage_location',
-            'expiry_date',
-            'is_active',
-        ]
+        fields = ["name", "unit", "quantity_in_stock", "alert_threshold", "is_active"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control", "placeholder": "Ex: Riz"}),
+            "unit": forms.Select(attrs={"class": "form-control"}),
+            "quantity_in_stock": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "alert_threshold": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "is_active": forms.CheckboxInput(attrs={"class": "form-check-input"}),
+        }
 
 
 class StockMovementForm(forms.ModelForm):
     class Meta:
         model = StockMovement
-        fields = ['ingredient', 'movement_type', 'quantity', 'note']
-
-
-class PurchaseOrderForm(forms.ModelForm):
-    class Meta:
-        model = PurchaseOrder
-        fields = ['supplier', 'status', 'total_amount', 'received_at']
-
-
-class PurchaseOrderItemForm(forms.ModelForm):
-    class Meta:
-        model = PurchaseOrderItem
-        fields = ['ingredient', 'quantity', 'unit_cost']
-
-
-PurchaseOrderItemFormSet = inlineformset_factory(
-    PurchaseOrder,
-    PurchaseOrderItem,
-    form=PurchaseOrderItemForm,
-    extra=1,
-    can_delete=True,
-)
+        fields = ["ingredient", "movement_type", "quantity", "note"]
+        widgets = {
+            "ingredient": forms.Select(attrs={"class": "form-control"}),
+            "movement_type": forms.Select(attrs={"class": "form-control"}),
+            "quantity": forms.NumberInput(attrs={"class": "form-control", "step": "0.01"}),
+            "note": forms.TextInput(attrs={"class": "form-control", "placeholder": "Achat, perte, ajustement"}),
+        }

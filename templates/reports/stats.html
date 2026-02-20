@@ -1,0 +1,33 @@
+{% extends "base_staff.html" %}
+{% block title %}Statistiques générales{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Reports</p>
+    <h2>Statistiques générales</h2>
+    <p class="muted">Période: {{ start }} → {{ end }}</p>
+  </div>
+  <a class="btn-outline" href="{% url 'reports:dashboard' %}">Retour</a>
+</div>
+
+<div class="card" style="margin-bottom:12px;">
+  <div class="menu-filters">
+    <a class="chip" href="{% url 'reports:stats' %}?period=month">Mois</a>
+    <a class="chip" href="{% url 'reports:stats' %}?period=week">Semaine</a>
+    <a class="chip" href="{% url 'reports:stats' %}?period=today">Aujourd’hui</a>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card"><strong>Revenus</strong><div class="muted">{{ revenue }} FCFA</div></div>
+  <div class="card"><strong>Commandes par type</strong>
+    <ul style="margin:0;padding-left:18px;">
+      {% for t in type_counts %}
+        <li>{{ t.order_type }} : {{ t.c }}</li>
+      {% empty %}
+        <li>Aucune donnée</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

@@ -1,101 +1,75 @@
 {% extends "base_staff.html" %}
-{% block title %}Rapports{% endblock %}
-
+{% block title %}Rapports — Dashboard{% endblock %}
 {% block content %}
-<div class="topbar">
-    <div>
-        <p class="pill muted">Analytique</p>
-        <h1 style="margin:6px 0 0;">Tableau de bord</h1>
-        <p class="muted">Synthèse des 10 derniers snapshots.</p>
-    </div>
+<style>
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .kpi{display:grid;gap:6px;padding:16px;border-radius:14px;color:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.08);} 
+  .kpi.sales{background:linear-gradient(135deg,#3E2723,#6d4c41);} 
+  .kpi.orders{background:linear-gradient(135deg,#008751,#1b9b6a);} 
+  .kpi.progress{background:linear-gradient(135deg,#f1c40f,#f39c12);} 
+  .kpi.mix{background:linear-gradient(135deg,#2c3e50,#34495e);} 
+  .chips{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{border:1px solid #e4e4e4;background:#fff;padding:6px 12px;border-radius:999px;font-weight:700;font-size:13px;text-decoration:none;color:#333;}
+  .chip.active{border-color:var(--green);color:var(--green);} 
+  .notif{display:grid;gap:8px;}
+  .notif-item{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:8px 10px;background:#fafafa;}
+</style>
+
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Reports</p>
+    <h2>Dashboard Rapports</h2>
+    <p class="muted">Période: {{ start }} → {{ end }}</p>
+  </div>
+  <div class="chips">
+    <a class="chip {% if preset == 'today' %}active{% endif %}" href="{% url 'reports:dashboard' %}?period=today">Aujourd’hui</a>
+    <a class="chip {% if preset == 'week' %}active{% endif %}" href="{% url 'reports:dashboard' %}?period=week">Semaine</a>
+    <a class="chip {% if preset == 'month' %}active{% endif %}" href="{% url 'reports:dashboard' %}?period=month">Mois</a>
+  </div>
 </div>
 
-{% if snapshots %}
-<div class="stats-grid">
-    <div class="card stat-card">
-        <p class="muted label">Chiffre d'affaires</p>
-        <h2>{{ total_ca|floatformat:0 }} FCFA</h2>
-        <span class="badge badge-success">Période {{ last_snapshot.get_period_type_display|default:"" }}</span>
-    </div>
-    <div class="card stat-card">
-        <p class="muted label">Commandes</p>
-        <h2>{{ orders|floatformat:0 }}</h2>
-        <p class="muted">Ticket moyen {{ avg_ticket|floatformat:0 }} FCFA</p>
-    </div>
-    <div class="card stat-card">
-        <p class="muted label">Plat vedette</p>
-        <h2 style="font-size:1.1rem;">{{ top_dish|default:"—" }}</h2>
-        <p class="muted">Basé sur le dernier rapport</p>
-    </div>
-    <div class="card stat-card">
-        <p class="muted label">Snapshots</p>
-        <h2>{{ snapshots_count }}</h2>
-        <p class="muted">Dernière mise à jour : {{ last_snapshot.created_at|date:"d/m/Y H:i" }}</p>
-    </div>
+<div class="kpi-grid">
+  <div class="kpi sales">
+    <span>Total ventes</span>
+    <strong>{{ total_sales }} FCFA</strong>
+  </div>
+  <div class="kpi orders">
+    <span>Commandes payées</span>
+    <strong>{{ paid_orders_count }}</strong>
+  </div>
+  <div class="kpi progress">
+    <span>Commandes en cours</span>
+    <strong>{{ in_progress }}</strong>
+  </div>
+  <div class="kpi mix">
+    <span>Top produit</span>
+    <strong>{% if top_item %}{{ top_item.dish__name }}{% else %}-{% endif %}</strong>
+  </div>
 </div>
 
-<div class="card" style="margin-top:14px;">
-    <div class="section-title">
-        <h2 style="margin:0;">Chronologie</h2>
-        <span class="muted">Périodes récentes</span>
+<div class="grid" style="margin-top:12px;">
+  <div class="card">
+    <h4>Revenus par type</h4>
+    <p>Sur place: <strong>{{ by_type.dine_in }}</strong></p>
+    <p>Livraison: <strong>{{ by_type.delivery }}</strong></p>
+    <p>Emporter: <strong>{{ by_type.takeaway }}</strong></p>
+  </div>
+  <div class="card">
+    <h4>Alertes</h4>
+    <div class="notif">
+      <div class="notif-item"><span>Stock faible</span><span class="badge">{{ low_stock }}</span></div>
+      <div class="notif-item"><span>Livraisons en retard</span><span class="badge">{{ late_deliveries }}</span></div>
+      <div class="notif-item"><span>En attente cuisine</span><span class="badge">{{ kitchen_pending }}</span></div>
     </div>
-    <div class="timeline">
-        {% for snapshot in snapshots %}
-        <div class="timeline-item">
-            <div class="dot"></div>
-            <div class="timeline-body">
-                <div class="row">
-                    <strong>{{ snapshot.get_period_type_display }}</strong>
-                    <span class="muted">{{ snapshot.period_start }} → {{ snapshot.period_end }}</span>
-                </div>
-                <div class="row">
-                    <span class="muted">Créé le {{ snapshot.created_at|date:"d/m/Y H:i" }}</span>
-                    <span class="badge badge-muted">ID #{{ snapshot.id }}</span>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
+  </div>
 </div>
 
-<div class="card" style="margin-top:14px;">
-    <div class="section-title">
-        <h2 style="margin:0;">Détails</h2>
-        <span class="muted">Vue tabulaire des snapshots</span>
-    </div>
-    <div class="table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Période</th>
-                    <th>Dates</th>
-                    <th>CA</th>
-                    <th>Commandes</th>
-                    <th>Ticket moyen</th>
-                    <th>Plat vedette</th>
-                    <th>Créé le</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for r in rows %}
-                <tr>
-                    <td>{{ r.period }}</td>
-                    <td>{{ r.start }} → {{ r.end }}</td>
-                    <td>{{ r.ca|floatformat:0 }} FCFA</td>
-                    <td>{{ r.orders }}</td>
-                    <td>{{ r.avg_ticket|floatformat:0 }} FCFA</td>
-                    <td>{{ r.top_dish|default:"—" }}</td>
-                    <td>{{ r.created_at|date:"d/m/Y H:i" }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="card" style="margin-top:12px;">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a class="btn-outline" href="{% url 'reports:daily' %}">Ventes journalières</a>
+    <a class="btn-outline" href="{% url 'reports:products' %}">Produits top</a>
+    <a class="btn-outline" href="{% url 'reports:delivery' %}">Livraisons</a>
+    <a class="btn-outline" href="{% url 'reports:export' %}">Export</a>
+  </div>
 </div>
-{% else %}
-<div class="card">
-    <p>Aucun rapport encore. Générez un snapshot pour voir les statistiques.</p>
-    <a class="btn" href="{% url 'reports:dashboard' %}">Rafraîchir</a>
-</div>
-{% endif %}
 {% endblock %}

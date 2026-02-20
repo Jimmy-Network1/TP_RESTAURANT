@@ -1,0 +1,57 @@
+{% extends "base_staff.html" %}
+{% block title %}Nouvelle commande — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .order-shell{display:grid;gap:12px;}
+</style>
+
+<div class="order-shell">
+  <div class="section-title">
+    <div>
+      <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Orders</p>
+      <h2>Creer commande (Salle)</h2>
+      <p class="muted">Selection table, reservation ou client.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+        <div>
+          <label>Type</label>
+          {{ form.order_type }}
+        </div>
+        <div>
+          <label>Table</label>
+          {{ form.table }}
+        </div>
+        <div>
+          <label>Client (optionnel)</label>
+          {{ form.customer }}
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label>Note</label>
+        {{ form.note }}
+      </div>
+
+      <div class="card" style="margin-top:12px;background:#f8f9fb;">
+        <strong>Reservation (check-in)</strong>
+        <div class="muted">Selectionnez une reservation CONFIRMEE pour la lier a cette table.</div>
+        <select class="form-control" name="reservation_id" style="margin-top:8px;">
+          <option value="">Aucune</option>
+          {% for r in reservations %}
+            <option value="{{ r.id }}">{{ r.customer_name }} • {{ r.reservation_datetime|date:"d/m H:i" }} • {{ r.party_size }} pers</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:12px;">
+        <button class="btn-outline" type="submit" name="action" value="draft">Sauver brouillon</button>
+        <button class="btn" type="submit" name="action" value="send">Envoyer cuisine</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

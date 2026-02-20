@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Saveur 237 — Public{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/public.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a class="brand" href="{% url 'public:home' %}">
+        <img src="{% static 'logo/logo2.png' %}" width="36" height="36">
+        <strong class="brand-title">Saveur 237</strong>
+      </a>
+      <nav class="nav-links">
+        <a href="{% url 'public:menu' %}">Menu</a>
+        <a href="{% url 'public:cart' %}">Panier <span class="badge js-cart-count">0</span></a>
+        <a href="{% url 'public:orders' %}">Mes commandes</a>
+        <a href="{% url 'reservations:client_list' %}">Reservations</a>
+        <a href="{% url 'dashboard:client' %}">Mon espace</a>
+        {% if user.is_authenticated %}
+          <span class="user-chip">{{ user.username }} <span class="user-role">Client</span></span>
+          <a href="{% url 'accounts:logout' %}">Deconnexion</a>
+        {% else %}
+          <a href="{% url 'accounts:login' %}">Connexion</a>
+          <a href="{% url 'accounts:register' %}" class="btn-outline">Inscription</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:20px 0;">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div>
+        <strong>Saveur 237</strong>
+        <div class="muted">Cuisine camerounaise moderne.</div>
+      </div>
+      <div>
+        <div>Adresse: Douala, Cameroun</div>
+        <div>Tel: +237 6 99 00 00</div>
+      </div>
+      <div>
+        <div>Horaires: 10h - 23h</div>
+        <div>WhatsApp: +237 6 88 00 00</div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast"></div>
+  <script src="{% static 'js/public.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

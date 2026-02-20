@@ -1,147 +1,105 @@
-from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from django.db import models
+from django.db.models import Q
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, ListView, UpdateView
 
-from .forms import (
-    IngredientForm,
-    PurchaseOrderForm,
-    PurchaseOrderItemFormSet,
-    StockMovementForm,
-    SupplierForm,
-)
-from .models import Ingredient, PurchaseOrder, StockMovement, Supplier
+from .forms import IngredientForm, StockMovementForm
+from .models import Ingredient, StockMovement
 
 
-def ingredients_list(request):
-    ingredients = Ingredient.objects.select_related('supplier').all().order_by('name')
-    return render(request, 'inventory/ingredients_list.html', {'ingredients': ingredients})
+class StockListView(ListView):
+    model = Ingredient
+    template_name = "inventory/stock.html"
+    context_object_name = "items"
+    paginate_by = 25
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        q = self.request.GET.get("q")
+        if q:
+            qs = qs.filter(Q(name__icontains=q))
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["query"] = self.request.GET.get("q", "")
+        ctx["ingredient"] = Ingredient
+        return ctx
 
 
-def ingredients_new(request):
-    if request.method == 'POST':
-        form = IngredientForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('inventory:ingredients')
-    else:
-        form = IngredientForm()
-    return render(request, 'inventory/ingredients_new.html', {'form': form})
+class IngredientCreateView(CreateView):
+    model = Ingredient
+    form_class = IngredientForm
+    template_name = "inventory/form.html"
+    success_url = reverse_lazy("inventory:stock")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Article ajoute au stock.")
+        return super().form_valid(form)
 
 
-def ingredients_edit(request, pk):
-    ingredient = get_object_or_404(Ingredient, pk=pk)
-    if request.method == 'POST':
-        form = IngredientForm(request.POST, instance=ingredient)
-        if form.is_valid():
-            form.save()
-            return redirect('inventory:ingredients')
-    else:
-        form = IngredientForm(instance=ingredient)
-    return render(request, 'inventory/ingredients_edit.html', {'form': form, 'ingredient': ingredient})
+class IngredientUpdateView(UpdateView):
+    model = Ingredient
+    form_class = IngredientForm
+    template_name = "inventory/form.html"
+    success_url = reverse_lazy("inventory:stock")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Article mis a jour.")
+        return super().form_valid(form)
 
 
-def ingredients_delete(request, pk):
-    ingredient = get_object_or_404(Ingredient, pk=pk)
-    if request.method == 'POST':
-        ingredient.delete()
-        return redirect('inventory:ingredients')
-    return render(request, 'inventory/ingredients_delete.html', {'ingredient': ingredient})
+class StockMovementsView(ListView):
+    model = StockMovement
+    template_name = "inventory/movements.html"
+    context_object_name = "movements"
+    paginate_by = 30
 
-def movements_list(request):
-    movements = StockMovement.objects.select_related('ingredient').all().order_by('-created_at')
-    return render(request, 'inventory/movements_list.html', {'movements': movements})
+    def get_queryset(self):
+        qs = super().get_queryset().select_related("ingredient")
+        start = self.request.GET.get("start")
+        end = self.request.GET.get("end")
+        if start:
+            qs = qs.filter(created_at__date__gte=start)
+        if end:
+            qs = qs.filter(created_at__date__lte=end)
+        return qs.order_by("-created_at")
 
-
-def movements_new(request):
-    if request.method == 'POST':
-        form = StockMovementForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('inventory:movements')
-    else:
-        form = StockMovementForm()
-    return render(request, 'inventory/movements_new.html', {'form': form})
-
-def suppliers_list(request):
-    suppliers = Supplier.objects.all().order_by('name')
-    return render(request, 'inventory/suppliers_list.html', {'suppliers': suppliers})
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["start"] = self.request.GET.get("start", "")
+        ctx["end"] = self.request.GET.get("end", "")
+        return ctx
 
 
-def suppliers_new(request):
-    if request.method == 'POST':
-        form = SupplierForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('inventory:suppliers')
-    else:
-        form = SupplierForm()
-    return render(request, 'inventory/suppliers_new.html', {'form': form})
+class StockMovementCreateView(CreateView):
+    model = StockMovement
+    form_class = StockMovementForm
+    template_name = "inventory/movement_form.html"
+    success_url = reverse_lazy("inventory:movements")
+
+    def form_valid(self, form):
+        messages.success(self.request, "Mouvement ajoute.")
+        return super().form_valid(form)
 
 
-def suppliers_edit(request, pk):
-    supplier = get_object_or_404(Supplier, pk=pk)
-    if request.method == 'POST':
-        form = SupplierForm(request.POST, instance=supplier)
-        if form.is_valid():
-            form.save()
-            return redirect('inventory:suppliers')
-    else:
-        form = SupplierForm(instance=supplier)
-    return render(request, 'inventory/suppliers_edit.html', {'form': form, 'supplier': supplier})
+class StockAlertsView(ListView):
+    model = Ingredient
+    template_name = "inventory/alerts.html"
+    context_object_name = "items"
 
+    def get_queryset(self):
+        return Ingredient.objects.filter(quantity_in_stock__lte=models.F("alert_threshold"))
 
-def suppliers_delete(request, pk):
-    supplier = get_object_or_404(Supplier, pk=pk)
-    if request.method == 'POST':
-        supplier.delete()
-        return redirect('inventory:suppliers')
-    return render(request, 'inventory/suppliers_delete.html', {'supplier': supplier})
-
-
-def purchase_orders_list(request):
-    purchase_orders = PurchaseOrder.objects.select_related('supplier').all().order_by('-created_at')
-    return render(request, 'inventory/purchase_orders_list.html', {'purchase_orders': purchase_orders})
-
-
-def purchase_orders_new(request):
-    if request.method == 'POST':
-        form = PurchaseOrderForm(request.POST)
-        formset = PurchaseOrderItemFormSet(request.POST)
-        if form.is_valid() and formset.is_valid():
-            purchase_order = form.save()
-            formset.instance = purchase_order
-            formset.save()
-            return redirect('inventory:purchase_orders')
-    else:
-        form = PurchaseOrderForm()
-        formset = PurchaseOrderItemFormSet()
-    return render(
-        request,
-        'inventory/purchase_orders_new.html',
-        {'form': form, 'formset': formset},
-    )
-
-
-def purchase_orders_edit(request, pk):
-    purchase_order = get_object_or_404(PurchaseOrder, pk=pk)
-    if request.method == 'POST':
-        form = PurchaseOrderForm(request.POST, instance=purchase_order)
-        formset = PurchaseOrderItemFormSet(request.POST, instance=purchase_order)
-        if form.is_valid() and formset.is_valid():
-            form.save()
-            formset.save()
-            return redirect('inventory:purchase_orders')
-    else:
-        form = PurchaseOrderForm(instance=purchase_order)
-        formset = PurchaseOrderItemFormSet(instance=purchase_order)
-    return render(
-        request,
-        'inventory/purchase_orders_edit.html',
-        {'form': form, 'formset': formset, 'purchase_order': purchase_order},
-    )
-
-
-def purchase_orders_delete(request, pk):
-    purchase_order = get_object_or_404(PurchaseOrder, pk=pk)
-    if request.method == 'POST':
-        purchase_order.delete()
-        return redirect('inventory:purchase_orders')
-    return render(request, 'inventory/purchase_orders_delete.html', {'purchase_order': purchase_order})
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        percent_map = {}
+        for item in ctx["items"]:
+            if item.alert_threshold and item.alert_threshold > 0:
+                percent = float(item.quantity_in_stock) / float(item.alert_threshold) * 100
+                percent_map[item.id] = min(100, max(0, round(percent)))
+            else:
+                percent_map[item.id] = 0
+        ctx["percent_map"] = percent_map
+        return ctx

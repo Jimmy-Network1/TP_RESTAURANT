@@ -1,30 +1,64 @@
-{% extends "base.html" %}
-{% block title %}Réservation — Saveur 237{% endblock %}
+{% extends "base_public.html" %}
+{% block title %}Reservations — Saveur 237{% endblock %}
 {% block content %}
-<h1>Réserver une table</h1>
-<form class="form card" method="post">
-    {% csrf_token %}
-    <label>Nom<input name="name" required></label>
-    <label>Téléphone<input name="phone" required></label>
-    <div class="form-row">
-        <label>Date<input type="date" name="date" required></label>
-        <label>Heure<input type="time" name="time" required></label>
-    </div>
-    <label>Personnes<input type="number" name="people" min="1" value="2" required></label>
-    <button class="btn">Envoyer la demande</button>
-</form>
+<div class="section-title">
+  <div>
+    <h2>Reserver une table</h2>
+    <p class="muted">Choisissez une date, une zone et confirmez.</p>
+  </div>
+</div>
 
-<section style="margin-top:22px;" id="contact">
-    <div class="card">
-        <div class="section-title"><h2>Contact & Accès</h2></div>
-        <div class="contact-block">
-            <div><strong>Adresse</strong><br>Bonapriso, Douala</div>
-            <div><strong>Téléphone</strong><br><a href="tel:+237123456789">+237 123 456 789</a></div>
-            <div><strong>WhatsApp</strong><br><a href="https://wa.me/237123456789">wa.me/237123456789</a></div>
+<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:12px;">
+  <div class="card">
+    <form>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+        <div>
+          <label>Date</label>
+          <input class="form-control" type="date">
         </div>
-        <div class="card" style="margin-top:12px; min-height:200px; background: #f3eee7; border-style:dashed;">
-            <p class="dish-desc">Carte simple / map intégrable ici.</p>
+        <div>
+          <label>Heure</label>
+          <input class="form-control" type="time">
         </div>
+        <div>
+          <label>Personnes</label>
+          <input class="form-control" type="number" min="1" value="2">
+        </div>
+        <div>
+          <label>Zone</label>
+          <select class="form-control">
+            <option>Terrasse</option>
+            <option>Salle VIP</option>
+            <option>Interieur</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label>Note</label>
+        <textarea class="form-control" rows="3" placeholder="Ex: table pres de la fenetre"></textarea>
+      </div>
+      <button class="btn" style="margin-top:12px;" type="button">Envoyer demande</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Mes reservations</h3>
+    <div class="cart-list">
+      <div class="cart-item">
+        <div>
+          <strong>20/02 20:00 • 4 pers</strong>
+          <div class="muted">Terrasse</div>
+        </div>
+        <span class="status status-ok">PENDING</span>
+      </div>
+      <div class="cart-item">
+        <div>
+          <strong>18/02 19:30 • 2 pers</strong>
+          <div class="muted">Interieur</div>
+        </div>
+        <span class="status" style="background:rgba(0,135,81,0.12);color:var(--green);">CONFIRMED</span>
+      </div>
     </div>
-</section>
+  </div>
+</div>
 {% endblock %}
