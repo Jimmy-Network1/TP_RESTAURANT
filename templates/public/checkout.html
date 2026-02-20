@@ -10,15 +10,16 @@
 
 <div class="grid" style="grid-template-columns:2fr 1fr;gap:12px;">
   <div class="card">
-    <form>
+    <form method="post">
+      {% csrf_token %}
       <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
         <div>
           <label>Nom complet</label>
-          <input class="form-control" type="text" placeholder="Votre nom">
+          <input class="form-control" type="text" name="name" placeholder="Votre nom">
         </div>
         <div>
-          <label>Telephone</label>
-          <input class="form-control" type="tel" placeholder="+237 ...">
+          <label>Téléphone</label>
+          <input class="form-control" type="tel" name="phone" placeholder="+237 ...">
         </div>
       </div>
 
@@ -32,34 +33,31 @@
 
       <div id="address-block" style="margin-top:12px;">
         <label>Adresse de livraison</label>
-        <input class="form-control" type="text" placeholder="Quartier, ville, details">
+        <input class="form-control" type="text" name="address" placeholder="Quartier, ville, details">
       </div>
 
       <div style="margin-top:12px;">
         <label>Note pour la cuisine</label>
-        <textarea class="form-control" rows="3" placeholder="Ex: sans piment"></textarea>
+        <textarea class="form-control" name="note" rows="3" placeholder="Ex: sans piment"></textarea>
       </div>
 
       <div style="margin-top:12px;">
         <label>Mode de paiement</label>
         <div class="menu-filters">
-          <span class="chip active">Paiement a la livraison</span>
+          <span class="chip active" id="payment-label">Paiement a la livraison</span>
         </div>
       </div>
 
       <div style="margin-top:12px;">
-        <button class="btn" type="button">Valider commande</button>
+        <button class="btn" type="submit">Valider commande</button>
       </div>
     </form>
   </div>
 
   <div class="card">
-    <h3 style="margin-top:0;">Resume</h3>
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <span>Total</span>
-      <strong><span id="summary-total">0</span> FCFA</strong>
-    </div>
+    <h3 style="margin-top:0;">Résumé</h3>
     <p class="muted">Statut initial: EN_ATTENTE</p>
+    <a class="btn-outline" href="{% url 'public:cart' %}">Retour panier</a>
   </div>
 </div>
 {% endblock %}

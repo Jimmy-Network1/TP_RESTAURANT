@@ -3,21 +3,46 @@
 {% block content %}
 <div class="section-title">
   <div>
-    <h2>Panier</h2>
-    <p class="muted">Ajustez vos quantites avant de commander.</p>
+    <h2>Votre panier</h2>
+    <p class="muted">Modifiez les quantités et validez.</p>
   </div>
-  <a class="btn-outline" href="{% url 'public:menu' %}">Continuer les achats</a>
 </div>
 
-<div class="grid" style="grid-template-columns:2fr 1fr;gap:12px;">
-  <div id="cart-items" class="cart-list"></div>
+<div class="grid" style="grid-template-columns:1.4fr .6fr;gap:14px;">
   <div class="card">
-    <h3 style="margin-top:0;">Resume</h3>
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <span>Total</span>
-      <strong><span id="cart-total">0</span> FCFA</strong>
+    {% if items %}
+      <div class="cart-list">
+        {% for it in items %}
+        <div class="cart-item">
+          <div>
+            <strong>{{ it.dish.name }}</strong>
+            <div class="muted">{{ it.dish.price }} FCFA</div>
+          </div>
+          <form method="post" action="{% url 'public:cart_update' it.dish.id %}" class="qty">
+            {% csrf_token %}
+            <input class="form-control" style="width:60px;" type="number" name="qty" value="{{ it.qty }}" min="0">
+            <button class="btn-outline" type="submit">Mettre à jour</button>
+          </form>
+          <form method="post" action="{% url 'public:cart_remove' it.dish.id %}">
+            {% csrf_token %}
+            <button class="btn-outline" type="submit">Supprimer</button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">Votre panier est vide.</p>
+    {% endif %}
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+      <a class="btn-outline" href="{% url 'public:menu' %}">Continuer achats</a>
+      {% if items %}
+        <a class="btn" href="{% url 'public:checkout' %}">Passer commande</a>
+      {% endif %}
     </div>
-    <a class="btn" href="{% url 'public:checkout' %}" style="width:100%;margin-top:12px;">Passer commande</a>
+  </div>
+  <div class="card">
+    <h3>Résumé</h3>
+    <p>Total: <strong>{{ total }} FCFA</strong></p>
   </div>
 </div>
 {% endblock %}

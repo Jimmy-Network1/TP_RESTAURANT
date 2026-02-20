@@ -1,44 +1,25 @@
 {% extends "base_public.html" %}
 {% block title %}Mes commandes — Saveur 237{% endblock %}
 {% block content %}
-<div class="section-title">
-  <div>
-    <h2>Mes commandes</h2>
-    <p class="muted">Suivez vos commandes en temps reel.</p>
-  </div>
-</div>
-
-<div class="card" style="margin-bottom:12px;">
-  <div class="menu-filters">
-    <span class="chip active">Toutes</span>
-    <span class="chip">En cours</span>
-    <span class="chip">Livrees</span>
-    <span class="chip">Annulees</span>
-  </div>
-</div>
-
-<div class="grid">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <strong>Commande #1024</strong>
-      <span class="status status-ok">EN_ATTENTE</span>
-    </div>
-    <div class="muted">20/02 12:42 • Livraison</div>
-    <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;">
-      <strong>32 000 FCFA</strong>
-      <a class="btn-outline" href="{% url 'public:order_detail' 1 %}">Voir detail</a>
-    </div>
-  </div>
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <strong>Commande #1025</strong>
-      <span class="status" style="background:rgba(80,120,255,0.15);color:#2d4aa0;">PREPARATION</span>
-    </div>
-    <div class="muted">20/02 12:55 • A emporter</div>
-    <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;">
-      <strong>18 500 FCFA</strong>
-      <a class="btn-outline" href="{% url 'public:order_detail' 1 %}">Voir detail</a>
-    </div>
-  </div>
+<div class="card">
+  <h2>Mes commandes</h2>
+  <table>
+    <thead>
+      <tr><th>Commande</th><th>Type</th><th>Statut</th><th>Total</th><th>Date</th></tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td><a href="{% url 'public:order_detail' o.id %}">#{{ o.id }}</a></td>
+        <td>{{ o.get_order_type_display }}</td>
+        <td>{{ o.get_status_display }}</td>
+        <td>{{ o.total_amount }} FCFA</td>
+        <td>{{ o.created_at|date:"d/m H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">Aucune commande.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 {% endblock %}

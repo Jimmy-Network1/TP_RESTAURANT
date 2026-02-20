@@ -17,15 +17,20 @@ def staff_required(user):
     return user.is_authenticated and (user.is_staff or user.is_superuser)
 
 
-@method_decorator(login_required, name="dispatch")
 class ClientReservationCreateView(View):
     template_name = "reservations/new.html"
 
     def get(self, request):
+        if not request.user.is_authenticated:
+            messages.info(request, "Connectez-vous pour réserver une table.")
+            return redirect(f"/accounts/login/?next=/reservations/new/")
         form = ClientReservationForm()
         return render(request, self.template_name, {"form": form})
 
     def post(self, request):
+        if not request.user.is_authenticated:
+            messages.info(request, "Connectez-vous pour réserver une table.")
+            return redirect(f"/accounts/login/?next=/reservations/new/")
         form = ClientReservationForm(request.POST)
         if form.is_valid():
             profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
