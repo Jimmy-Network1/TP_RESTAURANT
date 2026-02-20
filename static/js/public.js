@@ -1,4 +1,11 @@
 (function(){
+  function getCookie(name){
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return '';
+  }
+
   function updateBadge(){
     document.querySelectorAll('.js-cart-count').forEach(el => {
       const count = el.dataset.count || el.textContent || '0';
@@ -25,5 +32,62 @@
   document.addEventListener('DOMContentLoaded', () => {
     updateBadge();
     checkoutBehavior();
+    document.querySelectorAll('form[data-ajax="1"]').forEach(form => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const data = new FormData(form);
+        const res = await fetch(form.action, {
+          method: form.method || 'POST',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          body: data,
+        });
+        if (res.ok) {
+          const json = await res.json();
+          document.querySelectorAll('.js-cart-count').forEach(el => {
+            el.dataset.count = json.count;
+            el.textContent = json.count;
+          });
+          const totalEl = document.getElementById('cart-total');
+          if (totalEl && json.total !== undefined) {
+            totalEl.dataset.total = json.total;
+            totalEl.textContent = `${json.total} FCFA`;
+          }
+          const itemsWrap = document.getElementById('cart-items');
+          if (itemsWrap && json.items) {
+            const keep = new Set(Object.keys(json.items));
+            itemsWrap.querySelectorAll('[data-item-id]').forEach(row => {
+              const id = row.getAttribute('data-item-id');
+              if (!keep.has(id)) {
+                row.remove();
+              } else {
+                const info = json.items[id];
+                const line = row.querySelector('.js-line-total');
+                const qtyInput = row.querySelector('input[name="qty"]');
+                if (line && info.line_total !== undefined) {
+                  line.dataset.lineTotal = info.line_total;
+                  line.textContent = `${info.line_total} FCFA`;
+                }
+                if (qtyInput && info.qty !== undefined) {
+                  qtyInput.value = info.qty;
+                }
+              }
+            });
+          }
+          const emptyEl = document.getElementById('cart-empty');
+          const checkoutBtn = document.getElementById('checkout-btn');
+          if (emptyEl) {
+            emptyEl.style.display = json.empty ? 'block' : 'none';
+          }
+          if (checkoutBtn) {
+            checkoutBtn.style.display = json.empty ? 'none' : 'inline-flex';
+          }
+        } else {
+          form.submit();
+        }
+      });
+    });
   });
 })();

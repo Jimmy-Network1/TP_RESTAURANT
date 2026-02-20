@@ -3,12 +3,14 @@ from decimal import Decimal
 from django.db import transaction
 from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
+from django.http import JsonResponse
 from django.views.generic import TemplateView
 
 from accounts.models import CustomerProfile, Address
 from menu.models import Dish, Category
 from inventory.models import Ingredient, StockMovement, InventoryAlert
 from orders.models import Order, OrderItem
+from tablesapp.models import Table
 
 class HomeView(TemplateView):
     template_name = "public/home.html"
@@ -99,6 +101,25 @@ def _save_cart(request, cart):
     request.session.modified = True
 
 
+def _cart_summary(cart):
+    dish_ids = list(cart.keys())
+    dishes = Dish.objects.filter(id__in=dish_ids)
+    total = Decimal("0")
+    items = {}
+    for dish in dishes:
+        qty = int(cart.get(str(dish.id), 0))
+        if qty <= 0:
+            continue
+        line_total = dish.price * qty
+        total += line_total
+        items[str(dish.id)] = {
+            "qty": qty,
+            "line_total": str(line_total),
+        }
+    count = sum(int(v) for v in cart.values())
+    return {"count": count, "total": str(total), "items": items, "empty": count == 0}
+
+
 def cart_view(request):
     cart = _get_cart(request)
     dish_ids = cart.keys()
@@ -132,6 +153,8 @@ def cart_add(request, pk):
     cart[key] = new_qty
     _save_cart(request, cart)
     messages.success(request, f"{dish.name} ajouté au panier.")
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse(_cart_summary(cart))
     return redirect(request.META.get("HTTP_REFERER", "public:menu"))
 
 
@@ -152,6 +175,8 @@ def cart_update(request, pk):
     else:
         cart[key] = qty
     _save_cart(request, cart)
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse(_cart_summary(cart))
     return redirect("public:cart")
 
 
@@ -159,6 +184,8 @@ def cart_remove(request, pk):
     cart = _get_cart(request)
     cart.pop(str(pk), None)
     _save_cart(request, cart)
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        return JsonResponse(_cart_summary(cart))
     return redirect("public:cart")
 
 
@@ -184,6 +211,7 @@ def checkout_view(request):
         name = request.POST.get("name", "")
         phone = request.POST.get("phone", "")
         address_line = request.POST.get("address", "")
+        table_number = request.POST.get("table_number", "")
         note = request.POST.get("note", "")
 
         try:
@@ -201,6 +229,15 @@ def checkout_view(request):
                     if phone:
                         profile.phone = phone
                         profile.save(update_fields=["phone"])
+                    if order_type == Order.TYPE_DINE_IN:
+                        if not table_number:
+                            messages.error(request, "Numéro de table requis pour sur place.")
+                            return redirect("public:checkout")
+                        table = Table.objects.filter(name__iexact=table_number).first()
+                        if not table:
+                            messages.error(request, "Table introuvable.")
+                            return redirect("public:checkout")
+                        order.table = table
                     if order_type == Order.TYPE_DELIVERY and address_line:
                         addr = Address.objects.create(
                             profile=profile,

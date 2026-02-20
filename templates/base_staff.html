@@ -103,6 +103,14 @@
           <a href="{% url 'accounts:logout' %}">Déconnexion</a>
         </div>
       </div>
+      {% if is_server %}
+      <div style="background:#fff;border-bottom:1px solid #eee;">
+        <div class="container" style="padding:8px 16px;display:flex;gap:10px;flex-wrap:wrap;">
+          <a class="btn-outline" href="{% url 'public:cart' %}">Panier</a>
+          <a class="btn-outline" href="{% url 'public:menu' %}">Commande</a>
+        </div>
+      </div>
+      {% endif %}
       <div class="container">
         {% if messages %}
           <div style="display:grid;gap:8px;margin-bottom:10px;">

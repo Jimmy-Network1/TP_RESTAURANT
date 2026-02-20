@@ -17,6 +17,10 @@
       </a>
       <a class="btn-outline" href="javascript:history.back()">Retour</a>
       <nav class="nav-links">
+        {% if is_server %}
+          <a href="{% url 'public:cart' %}">Panier</a>
+          <a href="{% url 'public:menu' %}">Commande</a>
+        {% endif %}
         {% if not is_staff_role %}
           <a href="{% url 'public:menu' %}">Menu</a>
           <a href="{% url 'public:cart' %}">Panier <span class="badge js-cart-count" data-count="{{ cart_count }}">{{ cart_count }}</span></a>
