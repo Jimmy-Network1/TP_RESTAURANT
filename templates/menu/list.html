@@ -1,0 +1,110 @@
+{% extends "base_staff.html" %}
+{% block title %}Produits — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .menu-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .menu-head h2{margin:0;}
+  .menu-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+  .menu-table th{font-size:12px;color:#6b6b6b;font-weight:700;}
+  .menu-table td{background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;}
+  .menu-table td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
+  .menu-table td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
+  .img-thumb{width:52px;height:42px;border-radius:8px;object-fit:cover;border:1px solid #eee;}
+</style>
+
+<div class="menu-head">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Catalogue</p>
+    <h2>Liste des produits</h2>
+    <p class="muted">Gerer tous les plats, boissons et options du restaurant.</p>
+  </div>
+  <a class="btn" href="{% url 'menu:product_new' %}">Ajouter produit</a>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <form method="get" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;">
+    <div>
+      <label>Recherche</label>
+      <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Nom, description...">
+    </div>
+    <div>
+      <label>Categorie</label>
+      <select class="form-control" name="category">
+        <option value="">Toutes</option>
+        {% for c in categories %}
+          <option value="{{ c.id }}" {% if cat|default:'' == c.id|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Statut</label>
+      <select class="form-control" name="status">
+        <option value="" {% if not status %}selected{% endif %}>Tous</option>
+        <option value="active" {% if status == 'active' %}selected{% endif %}>Actif</option>
+        <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactif</option>
+      </select>
+    </div>
+    <div>
+      <label>Disponibilite</label>
+      <select class="form-control" name="availability">
+        <option value="" {% if not availability %}selected{% endif %}>Toutes</option>
+        <option value="in_stock" {% if availability == 'in_stock' %}selected{% endif %}>Disponible</option>
+        <option value="out" {% if availability == 'out' %}selected{% endif %}>Rupture</option>
+      </select>
+    </div>
+    <div><button class="btn" type="submit">Filtrer</button></div>
+  </form>
+
+  <table class="menu-table" style="margin-top:12px;">
+    <thead>
+      <tr>
+        <th>Image</th>
+        <th>Nom</th>
+        <th>Categorie</th>
+        <th>Prix</th>
+        <th>Statut</th>
+        <th>Disponibilite</th>
+        <th style="text-align:right;padding-right:14px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for dish in dishes %}
+      <tr>
+        <td style="width:70px;">
+          {% if dish.photo %}
+            <img src="{{ dish.photo.url }}" class="img-thumb">
+          {% else %}
+            <span class="cat-chip">—</span>
+          {% endif %}
+        </td>
+        <td><strong>{{ dish.name }}</strong></td>
+        <td><span class="cat-chip">{{ dish.category.name }}</span></td>
+        <td><strong>{{ dish.price }} FCFA</strong></td>
+        <td>
+          {% if dish.is_active %}
+            <span class="pill pill-ok">Actif</span>
+          {% else %}
+            <span class="pill pill-off">Inactif</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if dish.availability == 'in_stock' %}
+            <span class="pill pill-ok">Disponible</span>
+          {% else %}
+            <span class="pill pill-off">Rupture</span>
+          {% endif %}
+        </td>
+        <td>
+          <div class="actions">
+            <a class="icon-btn" href="{% url 'menu:product_edit' dish.pk %}">Edit</a>
+            <a class="icon-btn" href="#">Off</a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" class="empty">Aucun produit.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,55 +1,38 @@
-{% extends "base.html" %}
-{% block title %}Profil — Saveur 237{% endblock %}
+{% extends "base_public.html" %}
+{% block title %}Mon profil — Saveur 237{% endblock %}
 {% block content %}
-<div class="card" style="margin:24px auto; max-width:720px; display:grid; gap:14px;">
-    <div class="section-title">
-        <h2>Mon profil</h2>
-        <span class="pill">Rôle : {{ role|default:"membre" }}</span>
-    </div>
-    <div class="grid grid-2">
-        <div>
-            <p><strong>Utilisateur :</strong> {{ user.username }}</p>
-            <p><strong>Email :</strong> {{ user.email }}</p>
-        </div>
-        <div>
-            <p><strong>Nom complet :</strong> {{ user.get_full_name|default:"-" }}</p>
-            <p><strong>Groupes :</strong> {{ groups|join:", " }}</p>
-        </div>
-    </div>
-    <div class="grid grid-2">
-        <div class="card">
-            <div class="section-title"><strong>Panier</strong></div>
-            <p class="dish-desc">Articles en cours : {{ cart_count }}</p>
-            <a class="btn-outline" href="{% url 'public:cart' %}">Voir mon panier</a>
-        </div>
-    </div>
-    <div class="card">
-        <div class="section-title"><strong>Commandes récentes</strong></div>
-        {% if recent_orders %}
-            <ul style="margin:0; padding-left:18px;">
-                {% for o in recent_orders %}
-                <li>#{{ o.id }} — {{ o.get_status_display|default:o.status }} — {{ o.total_amount }} FCFA</li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="dish-desc">Aucune commande.</p>
-        {% endif %}
-    </div>
-    <div class="card">
-        <div class="section-title"><strong>Réservations</strong></div>
-        {% if recent_reservations %}
-            <ul style="margin:0; padding-left:18px;">
-                {% for r in recent_reservations %}
-                <li>{{ r.reservation_datetime }} — {{ r.table|default:"-" }} — {{ r.status }}</li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="dish-desc">Aucune réservation.</p>
-        {% endif %}
-    </div>
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <a class="btn" href="{% url 'accounts:logout' %}">Se déconnecter</a>
-        <a class="btn-outline" href="{% url 'public:menu' %}">Retour au menu</a>
-    </div>
+<div class="grid">
+  <div class="card">
+    <h2>Informations personnelles</h2>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <label>Nom</label>
+        <input class="form-control" value="{{ request.user.get_full_name }}" readonly>
+      </div>
+      <div class="form-row">
+        <label>Email</label>
+        <input class="form-control" value="{{ request.user.email }}" readonly>
+      </div>
+      <div class="form-row">
+        <label>Téléphone</label>
+        {{ form.phone }}
+      </div>
+      <div class="form-row">
+        <label>Préférences</label>
+        {{ form.preferences }}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn" type="submit">Mettre à jour</button>
+        <a class="btn-outline" href="{% url 'accounts:addresses' %}">Gérer mes adresses</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Adresses</h3>
+    <p class="muted">{{ profile.addresses.count }} adresse(s) enregistrée(s).</p>
+    <a class="btn" href="{% url 'accounts:addresses' %}">Voir mes adresses</a>
+  </div>
 </div>
 {% endblock %}

@@ -1,37 +1,23 @@
-{% extends "base.html" %}
+{% extends "base_public.html" %}
 {% block title %}Panier — Saveur 237{% endblock %}
 {% block content %}
-<h1>Votre panier</h1>
-<div class="cart-items">
-    {% comment %} context: cart_items=[{'id':1,'name':..., 'price':..., 'qty':...}] {% endcomment %}
-    {% for item in cart_items %}
-    <form method="post" action="{% url 'public:cart_update' %}" data-ajax-url="{% url 'public:cart_update' %}" class="cart-line cart-update-form" data-line data-id="{{ item.id }}" data-price="{{ item.price }}">
-        {% csrf_token %}
-        <input type="hidden" name="id" value="{{ item.id }}">
-        <div>
-            <div class="title">{{ item.name }}</div>
-            <small class="dish-desc">Prix unitaire : {{ item.price }} FCFA</small>
-        </div>
-        <div class="quantity">
-            <button type="submit" name="action" value="minus" aria-label="Moins">-</button>
-            <span data-qty>{{ item.qty }}</span>
-            <button type="submit" name="action" value="plus" aria-label="Plus">+</button>
-        </div>
-        <div class="line-total" data-line-total>{{ item.price|floatformat:2|add:""|add:""|default:"0"|floatformat:2 }}</div>
-        <button class="btn-outline" type="submit" name="action" value="remove">Retirer</button>
-    </form>
-    {% empty %}
-    <div class="empty">Panier vide.</div>
-    {% endfor %}
+<div class="section-title">
+  <div>
+    <h2>Panier</h2>
+    <p class="muted">Ajustez vos quantites avant de commander.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'public:menu' %}">Continuer les achats</a>
 </div>
 
-<div class="summary" style="margin-top:12px;">
-    <div class="summary-row"><span>Sous-total</span><span data-total>{{ cart_total|default:0 }} FCFA</span></div>
-    <div class="summary-row summary-total"><span>Total</span><span data-total>{{ cart_total|default:0 }} FCFA</span></div>
-</div>
-
-<div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
-    <a class="btn-outline" href="{% url 'public:menu' %}">Continuer vos choix</a>
-    <a class="btn" href="{% url 'public:checkout' %}">Passer commande</a>
+<div class="grid" style="grid-template-columns:2fr 1fr;gap:12px;">
+  <div id="cart-items" class="cart-list"></div>
+  <div class="card">
+    <h3 style="margin-top:0;">Resume</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Total</span>
+      <strong><span id="cart-total">0</span> FCFA</strong>
+    </div>
+    <a class="btn" href="{% url 'public:checkout' %}" style="width:100%;margin-top:12px;">Passer commande</a>
+  </div>
 </div>
 {% endblock %}

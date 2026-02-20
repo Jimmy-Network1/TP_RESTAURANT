@@ -2,37 +2,22 @@
 {% block title %}Bar — KDS{% endblock %}
 {% block content %}
 <div class="section-title">
-    <div>
-        <p class="kicker">Bar</p>
-        <h2>Tickets boissons</h2>
-        <p class="muted">Commandes assignées à la station bar.</p>
-    </div>
-    <a class="btn-outline" href="{% url 'kitchen:board' %}">← Cuisine</a>
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Bar</p>
+    <h2>Écran Bar</h2>
+    <p class="muted">Tickets boissons uniquement.</p>
+  </div>
 </div>
 
-<div class="kitchen-grid">
-    {% for t in tickets %}
-    <article class="ticket-card ticket-preparing" data-status="{{ t.status }}">
-        <header>
-            <div>
-                <strong>Cmd #{{ t.order_id }}</strong>
-                <p class="muted">{{ t.created_at|date:"H:i" }}</p>
-            </div>
-            <span class="badge badge-warning">{{ t.get_status_display }}</span>
-        </header>
-        <ul class="ticket-items">
-            {% for item in t.items.all %}
-            <li>{{ item.dish.name }} <span class="muted">x{{ item.quantity }}</span></li>
-            {% empty %}<li class="muted">Pas de détail.</li>{% endfor %}
-        </ul>
-        <div class="table-actions">
-            <form method="post" action="{% url 'kitchen:ticket_status' t.pk 'ready' %}">
-                {% csrf_token %}<button class="btn" type="submit">Prêt</button>
-            </form>
-        </div>
-    </article>
-    {% empty %}
-    <div class="empty">Aucun ticket bar.</div>
-    {% endfor %}
+<div class="grid">
+  {% for o in orders %}
+  <div class="card">
+    <strong>#{{ o.id }}</strong>
+    <p class="muted">{{ o.get_order_type_display }}</p>
+    <a class="btn-outline" href="{% url 'kitchen:ticket' o.id %}">Voir ticket</a>
+  </div>
+  {% empty %}
+  <div class="card">Aucun ticket bar.</div>
+  {% endfor %}
 </div>
 {% endblock %}

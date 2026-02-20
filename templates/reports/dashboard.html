@@ -1,51 +1,75 @@
 {% extends "base_staff.html" %}
-{% block title %}Rapports — Saveur 237{% endblock %}
+{% block title %}Rapports — Dashboard{% endblock %}
 {% block content %}
+<style>
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .kpi{display:grid;gap:6px;padding:16px;border-radius:14px;color:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.08);} 
+  .kpi.sales{background:linear-gradient(135deg,#3E2723,#6d4c41);} 
+  .kpi.orders{background:linear-gradient(135deg,#008751,#1b9b6a);} 
+  .kpi.progress{background:linear-gradient(135deg,#f1c40f,#f39c12);} 
+  .kpi.mix{background:linear-gradient(135deg,#2c3e50,#34495e);} 
+  .chips{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{border:1px solid #e4e4e4;background:#fff;padding:6px 12px;border-radius:999px;font-weight:700;font-size:13px;text-decoration:none;color:#333;}
+  .chip.active{border-color:var(--green);color:var(--green);} 
+  .notif{display:grid;gap:8px;}
+  .notif-item{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:8px 10px;background:#fafafa;}
+</style>
+
 <div class="section-title">
-    <div>
-        <p class="kicker">Reports</p>
-        <h2>Dashboard analytique</h2>
-        <p class="muted">Vue rapide des performances.</p>
-    </div>
-    <div class="table-actions">
-        <a class="btn-outline" href="#">Exporter</a>
-    </div>
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Reports</p>
+    <h2>Dashboard Rapports</h2>
+    <p class="muted">Période: {{ start }} → {{ end }}</p>
+  </div>
+  <div class="chips">
+    <a class="chip {% if preset == 'today' %}active{% endif %}" href="{% url 'reports:dashboard' %}?period=today">Aujourd’hui</a>
+    <a class="chip {% if preset == 'week' %}active{% endif %}" href="{% url 'reports:dashboard' %}?period=week">Semaine</a>
+    <a class="chip {% if preset == 'month' %}active{% endif %}" href="{% url 'reports:dashboard' %}?period=month">Mois</a>
+  </div>
 </div>
 
-<div class="stats-grid" style="margin-bottom:12px;">
-    <div class="card stat-card"><p class="label muted">CA jour</p><h2>{{ total_ca }}</h2></div>
-    <div class="card stat-card"><p class="label muted">Commandes</p><h2>{{ orders }}</h2></div>
-    <div class="card stat-card"><p class="label muted">Ticket moyen</p><h2>{{ avg_ticket }}</h2></div>
-    <div class="card stat-card"><p class="label muted">Top plat</p><h2>{{ top_dish|default:"—" }}</h2></div>
+<div class="kpi-grid">
+  <div class="kpi sales">
+    <span>Total ventes</span>
+    <strong>{{ total_sales }} FCFA</strong>
+  </div>
+  <div class="kpi orders">
+    <span>Commandes payées</span>
+    <strong>{{ paid_orders_count }}</strong>
+  </div>
+  <div class="kpi progress">
+    <span>Commandes en cours</span>
+    <strong>{{ in_progress }}</strong>
+  </div>
+  <div class="kpi mix">
+    <span>Top produit</span>
+    <strong>{% if top_item %}{{ top_item.dish__name }}{% else %}-{% endif %}</strong>
+  </div>
 </div>
 
-<div class="card">
-    <div class="section-title">
-        <h3>Évolution (snapshots)</h3>
-        <div class="filters">
-            <a class="chip-filter active" href="#">Jour</a>
-            <a class="chip-filter" href="#">Semaine</a>
-            <a class="chip-filter" href="#">Mois</a>
-        </div>
+<div class="grid" style="margin-top:12px;">
+  <div class="card">
+    <h4>Revenus par type</h4>
+    <p>Sur place: <strong>{{ by_type.dine_in }}</strong></p>
+    <p>Livraison: <strong>{{ by_type.delivery }}</strong></p>
+    <p>Emporter: <strong>{{ by_type.takeaway }}</strong></p>
+  </div>
+  <div class="card">
+    <h4>Alertes</h4>
+    <div class="notif">
+      <div class="notif-item"><span>Stock faible</span><span class="badge">{{ low_stock }}</span></div>
+      <div class="notif-item"><span>Livraisons en retard</span><span class="badge">{{ late_deliveries }}</span></div>
+      <div class="notif-item"><span>En attente cuisine</span><span class="badge">{{ kitchen_pending }}</span></div>
     </div>
-    <div class="table-responsive">
-        <table class="table">
-            <thead><tr><th>Période</th><th>CA</th><th>Cmd</th><th>Ticket</th><th>Top plat</th><th>Généré</th></tr></thead>
-            <tbody>
-                {% for r in rows %}
-                <tr>
-                    <td>{{ r.period }} ({{ r.start|date:"d/m" }} - {{ r.end|date:"d/m" }})</td>
-                    <td>{{ r.ca }}</td>
-                    <td>{{ r.orders }}</td>
-                    <td>{{ r.avg_ticket }}</td>
-                    <td>{{ r.top_dish|default:"—" }}</td>
-                    <td>{{ r.created_at|date:"d/m H:i" }}</td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="6" class="empty">Aucune donnée.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a class="btn-outline" href="{% url 'reports:daily' %}">Ventes journalières</a>
+    <a class="btn-outline" href="{% url 'reports:products' %}">Produits top</a>
+    <a class="btn-outline" href="{% url 'reports:delivery' %}">Livraisons</a>
+    <a class="btn-outline" href="{% url 'reports:export' %}">Export</a>
+  </div>
 </div>
 {% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base_public.html" %}
+{% block title %}Mes adresses — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <h2>Mes adresses</h2>
+    <p class="muted">Gérez vos adresses de livraison.</p>
+  </div>
+  <a class="btn" href="{% url 'accounts:address_new' %}">Ajouter adresse</a>
+</div>
+
+<div class="grid">
+  {% for addr in addresses %}
+  <div class="card">
+    <strong>{{ addr.label }}</strong>
+    <p class="muted">{{ addr.city }} {{ addr.district }}</p>
+    <p>{{ addr.details }}</p>
+    {% if addr.is_default %}<span class="badge">Par défaut</span>{% endif %}
+    <div style="margin-top:8px;">
+      <a class="btn-outline" href="{% url 'accounts:address_edit' addr.id %}">Modifier</a>
+    </div>
+  </div>
+  {% empty %}
+  <div class="card">Aucune adresse.</div>
+  {% endfor %}
+</div>
+{% endblock %}

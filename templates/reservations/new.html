@@ -1,12 +1,45 @@
-{% extends "base_staff.html" %}
-
-{% block title %}Nouvelle réservation{% endblock %}
-
+{% extends "base_public.html" %}
+{% block title %}Réserver — Saveur 237{% endblock %}
 {% block content %}
-<h1>Nouvelle réservation</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Enregistrer</button>
-</form>
+<div class="section-title">
+  <div>
+    <h2>Réserver une table</h2>
+    <p class="muted">Confirmez votre présence et laissez une note si besoin.</p>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <label>Date & heure</label>
+        {{ form.reservation_datetime }}
+        {{ form.reservation_datetime.errors }}
+      </div>
+      <div class="form-row">
+        <label>Nombre de personnes</label>
+        {{ form.party_size }}
+        {{ form.party_size.errors }}
+      </div>
+      <div class="form-row">
+        <label>Zone souhaitée</label>
+        {{ form.zone }}
+      </div>
+      <div class="form-row">
+        <label>Note spéciale</label>
+        {{ form.note }}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn" type="submit">Réserver</button>
+        <a class="btn-outline" href="{% url 'reservations:client_list' %}">Mes réservations</a>
+      </div>
+    </form>
+  </div>
+  <div class="card">
+    <h3>Informations</h3>
+    <p class="muted">Horaires: 10h - 23h</p>
+    <p class="muted">Annulation possible jusqu’à 1h avant.</p>
+  </div>
+</div>
 {% endblock %}

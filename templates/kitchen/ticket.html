@@ -1,0 +1,80 @@
+{% extends "base_staff.html" %}
+{% block title %}Ticket cuisine #{{ order.id }}{% endblock %}
+{% block content %}
+<style>
+  .ticket-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .badge-pending{background:rgba(252,209,22,0.25);color:#9b6a00;} 
+  .badge-prep{background:rgba(0,113,188,0.15);color:#0a4f87;} 
+  .badge-ready{background:rgba(0,135,81,0.12);color:var(--green);} 
+  .badge-issue{background:rgba(206,17,38,0.12);color:var(--red);} 
+  .item-row{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:8px 10px;background:#fafafa;}
+</style>
+
+<div class="ticket-head">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Cuisine</p>
+    <h2>Ticket #{{ order.id }}</h2>
+    <p class="muted">{% if order.order_type == 'dine_in' %}TABLE {{ order.table.name }}{% else %}ONLINE — {{ order.get_order_type_display }}{% endif %}</p>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    {% if order.status == 'EN_ATTENTE' %}<span class="badge badge-pending">En attente</span>{% endif %}
+    {% if order.status == 'PREPARATION' %}<span class="badge badge-prep">En préparation</span>{% endif %}
+    {% if order.status == 'PRETE' %}<span class="badge badge-ready">Prête</span>{% endif %}
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h4>Items</h4>
+    <div style="display:grid;gap:8px;">
+      {% for item in items %}
+      <div class="item-row">
+        <span>{{ item.dish.name }} x{{ item.quantity }}</span>
+        <strong>{{ item.line_total }} FCFA</strong>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h4>Actions</h4>
+    <form method="post" action="{% url 'kitchen:action' order.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="start">
+      <button class="btn-outline" type="submit">Commencer</button>
+    </form>
+    <form method="post" action="{% url 'kitchen:action' order.id %}" style="margin-top:8px;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="ready">
+      <button class="btn" type="submit">Marquer prête</button>
+    </form>
+    <hr style="border:none;border-top:1px solid #eee;margin:12px 0;">
+    <form method="post" action="{% url 'kitchen:action' order.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="issue">
+      <div class="form-row">
+        <label>Signaler un problème</label>
+        <input class="form-control" name="note" maxlength="200" placeholder="Rupture, clarification, etc.">
+      </div>
+      <button class="btn-outline" type="submit">Notifier manager</button>
+    </form>
+    {% if order.kitchen_issue %}
+      <p class="badge badge-issue" style="margin-top:8px;">⚠ {{ order.kitchen_issue_note }}</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <h4>Ajouts / modifications</h4>
+  <div style="display:grid;gap:6px;">
+    {% for u in updates %}
+      <div class="item-row">
+        <span>{{ u.get_kind_display }} — {{ u.note|default:'Ajout après envoi' }}</span>
+        <span class="muted">{{ u.created_at|date:"H:i" }}</span>
+      </div>
+    {% empty %}
+      <p class="muted">Aucun ajout.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

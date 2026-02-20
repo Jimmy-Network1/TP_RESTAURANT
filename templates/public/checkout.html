@@ -1,33 +1,65 @@
-{% extends "base.html" %}
-{% block title %}Paiement — Saveur 237{% endblock %}
+{% extends "base_public.html" %}
+{% block title %}Checkout — Saveur 237{% endblock %}
 {% block content %}
-<h1>Finaliser</h1>
-<form class="grid grid-2 form" method="post">
-    {% csrf_token %}
-    <div class="card">
-        <h3>Informations</h3>
-        <div class="radio-group">
-            <label><input type="radio" name="mode" value="delivery" checked> Livraison</label>
-            <label><input type="radio" name="mode" value="pickup"> À emporter</label>
-            <label><input type="radio" name="mode" value="onsite"> Sur place</label>
+<div class="section-title">
+  <div>
+    <h2>Checkout</h2>
+    <p class="muted">Finalisez votre commande.</p>
+  </div>
+</div>
+
+<div class="grid" style="grid-template-columns:2fr 1fr;gap:12px;">
+  <div class="card">
+    <form>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+        <div>
+          <label>Nom complet</label>
+          <input class="form-control" type="text" placeholder="Votre nom">
         </div>
-        <label>Nom complet<input name="name" required></label>
-        <label>Téléphone<input name="phone" required></label>
-        <div data-address-block>
-            <label>Adresse<input name="address"></label>
-            <p class="help">Requise pour la livraison.</p>
+        <div>
+          <label>Telephone</label>
+          <input class="form-control" type="tel" placeholder="+237 ...">
         </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>Type de commande</label>
+        <div class="menu-filters">
+          <label class="chip"><input type="radio" name="order_type" value="delivery" checked> Livraison</label>
+          <label class="chip"><input type="radio" name="order_type" value="takeaway"> A emporter</label>
+        </div>
+      </div>
+
+      <div id="address-block" style="margin-top:12px;">
+        <label>Adresse de livraison</label>
+        <input class="form-control" type="text" placeholder="Quartier, ville, details">
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>Note pour la cuisine</label>
+        <textarea class="form-control" rows="3" placeholder="Ex: sans piment"></textarea>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>Mode de paiement</label>
+        <div class="menu-filters">
+          <span class="chip active">Paiement a la livraison</span>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn" type="button">Valider commande</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Resume</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Total</span>
+      <strong><span id="summary-total">0</span> FCFA</strong>
     </div>
-    <div class="card">
-        <h3>Résumé</h3>
-        {% comment %} context: cart_summary.items [{'name':..., 'total':...}], total {% endcomment %}
-        <div class="summary">
-            {% for line in cart_summary.items %}
-            <div class="summary-row"><span>{{ line.name }}</span><span>{{ line.total }} FCFA</span></div>
-            {% endfor %}
-            <div class="summary-row summary-total"><span>Total</span><span>{{ cart_summary.total }} FCFA</span></div>
-        </div>
-        <button class="btn" style="margin-top:12px;">Confirmer</button>
-    </div>
-</form>
+    <p class="muted">Statut initial: EN_ATTENTE</p>
+  </div>
+</div>
 {% endblock %}

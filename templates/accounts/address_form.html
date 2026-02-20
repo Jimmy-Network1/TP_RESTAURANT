@@ -1,0 +1,34 @@
+{% extends "base_public.html" %}
+{% block title %}Adresse — Saveur 237{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>{% if address %}Modifier adresse{% else %}Ajouter adresse{% endif %}</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-row">
+      <label>Label</label>
+      {{ form.label }}
+    </div>
+    <div class="form-row">
+      <label>Ville / Quartier</label>
+      {{ form.city }}
+    </div>
+    <div class="form-row">
+      <label>Zone</label>
+      {{ form.district }}
+    </div>
+    <div class="form-row">
+      <label>Détails</label>
+      {{ form.details }}
+    </div>
+    <div class="form-row">
+      <label>Par défaut</label>
+      {{ form.is_default }}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn" type="submit">Enregistrer</button>
+      <a class="btn-outline" href="{% url 'accounts:addresses' %}">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

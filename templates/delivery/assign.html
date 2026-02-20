@@ -1,51 +1,57 @@
 {% extends "base_staff.html" %}
-{% block title %}Attribuer un livreur — Saveur 237{% endblock %}
+{% block title %}Attribution — Saveur 237{% endblock %}
 {% block content %}
 <div class="section-title">
-    <div>
-        <p class="kicker">Livraison</p>
-        <h2>Attribuer un livreur</h2>
-        <p class="muted">Sélectionnez une commande et un coursier.</p>
-    </div>
-    <a class="btn-outline" href="{% url 'delivery:deliveries' %}">← Livraisons</a>
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Livraison</p>
+    <h2>Attribution des livreurs</h2>
+    <p class="muted">Seulement les commandes PRETES sont attribuables.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'delivery:deliveries' %}">Retour</a>
 </div>
 
-<div class="grid grid-2">
-    <div class="card">
-        <h3>Commandes à livrer</h3>
-        <div class="table-responsive">
-            <table class="table">
-                <thead><tr><th></th><th>#</th><th>Client</th><th>Adresse</th></tr></thead>
-                <tbody>
-                    {% for order in orders %}
-                    <tr>
-                        <td><input type="radio" name="order" value="{{ order.id }}" form="assign-form"></td>
-                        <td>#{{ order.id }}</td>
-                        <td>{{ order.customer_name|default:"—" }}</td>
-                        <td>{{ order.delivery_address|default:"—" }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr><td colspan="4" class="empty">Aucune commande.</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:12px;">
+  <div class="card">
+    <h4 style="margin-top:0;">Commandes pretes</h4>
+    <form method="post">
+      {% csrf_token %}
+      <div class="cart-list">
+        {% for o in orders %}
+          <label class="cart-item">
+            <div>
+              <strong>#{{ o.id }}</strong>
+              <div class="muted">{{ o.delivery_address|default:'-' }}</div>
+            </div>
+            <input type="radio" name="order_id" value="{{ o.id }}">
+          </label>
+        {% empty %}
+          <div class="muted">Aucune commande prete.</div>
+        {% endfor %}
+      </div>
+      <div style="margin-top:12px;">
+        <label>Livreur</label>
+        <select class="form-control" name="courier_id">
+          {% for c in couriers %}
+            <option value="{{ c.user.id }}" {% if c.status == 'busy' %}disabled{% endif %}>{{ c.user.username }}{% if c.status == 'busy' %} (Occupe){% endif %}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <button class="btn" style="margin-top:12px;">Confirmer attribution</button>
+    </form>
+  </div>
 
-    <div class="card">
-        <h3>Livreurs</h3>
-        <form id="assign-form" method="post" class="form">
-            {% csrf_token %}
-            <label>Livreur
-                <select name="courier" required class="form-control">
-                    <option value="">Choisir</option>
-                    {% for c in couriers %}
-                    <option value="{{ c.id }}">{{ c.username }} — {{ c.first_name }} {{ c.last_name }}</option>
-                    {% endfor %}
-                </select>
-            </label>
-            <button class="btn" type="submit">Assigner</button>
-        </form>
+  <div class="card">
+    <h4 style="margin-top:0;">Livreurs</h4>
+    <div class="cart-list">
+      {% for c in couriers %}
+        <div class="cart-item">
+          <div>{{ c.user.username }}</div>
+          {% if c.status == 'busy' %}<span class="pill pill-off">Occupe</span>{% else %}<span class="pill pill-ok">Disponible</span>{% endif %}
+        </div>
+      {% empty %}
+        <div class="muted">Aucun livreur.</div>
+      {% endfor %}
     </div>
+  </div>
 </div>
 {% endblock %}

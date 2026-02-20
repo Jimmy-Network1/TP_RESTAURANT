@@ -1,21 +1,34 @@
-{% extends "base_staff.html" %}
-
-{% block title %}Réservations{% endblock %}
-
+{% extends "base_public.html" %}
+{% block title %}Mes réservations — Saveur 237{% endblock %}
 {% block content %}
-<h1>Réservations</h1>
-<p><a href="{% url 'reservations:new' %}">+ Ajouter</a></p>
-{% if reservations %}
-<ul>
-    {% for reservation in reservations %}
-    <li>
-        {{ reservation.customer_name }} — {{ reservation.reservation_datetime }} — {{ reservation.party_size }} pers — {{ reservation.get_status_display }}
-        <a href="{% url 'reservations:edit' reservation.pk %}">Modifier</a>
-        <a href="{% url 'reservations:delete' reservation.pk %}">Supprimer</a>
-    </li>
-    {% endfor %}
-</ul>
-{% else %}
-<p>Aucune réservation.</p>
-{% endif %}
+<div class="section-title">
+  <div>
+    <h2>Mes réservations</h2>
+    <p class="muted">Suivez vos demandes et confirmations.</p>
+  </div>
+  <a class="btn" href="{% url 'reservations:client_new' %}">Nouvelle réservation</a>
+</div>
+
+<div class="card" style="margin-bottom:12px;">
+  <div class="menu-filters">
+    <a class="chip {% if not scope %}active{% endif %}" href="{% url 'reservations:client_list' %}">Toutes</a>
+    <a class="chip {% if scope == 'upcoming' %}active{% endif %}" href="{% url 'reservations:client_list' %}?scope=upcoming">À venir</a>
+    <a class="chip {% if scope == 'past' %}active{% endif %}" href="{% url 'reservations:client_list' %}?scope=past">Passées</a>
+  </div>
+</div>
+
+<div class="grid">
+  {% for r in reservations %}
+  <div class="card">
+    <strong>{{ r.reservation_datetime|date:"d/m H:i" }}</strong>
+    <div class="muted">{{ r.party_size }} personnes • {{ r.zone|default:'Zone libre' }}</div>
+    <div style="margin-top:8px;">Statut: {{ r.get_status_display }}</div>
+    <div style="margin-top:8px;">
+      <a class="btn-outline" href="{% url 'reservations:client_detail' r.id %}">Voir détail</a>
+    </div>
+  </div>
+  {% empty %}
+  <div class="card">Aucune réservation.</div>
+  {% endfor %}
+</div>
 {% endblock %}

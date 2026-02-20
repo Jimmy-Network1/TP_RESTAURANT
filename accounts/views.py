@@ -1,68 +1,243 @@
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.db.models import Q
-from django.shortcuts import redirect, render
+from django.contrib.auth.models import Group
+from django.db import transaction
+from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.views.generic import ListView, TemplateView
 
-from .forms import LoginForm, RegisterForm
+from .forms import (
+    AddressForm,
+    ClientProfileForm,
+    LoginForm,
+    RegisterForm,
+    StaffCreateForm,
+    ROLE_CHOICES,
+)
+from .models import Address, CustomerProfile
 
 User = get_user_model()
 
 
-def login_view(request):
-    if request.user.is_authenticated:
-        return redirect("accounts:users_list")
-    form = LoginForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        login(request, form.cleaned_data["user"])
-        messages.success(request, "Connexion réussie.")
-        return redirect("accounts:users_list")
-    return render(request, "accounts/login.html", {"form": form})
+def is_manager(user):
+    return user.is_authenticated and (user.is_superuser or user.groups.filter(name__in=["manager", "admin"]).exists())
 
 
-def register_view(request):
-    if request.user.is_authenticated:
-        return redirect("accounts:users_list")
-    form = RegisterForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        user = form.save()
-        login(request, user)
-        messages.success(request, "Compte créé et connecté.")
-        return redirect("accounts:users_list")
-    return render(request, "accounts/register.html", {"form": form})
+class LoginView(View):
+    template_name = "accounts/login.html"
+
+    def get(self, request):
+        form = LoginForm()
+        return render(request, self.template_name, {"form": form})
+
+    def post(self, request):
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            identifier = form.cleaned_data["username_or_email"]
+            password = form.cleaned_data["password"]
+            selected_role = form.cleaned_data.get("role")
+            user = None
+            if "@" in identifier:
+                user_obj = User.objects.filter(email__iexact=identifier).first()
+                if user_obj:
+                    user = authenticate(request, username=user_obj.username, password=password)
+            else:
+                user = authenticate(request, username=identifier, password=password)
+
+            if user and user.is_active:
+                # Determine actual role from DB
+                if user.is_superuser:
+                    actual_role = "admin"
+                else:
+                    group = user.groups.first()
+                    actual_role = group.name if group else "client"
+
+                if selected_role != actual_role:
+                    messages.error(request, "Role incorrect pour ce compte.")
+                    return render(request, self.template_name, {"form": form})
+
+                login(request, user)
+                messages.success(request, "Connexion reussie.")
+                return redirect("public:home")
+            if user and not user.is_active:
+                messages.error(request, "Compte desactive. Contactez le restaurant.")
+            else:
+                messages.error(request, "Email ou mot de passe incorrect.")
+        return render(request, self.template_name, {"form": form})
+
+
+class RegisterView(View):
+    template_name = "accounts/register.html"
+
+    def get(self, request):
+        form = RegisterForm()
+        return render(request, self.template_name, {"form": form})
+
+    def post(self, request):
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            with transaction.atomic():
+                user = form.save(commit=False)
+                user.set_password(form.cleaned_data["password1"])
+                user.save()
+                CustomerProfile.objects.create(user=user, phone=form.cleaned_data.get("phone", ""))
+            login(request, user)
+            messages.success(request, "Compte cree avec succes.")
+            return redirect("public:home")
+        return render(request, self.template_name, {"form": form})
 
 
 @login_required
 def logout_view(request):
     logout(request)
-    messages.info(request, "Déconnecté.")
-    return redirect("accounts:login")
+    messages.info(request, "Vous etes deconnecte.")
+    return redirect("public:home")
+
+
+@method_decorator(login_required, name="dispatch")
+class ProfileView(View):
+    template_name = "accounts/profile.html"
+
+    def get(self, request):
+        profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
+        form = ClientProfileForm(instance=profile)
+        return render(request, self.template_name, {"profile": profile, "form": form})
+
+    def post(self, request):
+        profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
+        form = ClientProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profil mis a jour.")
+            return redirect("accounts:profile")
+        return render(request, self.template_name, {"profile": profile, "form": form})
+
+
+@method_decorator(login_required, name="dispatch")
+class AddressListView(View):
+    template_name = "accounts/addresses.html"
+
+    def get(self, request):
+        profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
+        return render(request, self.template_name, {"profile": profile, "addresses": profile.addresses.all()})
+
+
+@method_decorator(login_required, name="dispatch")
+class AddressCreateView(View):
+    template_name = "accounts/address_form.html"
+
+    def get(self, request):
+        form = AddressForm()
+        return render(request, self.template_name, {"form": form})
+
+    def post(self, request):
+        profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
+        form = AddressForm(request.POST)
+        if form.is_valid():
+            addr = form.save(commit=False)
+            addr.profile = profile
+            if addr.is_default:
+                profile.addresses.update(is_default=False)
+            addr.save()
+            messages.success(request, "Adresse ajoutee.")
+            return redirect("accounts:addresses")
+        return render(request, self.template_name, {"form": form})
+
+
+@method_decorator(login_required, name="dispatch")
+class AddressUpdateView(View):
+    template_name = "accounts/address_form.html"
+
+    def get(self, request, pk):
+        profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
+        addr = get_object_or_404(Address, pk=pk, profile=profile)
+        form = AddressForm(instance=addr)
+        return render(request, self.template_name, {"form": form, "address": addr})
+
+    def post(self, request, pk):
+        profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
+        addr = get_object_or_404(Address, pk=pk, profile=profile)
+        form = AddressForm(request.POST, instance=addr)
+        if form.is_valid():
+            addr = form.save(commit=False)
+            if addr.is_default:
+                profile.addresses.update(is_default=False)
+            addr.save()
+            messages.success(request, "Adresse mise a jour.")
+            return redirect("accounts:addresses")
+        return render(request, self.template_name, {"form": form, "address": addr})
+
+
+@method_decorator(login_required, name="dispatch")
+class UsersListView(ListView):
+    template_name = "accounts/users.html"
+    model = User
+    context_object_name = "users"
+    paginate_by = 20
+
+    def dispatch(self, request, *args, **kwargs):
+        if not is_manager(request.user):
+            return HttpResponseForbidden("Acces interdit")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        role = self.request.GET.get("role")
+        q = self.request.GET.get("q")
+        if role == "client":
+            qs = qs.filter(groups__isnull=True, is_staff=False)
+        elif role:
+            qs = qs.filter(groups__name=role)
+        if q:
+            qs = qs.filter(
+                username__icontains=q
+            )
+        return qs.order_by("-date_joined")
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["query"] = self.request.GET.get("q", "")
+        ctx["role_filter"] = self.request.GET.get("role", "")
+        ctx["roles"] = [r[0] for r in ROLE_CHOICES]
+        return ctx
+
+
+@method_decorator(login_required, name="dispatch")
+class StaffCreateView(View):
+    template_name = "accounts/staff_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not is_manager(request.user):
+            return HttpResponseForbidden("Acces interdit")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request):
+        form = StaffCreateForm()
+        return render(request, self.template_name, {"form": form})
+
+    def post(self, request):
+        form = StaffCreateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Utilisateur staff cree.")
+            return redirect("accounts:users")
+        return render(request, self.template_name, {"form": form})
 
 
 @login_required
-def users_list(request):
-    q = request.GET.get("q", "").strip()
-    users_qs = User.objects.all().order_by("-date_joined")
-    if q:
-        users_qs = users_qs.filter(
-            Q(first_name__icontains=q)
-            | Q(last_name__icontains=q)
-            | Q(username__icontains=q)
-            | Q(email__icontains=q)
-        )
-    paginator = Paginator(users_qs, 10)
-    page_obj = paginator.get_page(request.GET.get("page"))
+def toggle_user_active(request, pk):
+    if not is_manager(request.user):
+        return HttpResponseForbidden("Acces interdit")
+    user = get_object_or_404(User, pk=pk)
+    user.is_active = not user.is_active
+    user.save(update_fields=["is_active"])
+    messages.success(request, "Statut utilisateur mis a jour.")
+    return redirect("accounts:users")
 
-    def role_for(u):
-        if u.is_superuser:
-            return "Admin"
-        if u.groups.filter(name="moderateur").exists():
-            return "Modérateur"
-        return "Utilisateur"
 
-    return render(
-        request,
-        "accounts/users_list.html",
-        {"page_obj": page_obj, "q": q, "role_for": role_for},
-    )
+class SimplePage(TemplateView):
+    pass

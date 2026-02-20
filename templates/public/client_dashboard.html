@@ -1,0 +1,74 @@
+{% extends "base_public.html" %}
+{% block title %}Mon espace — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <h2>Mon espace</h2>
+    <p class="muted">Suivi des commandes et réservations.</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a class="btn" href="{% url 'public:menu' %}">Commander maintenant</a>
+    <a class="btn-outline" href="{% url 'reservations:client_new' %}">Réserver une table</a>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Commande en cours</h3>
+    {% if last_order %}
+      <p><strong>#{{ last_order.id }}</strong> • {{ last_order.get_status_display }}</p>
+      <p class="muted">{{ last_order.get_order_type_display }}</p>
+      <a class="btn-outline" href="{% url 'public:orders' %}">Voir mes commandes</a>
+    {% else %}
+      <p class="muted">Aucune commande en cours.</p>
+    {% endif %}
+  </div>
+  <div class="card">
+    <h3>Dernière réservation</h3>
+    {% if last_res %}
+      <p>{{ last_res.reservation_datetime|date:"d/m H:i" }} • {{ last_res.party_size }} pers</p>
+      <p class="muted">Statut : {{ last_res.get_status_display }}</p>
+      <a class="btn-outline" href="{% url 'reservations:client_detail' last_res.id %}">Voir détail</a>
+    {% else %}
+      <p class="muted">Aucune réservation.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="grid" style="margin-top:12px;">
+  <div class="card">
+    <h3>Mes commandes récentes</h3>
+    <div style="display:grid;gap:8px;">
+      {% for o in recent_orders %}
+        <div class="row">
+          <span>{{ o.created_at|date:"d/m" }} • #{{ o.id }}</span>
+          <span>{{ o.get_status_display }}</span>
+        </div>
+      {% empty %}
+        <p class="muted">Aucune commande.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Mes réservations</h3>
+    <div style="display:grid;gap:8px;">
+      {% for r in recent_reservations %}
+        <div class="row">
+          <span>{{ r.reservation_datetime|date:"d/m H:i" }}</span>
+          <span>{{ r.get_status_display }}</span>
+        </div>
+      {% empty %}
+        <p class="muted">Aucune réservation.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <h3>Profil rapide</h3>
+  <p><strong>Téléphone:</strong> {{ profile.phone|default:'-' }}</p>
+  <p><strong>Email:</strong> {{ request.user.email|default:'-' }}</p>
+  <a class="btn-outline" href="{% url 'accounts:profile' %}">Modifier profil</a>
+</div>
+{% endblock %}

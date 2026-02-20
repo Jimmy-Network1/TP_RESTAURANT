@@ -1,71 +1,96 @@
-from collections import defaultdict
-
 from django.contrib import messages
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, User
 from django.db.models import Count, Q
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, render, redirect
+from django.utils import timezone
 
-from sales.models import Order
+from accounts.models import CustomerProfile
+from orders.models import Order, OrderItem, OrderStatusLog
 
-User = get_user_model()
+
+def _courier_queryset():
+    group = Group.objects.filter(name__iexact="Livreur").first()
+    if group:
+        return group.user_set.all()
+    return User.objects.all()
 
 
 def clients_list(request):
-    q = request.GET.get('q', '').strip()
-    customers = (
-        Order.objects.filter(order_type=Order.TYPE_DELIVERY)
-        .values('customer_name', 'customer_phone', 'delivery_address')
-        .annotate(total=Count('id'))
-        .order_by('-total')
-    )
-    if q:
-        customers = customers.filter(
-            Q(customer_name__icontains=q)
-            | Q(customer_phone__icontains=q)
-            | Q(delivery_address__icontains=q)
-        )
-    return render(request, 'delivery/clients_list.html', {'customers': customers, 'q': q})
-
-
-def client_detail(request, phone):
-    orders = (
-        Order.objects.filter(customer_phone=phone, order_type=Order.TYPE_DELIVERY)
-        .order_by('-created_at')
-        .select_related('assigned_delivery')
-    )
-    customer = orders.first()
-    return render(request, 'delivery/client_detail.html', {'orders': orders, 'customer': customer, 'phone': phone})
+    clients = CustomerProfile.objects.annotate(order_count=Count("orders")).select_related("user")
+    return render(request, "delivery/clients.html", {"clients": clients})
 
 
 def deliveries_list(request):
-    status = request.GET.get('status', '')
-    deliveries = (
-        Order.objects.filter(order_type=Order.TYPE_DELIVERY)
-        .select_related('assigned_delivery')
-        .order_by('-created_at')
-    )
+    status = request.GET.get("status", "")
+    q = request.GET.get("q", "")
+    qs = Order.objects.filter(order_type=Order.TYPE_DELIVERY).select_related("customer", "delivery_address", "assigned_delivery")
     if status:
-        deliveries = deliveries.filter(status=status)
-    return render(request, 'delivery/deliveries_list.html', {'deliveries': deliveries, 'status': status})
+        qs = qs.filter(status=status)
+    if q:
+        qs = qs.filter(
+            Q(id__icontains=q) | Q(customer__username__icontains=q)
+        )
+
+    counters = {
+        "preparing": qs.filter(status=Order.STATUS_PREPARING).count(),
+        "ready": qs.filter(status=Order.STATUS_READY).count(),
+        "on_route": qs.filter(status=Order.STATUS_ON_ROUTE).count(),
+        "done": qs.filter(status=Order.STATUS_DONE).count(),
+    }
+    return render(request, "delivery/deliveries.html", {"orders": qs, "status": status, "q": q, "counters": counters})
 
 
-def couriers_list(request):
-    couriers = User.objects.filter(groups__name__iexact='coursier').order_by('username')
-    return render(request, 'delivery/couriers_list.html', {'couriers': couriers})
+def delivery_detail(request, pk):
+    order = get_object_or_404(Order, pk=pk, order_type=Order.TYPE_DELIVERY)
+    items = order.items.select_related("dish")
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "delivered" and order.status == Order.STATUS_ON_ROUTE:
+            order.status = Order.STATUS_DONE
+            order.save(update_fields=["status"])
+            OrderStatusLog.objects.create(order=order, status=order.status, actor=request.user)
+            messages.success(request, "Commande marquee livree.")
+            return redirect("delivery:detail", pk=order.id)
+        if action == "issue":
+            reason = request.POST.get("reason", "").strip()[:200]
+            OrderStatusLog.objects.create(order=order, status=order.status, actor=request.user, reason=reason)
+            messages.warning(request, "Probleme enregistre.")
+            return redirect("delivery:detail", pk=order.id)
+    return render(request, "delivery/detail.html", {"order": order, "items": items})
 
 
-def assign(request):
-    couriers = User.objects.filter(groups__name__iexact='coursier').order_by('username')
-    pending = Order.objects.filter(order_type=Order.TYPE_DELIVERY).exclude(status=Order.STATUS_CLOSED).order_by(
-        '-created_at'
-    )
-    if request.method == 'POST':
-        courier_id = request.POST.get('courier')
-        order_id = request.POST.get('order')
-        courier = get_object_or_404(User, pk=courier_id)
-        order = get_object_or_404(Order, pk=order_id)
-        order.assigned_delivery = courier
-        order.save(update_fields=['assigned_delivery'])
-        messages.success(request, f"Commande #{order.id} assignée à {courier.username}.")
-        return redirect('delivery:deliveries')
-    return render(request, 'delivery/assign.html', {'couriers': couriers, 'orders': pending})
+def assign_view(request):
+    ready_orders = Order.objects.filter(order_type=Order.TYPE_DELIVERY, status=Order.STATUS_READY).select_related("delivery_address")
+    couriers_qs = _courier_queryset()
+    couriers = []
+    for c in couriers_qs:
+        active = Order.objects.filter(assigned_delivery=c, status=Order.STATUS_ON_ROUTE).exists()
+        couriers.append({"user": c, "status": "busy" if active else "free"})
+
+    if request.method == "POST":
+        order_id = request.POST.get("order_id")
+        courier_id = request.POST.get("courier_id")
+        order = Order.objects.filter(id=order_id, status=Order.STATUS_READY).first()
+        courier = couriers_qs.filter(id=courier_id).first()
+        if not order:
+            messages.error(request, "Commande non prete.")
+        elif not courier:
+            messages.error(request, "Livreur invalide.")
+        else:
+            order.assigned_delivery = courier
+            order.status = Order.STATUS_ON_ROUTE
+            order.save(update_fields=["assigned_delivery", "status"])
+            OrderStatusLog.objects.create(order=order, status=order.status, actor=request.user)
+            messages.success(request, "Livreur attribue.")
+            return redirect("delivery:deliveries")
+
+    return render(request, "delivery/assign.html", {"orders": ready_orders, "couriers": couriers})
+
+
+def couriers_view(request):
+    couriers_qs = _courier_queryset()
+    couriers = []
+    for c in couriers_qs:
+        active = Order.objects.filter(assigned_delivery=c, status=Order.STATUS_ON_ROUTE).exists()
+        couriers.append({"user": c, "status": "busy" if active else "free"})
+    return render(request, "delivery/couriers.html", {"couriers": couriers})

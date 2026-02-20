@@ -1,0 +1,65 @@
+{% extends "base_staff.html" %}
+{% block title %}Categories — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .cat-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .cat-card{border:1px solid #eee;border-radius:12px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .cat-label{display:flex;align-items:center;gap:10px;font-weight:700;}
+  .cat-dot{width:10px;height:10px;border-radius:50%;background:var(--green);} 
+</style>
+
+<div class="cat-head">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Catalogue</p>
+    <h2>Categories</h2>
+    <p class="muted">Organiser le menu par categories.</p>
+  </div>
+  <a class="btn" href="#">Ajouter categorie</a>
+</div>
+
+<div class="grid" style="grid-template-columns:1.2fr 2fr;gap:12px;margin-top:12px;">
+  <div class="card">
+    <h4 style="margin-top:0;">Nouvelle categorie</h4>
+    <form method="post" class="form" style="display:grid;gap:10px;">
+      {% csrf_token %}
+      <div>
+        {{ form.name.label_tag }}
+        {{ form.name }}
+      </div>
+      <div>
+        {{ form.description.label_tag }}
+        {{ form.description }}
+      </div>
+      <div>
+        <label>Active {{ form.is_active }}</label>
+      </div>
+      <button class="btn" type="submit">Enregistrer</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0;">Liste des categories</h4>
+    <div style="display:grid;gap:10px;">
+      {% for c in categories %}
+        <div class="cat-card">
+          <div class="cat-label">
+            <span class="cat-dot"></span>
+            <div>
+              <div>{{ c.name }}</div>
+              <div class="muted">{{ c.description|default:'-' }}</div>
+              <div class="muted">Produits actifs: —</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <span class="pill {% if c.is_active %}pill-ok{% else %}pill-off{% endif %}">{% if c.is_active %}Active{% else %}Inactive{% endif %}</span>
+            <a class="icon-btn" href="#">Edit</a>
+            <a class="icon-btn" href="#">Off</a>
+          </div>
+        </div>
+      {% empty %}
+        <div class="empty">Aucune categorie.</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

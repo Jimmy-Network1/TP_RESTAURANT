@@ -1,0 +1,118 @@
+{% extends "base_staff.html" %}
+{% block title %}{% if create %}Ajouter un produit{% else %}Modifier : {{ dish.name }}{% endif %}{% endblock %}
+{% block content %}
+<style>
+  .form-shell{display:grid;gap:14px;}
+  .form-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .form-head h2{margin:0;}
+  .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+  .preview{border:1px dashed #d7d7d7;border-radius:12px;padding:12px;display:grid;gap:8px;align-content:start;}
+  .preview img{width:100%;max-width:180px;border-radius:10px;border:1px solid #eee;object-fit:cover;}
+  .switch{position:relative;display:inline-flex;align-items:center;gap:10px;}
+  .switch input{display:none;}
+  .switch .track{width:46px;height:26px;background:#ddd;border-radius:999px;position:relative;transition:background .2s ease;}
+  .switch .thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s ease;box-shadow:0 4px 10px rgba(0,0,0,0.2);} 
+  .switch input:checked + .track{background:var(--green);} 
+  .switch input:checked + .track .thumb{transform:translateX(20px);} 
+  .header-strip{background:linear-gradient(90deg,#2b8a57 0%, #3aa768 100%);border-radius:12px;padding:12px 14px;border:1px solid #3aa768;color:#fff;}
+</style>
+
+<div class="form-shell">
+  <div class="header-strip">
+    <div class="form-head">
+      <div>
+        <h2>{% if create %}Ajouter un nouveau produit{% else %}Modifier le produit{% endif %}</h2>
+        <p class="muted" style="color:#e8f7ef;">Completez les informations du plat et ses options.</p>
+      </div>
+      <a class="btn-outline" href="{% url 'menu:list' %}" style="border-color:#e8f7ef;color:#e8f7ef;">Retour</a>
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:2fr 1fr;gap:12px;">
+    <div class="card">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-grid">
+          <div>
+            <label>Nom du produit</label>
+            {{ form.name }}
+            {{ form.name.errors }}
+          </div>
+          <div>
+            <label>Categorie</label>
+            {{ form.category }}
+            {{ form.category.errors }}
+          </div>
+          <div>
+            <label>Prix</label>
+            {{ form.price }}
+            {{ form.price.errors }}
+          </div>
+          <div>
+            <label>Disponibilite</label>
+            {{ form.availability }}
+            {{ form.availability.errors }}
+          </div>
+        </div>
+        <div style="margin-top:12px;">
+          <label>Description</label>
+          {{ form.description }}
+          {{ form.description.errors }}
+        </div>
+        <div class="form-grid" style="margin-top:12px;">
+          <div>
+            <label>Image</label>
+            {{ form.photo }}
+            {{ form.photo.errors }}
+          </div>
+          <div>
+            <label>Statut</label>
+            <label class="switch">
+              {{ form.is_active }}
+              <span class="track"><span class="thumb"></span></span>
+              <span class="muted">Actif</span>
+            </label>
+            {{ form.is_active.errors }}
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px;background:#f8f9fb;">
+          <div class="section-title" style="margin-bottom:8px;"><h3 style="margin:0;">Options / Supplements</h3></div>
+          <div class="form-grid">
+            <select class="form-control" multiple>
+              <option>Extra fromage</option>
+              <option>Champignons</option>
+              <option>Sauce piquante</option>
+            </select>
+            <div class="muted">Selection multiple possible.</div>
+          </div>
+        </div>
+
+        {% if not create %}
+          <div class="card" style="margin-top:14px;background:#fff7e6;">
+            <strong>Note:</strong> Les commandes passees conservent l'ancien prix.
+          </div>
+        {% endif %}
+
+        <div style="display:flex;gap:10px;margin-top:12px;">
+          <button class="btn" type="submit">{% if create %}Enregistrer{% else %}Sauvegarder{% endif %}</button>
+          <a class="btn-outline" href="{% url 'menu:list' %}">Annuler</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h4 style="margin-top:0;">Apercu produit</h4>
+      <div class="preview">
+        {% if dish.photo %}
+          <img src="{{ dish.photo.url }}">
+        {% endif %}
+        <div>
+          <strong>{{ dish.name|default:'Nom du produit' }}</strong>
+          <p class="muted">{{ dish.description|default:'Description courte du produit.' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

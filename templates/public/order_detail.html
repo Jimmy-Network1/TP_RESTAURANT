@@ -1,0 +1,66 @@
+{% extends "base_public.html" %}
+{% block title %}Commande — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <h2>Commande #1024</h2>
+    <p class="muted">20/02 12:42 • Livraison</p>
+  </div>
+  <span class="status status-ok">EN_ATTENTE</span>
+</div>
+
+<div class="grid" style="grid-template-columns:1.4fr 1fr;gap:12px;">
+  <div class="card">
+    <h3 style="margin-top:0;">Articles</h3>
+    <div class="cart-list">
+      <div class="cart-item">
+        <div>
+          <strong>Burger classique</strong>
+          <div class="muted">Fromage, Champignons</div>
+        </div>
+        <div><strong>2 x 8 000</strong></div>
+      </div>
+      <div class="cart-item">
+        <div>
+          <strong>Frites</strong>
+          <div class="muted">Sans piment</div>
+        </div>
+        <div><strong>1 x 4 000</strong></div>
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <strong>Adresse:</strong> Bonapriso, Douala
+    </div>
+    <div class="muted">Frais livraison: 0 FCFA</div>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Total</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Sous-total</span>
+      <strong>28 000</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Livraison</span>
+      <strong>0</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:18px;margin-top:8px;">
+      <span>Total</span>
+      <strong>32 000 FCFA</strong>
+    </div>
+    <button class="btn" style="width:100%;margin-top:12px;">Annuler (si EN_ATTENTE)</button>
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <h3 style="margin-top:0;">Timeline</h3>
+  <div class="menu-filters">
+    <span class="chip active">EN_ATTENTE</span>
+    <span class="chip">EN_PREPARATION</span>
+    <span class="chip">PRETE</span>
+    <span class="chip">EN_LIVRAISON</span>
+    <span class="chip">LIVREE</span>
+  </div>
+  <p class="muted" style="margin-top:8px;">Annulation impossible apres demarrage cuisine.</p>
+</div>
+{% endblock %}

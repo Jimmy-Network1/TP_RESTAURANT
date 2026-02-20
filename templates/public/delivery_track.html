@@ -1,0 +1,34 @@
+{% extends "base_public.html" %}
+{% block title %}Suivi livraison — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <h2>Suivi livraison</h2>
+    <p class="muted">Etat en temps reel de votre commande.</p>
+  </div>
+</div>
+
+{% if not order %}
+  <div class="card">Livraison introuvable.</div>
+{% else %}
+<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:12px;">
+  <div class="card">
+    <h3 style="margin-top:0;">Commande #{{ order.id }}</h3>
+    <p class="muted">{{ order.created_at|date:"d/m H:i" }}</p>
+    <div class="menu-filters">
+      <span class="chip">EN_ATTENTE</span>
+      <span class="chip">EN_PREPARATION</span>
+      <span class="chip">PRETE</span>
+      <span class="chip">EN_LIVRAISON</span>
+      <span class="chip">LIVREE</span>
+    </div>
+    <p class="muted" style="margin-top:8px;">Adresse: {{ order.delivery_address|default:'-' }}</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0;">Livreur</h3>
+    <p class="muted">{{ order.assigned_delivery.username|default:'Non assigne' }}</p>
+    <a class="btn-outline" href="{% url 'public:order_detail' order.id %}">Voir detail commande</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

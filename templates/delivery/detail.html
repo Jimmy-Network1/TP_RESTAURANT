@@ -1,0 +1,54 @@
+{% extends "base_staff.html" %}
+{% block title %}Livraison — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Livraison</p>
+    <h2>Commande #{{ order.id }}</h2>
+    <p class="muted">{{ order.created_at|date:"d/m H:i" }} • {{ order.get_status_display }}</p>
+  </div>
+  <a class="btn-outline" href="{% url 'delivery:deliveries' %}">Retour</a>
+</div>
+
+<div class="grid" style="grid-template-columns:1.4fr 1fr;gap:12px;">
+  <div class="card">
+    <h4 style="margin-top:0;">Commande</h4>
+    <div class="cart-list">
+      {% for item in items %}
+        <div class="cart-item"><div>{{ item.dish.name }} x{{ item.quantity }}</div><div>{{ item.line_total }}</div></div>
+      {% empty %}
+        <div class="muted">Aucun article.</div>
+      {% endfor %}
+    </div>
+    <div style="margin-top:10px;">
+      <strong>Adresse:</strong> {{ order.delivery_address|default:'-' }}
+    </div>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0;">Actions</h4>
+    <form method="post">
+      {% csrf_token %}
+      <button class="btn" name="action" value="delivered" {% if order.status != 'EN_ROUTE' %}disabled{% endif %}>Marquer livree</button>
+    </form>
+    <form method="post" style="margin-top:10px;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="issue">
+      <label>Signaler probleme</label>
+      <input class="form-control" name="reason" maxlength="200" placeholder="Client absent, adresse...">
+      <button class="btn-outline" style="margin-top:8px;">Enregistrer</button>
+    </form>
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <h4 style="margin-top:0;">Timeline</h4>
+  <div class="menu-filters">
+    <span class="chip">EN_ATTENTE</span>
+    <span class="chip">EN_PREPARATION</span>
+    <span class="chip">PRETE</span>
+    <span class="chip">EN_LIVRAISON</span>
+    <span class="chip">LIVREE</span>
+  </div>
+</div>
+{% endblock %}

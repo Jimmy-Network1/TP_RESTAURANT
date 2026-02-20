@@ -1,0 +1,75 @@
+{% extends "base_staff.html" %}
+{% block title %}Historique paiements — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .hist-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .hist-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+  .hist-table td{background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;}
+  .hist-table td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
+  .hist-table td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
+</style>
+
+<div class="hist-head">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Caisse</p>
+    <h2>Historique des paiements</h2>
+    <p class="muted">Suivi de toutes les transactions.</p>
+  </div>
+  <a class="btn" href="{% url 'billing:cashdesk' %}">Caisse</a>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <form method="get" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;">
+    <div>
+      <label>Du</label>
+      <input class="form-control" type="date">
+    </div>
+    <div>
+      <label>Au</label>
+      <input class="form-control" type="date">
+    </div>
+    <div>
+      <button class="btn" type="submit">Filtrer</button>
+    </div>
+  </form>
+
+  <table class="hist-table" style="margin-top:12px;">
+    <thead>
+      <tr>
+        <th>Facture</th>
+        <th>Mode</th>
+        <th>Montant</th>
+        <th>Date</th>
+        <th>Caissier</th>
+        <th style="text-align:right;padding-right:14px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>#F-1024</td>
+        <td><span class="pill pill-ok">Especes</span></td>
+        <td>32 000 FCFA</td>
+        <td>20/02 12:50</td>
+        <td>Fatou</td>
+        <td><div class="actions"><a class="icon-btn" href="#">Voir</a></div></td>
+      </tr>
+      <tr>
+        <td>#F-1025</td>
+        <td><span class="pill pill-card">Carte</span></td>
+        <td>58 900 FCFA</td>
+        <td>20/02 12:54</td>
+        <td>Anna B.</td>
+        <td><div class="actions"><a class="icon-btn" href="#">Voir</a></div></td>
+      </tr>
+      <tr>
+        <td>#F-1026</td>
+        <td><span class="pill pill-momo">Mobile Money</span></td>
+        <td>12 000 FCFA</td>
+        <td>20/02 13:02</td>
+        <td>Junior</td>
+        <td><div class="actions"><a class="icon-btn" href="#">Voir</a></div></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

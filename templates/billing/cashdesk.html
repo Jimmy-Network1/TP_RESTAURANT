@@ -1,0 +1,46 @@
+{% extends "base_staff.html" %}
+{% block title %}Caisse — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .cash-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .cash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+  .cash-card{border:1px solid #eee;border-radius:16px;background:#fff;padding:14px;box-shadow:0 12px 24px rgba(0,0,0,0.06);} 
+</style>
+
+<div class="cash-head">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Caisse</p>
+    <h2>Ouverture / fermeture</h2>
+    <p class="muted">Suivi des sessions de caisse.</p>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a class="btn" href="#">Ouvrir caisse</a>
+    <a class="btn-outline" href="#">Fermer caisse</a>
+  </div>
+</div>
+
+<div class="cash-grid" style="margin-top:12px;">
+  <div class="cash-card">
+    <div class="muted">Montant initial</div>
+    <div style="font-size:20px;font-weight:800;">20 000 FCFA</div>
+  </div>
+  <div class="cash-card">
+    <div class="muted">Total ventes</div>
+    <div style="font-size:20px;font-weight:800;">98 500 FCFA</div>
+  </div>
+  <div class="cash-card">
+    <div class="muted">Paiements</div>
+    <div style="font-size:20px;font-weight:800;">23</div>
+  </div>
+  <div class="cash-card">
+    <div class="muted">Difference caisse</div>
+    <div style="font-size:20px;font-weight:800;">0 FCFA</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <h4 style="margin-top:0;">Generer un resume</h4>
+  <p class="muted">Export future (PDF / CSV).</p>
+  <a class="btn" href="#">Generer resume</a>
+</div>
+{% endblock %}

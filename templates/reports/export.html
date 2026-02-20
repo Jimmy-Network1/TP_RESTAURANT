@@ -1,30 +1,46 @@
 {% extends "base_staff.html" %}
-{% block title %}Export rapports — Saveur 237{% endblock %}
+{% block title %}Export rapports{% endblock %}
 {% block content %}
 <div class="section-title">
-    <div>
-        <p class="kicker">Reports</p>
-        <h2>Export de rapports</h2>
-        <p class="muted">Choisissez période et format.</p>
-    </div>
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Reports</p>
+    <h2>Export rapports</h2>
+    <p class="muted">Générez un fichier PDF ou CSV.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'reports:dashboard' %}">Retour</a>
 </div>
 
 <div class="card">
-    <form class="form">
-        <div class="grid grid-3">
-            <label>Du<input type="date" name="from" class="form-control"></label>
-            <label>Au<input type="date" name="to" class="form-control"></label>
-            <label>Format
-                <select class="form-control" name="format">
-                    <option>PDF</option>
-                    <option>CSV</option>
-                </select>
-            </label>
-        </div>
-        <div class="table-actions" style="margin-top:12px;">
-            <button class="btn" type="button">Exporter</button>
-            <a class="btn-outline" href="{% url 'reports:dashboard' %}">Retour</a>
-        </div>
-    </form>
+  <form>
+    <div class="grid">
+      <div class="form-row">
+        <label>Date début</label>
+        <input class="form-control" type="date">
+      </div>
+      <div class="form-row">
+        <label>Date fin</label>
+        <input class="form-control" type="date">
+      </div>
+    </div>
+    <div class="grid">
+      <div class="form-row">
+        <label>Rapport</label>
+        <select class="form-control">
+          <option>Ventes</option>
+          <option>Produits</option>
+          <option>Livraisons</option>
+          <option>Cuisine</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Format</label>
+        <select class="form-control">
+          <option>PDF</option>
+          <option>CSV</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn" type="button">Exporter</button>
+  </form>
 </div>
 {% endblock %}

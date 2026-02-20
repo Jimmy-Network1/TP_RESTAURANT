@@ -1,0 +1,64 @@
+{% extends "base_staff.html" %}
+{% block title %}Transfert / Fusion — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .transfer-shell{display:grid;gap:14px;}
+  .action-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+  .action-card{border:1px solid #eee;border-radius:14px;padding:12px;background:#fff;box-shadow:0 10px 24px rgba(0,0,0,0.06);transition:transform .15s ease, box-shadow .15s ease;}
+  .action-card:hover{transform:translateY(-2px);box-shadow:0 16px 30px rgba(0,0,0,0.12);} 
+  .action-card input{margin-right:6px;}
+  .action-title{font-weight:800;margin:0 0 6px;}
+</style>
+
+<div class="transfer-shell">
+  <div class="section-title">
+    <div>
+      <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Salle</p>
+      <h2>Transfert / fusion des tables</h2>
+      <p class="muted">Deplacez une commande ou regroupez deux tables.</p>
+    </div>
+    <a class="btn-outline" href="{% url 'tables:plan' %}">Retour plan</a>
+  </div>
+
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      <div class="action-cards">
+        <label class="action-card">
+          <div class="action-title">Transferer commande</div>
+          <div class="muted">Deplacer la commande active vers une autre table.</div>
+          <div style="margin-top:8px;">
+            <input type="radio" name="action" value="transfer" {% if form.action.value == 'transfer' or not form.action.value %}checked{% endif %}> Transferer
+          </div>
+        </label>
+        <label class="action-card">
+          <div class="action-title">Fusionner tables</div>
+          <div class="muted">Regrouper deux tables pour un seul service.</div>
+          <div style="margin-top:8px;">
+            <input type="radio" name="action" value="merge" {% if form.action.value == 'merge' %}checked{% endif %}> Fusionner
+          </div>
+        </label>
+      </div>
+      {{ form.action.errors }}
+
+      <div class="grid" style="margin-top:14px;">
+        <div class="form-row">
+          <label>Table source</label>
+          {{ form.source }}
+          {{ form.source.errors }}
+        </div>
+        <div class="form-row">
+          <label>Table destination</label>
+          {{ form.destination }}
+          {{ form.destination.errors }}
+        </div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:10px;">
+        <button class="btn" type="submit">Confirmer</button>
+        <a class="btn-outline" href="{% url 'tables:plan' %}">Annuler</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
