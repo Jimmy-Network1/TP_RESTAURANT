@@ -3,6 +3,7 @@ from django.utils import timezone
 
 from tablesapp.models import Table
 from .models import Reservation
+from .utils import is_in_opening_hours, is_valid_slot, conflict_window, active_reservations_qs
 
 
 class ClientReservationForm(forms.ModelForm):
@@ -20,6 +21,10 @@ class ClientReservationForm(forms.ModelForm):
         dt = self.cleaned_data.get("reservation_datetime")
         if dt and dt < timezone.now():
             raise forms.ValidationError("Impossible de reserver dans le passe.")
+        if dt and not is_valid_slot(dt):
+            raise forms.ValidationError("Créneau invalide. Merci de choisir une tranche de 30 minutes.")
+        if dt and not is_in_opening_hours(dt):
+            raise forms.ValidationError("Créneau hors horaires d'ouverture.")
         return dt
 
     def clean(self):
@@ -30,18 +35,14 @@ class ClientReservationForm(forms.ModelForm):
         if not dt or not party_size:
             return cleaned
 
-        window_start = dt - timezone.timedelta(hours=2)
-        window_end = dt + timezone.timedelta(hours=2)
+        window_start, window_end = conflict_window(dt)
 
         tables_qs = Table.objects.filter(active=True, capacity__gte=party_size)
         if zone:
             tables_qs = tables_qs.filter(zone=zone)
 
         available_tables = tables_qs.count()
-        existing = Reservation.objects.filter(
-            status__in=[Reservation.STATUS_PENDING, Reservation.STATUS_CONFIRMED],
-            reservation_datetime__range=(window_start, window_end),
-        )
+        existing = active_reservations_qs().filter(reservation_datetime__range=(window_start, window_end))
         if zone:
             existing = existing.filter(zone=zone)
 
@@ -65,6 +66,11 @@ class StaffReservationUpdateForm(forms.ModelForm):
         cleaned = super().clean()
         table = cleaned.get("table")
         reservation = self.instance
+        if reservation.status in [Reservation.STATUS_CANCELLED, Reservation.STATUS_COMPLETED, Reservation.STATUS_NO_SHOW]:
+            raise forms.ValidationError("Réservation clôturée : modification interdite.")
+        new_status = cleaned.get("status") or reservation.status
+        if reservation.status == Reservation.STATUS_CONFIRMED and new_status == Reservation.STATUS_PENDING:
+            raise forms.ValidationError("Impossible de revenir à 'En attente' après confirmation.")
         if table:
             if not table.active:
                 self.add_error("table", "Cette table est inactive.")
@@ -72,4 +78,11 @@ class StaffReservationUpdateForm(forms.ModelForm):
                 self.add_error("table", "Cette table est déjà occupée.")
             if reservation.party_size and table.capacity < reservation.party_size:
                 self.add_error("table", "Capacité insuffisante pour cette table.")
+            window_start, window_end = conflict_window(reservation.reservation_datetime)
+            conflicts = active_reservations_qs().filter(
+                table=table,
+                reservation_datetime__range=(window_start, window_end),
+            ).exclude(id=reservation.id)
+            if conflicts.exists():
+                self.add_error("table", "Cette table est déjà réservée sur ce créneau.")
         return cleaned

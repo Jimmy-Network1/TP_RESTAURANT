@@ -10,9 +10,13 @@ from tablesapp.models import Table
 from .forms import OrderForm
 from kitchen.models import KitchenUpdate
 from .models import Order, OrderItem, OrderStatusLog, OrderNotification
+from .utils import can_transition, can_edit_order, is_manager, log_transition, is_staff_user
 
 
 def list_view(request):
+    if not is_staff_user(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     qs = Order.objects.select_related("table", "customer").order_by("-created_at")
     status = request.GET.get("status", "")
     source = request.GET.get("source", "")
@@ -48,16 +52,25 @@ def list_view(request):
 
 
 def history_view(request):
+    if not is_staff_user(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     qs = Order.objects.filter(status__in=[Order.STATUS_DONE, Order.STATUS_PAID, Order.STATUS_CANCELLED]).order_by("-created_at")
     return render(request, "orders/history.html", {"orders": qs})
 
 
 def delivery_view(request):
+    if not is_staff_user(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     qs = Order.objects.filter(order_type=Order.TYPE_DELIVERY).order_by("-created_at")
     return render(request, "orders/delivery.html", {"orders": qs})
 
 
 def detail_view(request, pk):
+    if not is_staff_user(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     order = get_object_or_404(Order, pk=pk)
     items = order.items.select_related("dish")
     logs = order.status_logs.all()
@@ -65,11 +78,20 @@ def detail_view(request, pk):
     return render(
         request,
         "orders/detail.html",
-        {"order": order, "items": items, "logs": logs, "total": total},
+        {
+            "order": order,
+            "items": items,
+            "logs": logs,
+            "total": total,
+            "can_cancel": is_manager(request.user) and order.status not in [Order.STATUS_PAID, Order.STATUS_CANCELLED],
+        },
     )
 
 
 def new_view(request):
+    if not is_staff_user(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     tables = Table.objects.all()
     reservations = Reservation.objects.filter(status=Reservation.STATUS_CONFIRMED).order_by("reservation_datetime")
 
@@ -111,11 +133,35 @@ def new_view(request):
 
 
 def edit_view(request, pk):
+    if not is_staff_user(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     order = get_object_or_404(Order, pk=pk)
+    if not can_edit_order(request.user, order):
+        messages.error(request, "Modification non autorisée pour ce statut.")
+        return redirect("orders:detail", pk=order.id)
     if request.method == "POST":
         form = OrderForm(request.POST, instance=order)
+        if not is_manager(request.user):
+            form.fields.pop("status", None)
         if form.is_valid():
-            order = form.save()
+            new_status = form.cleaned_data.get("status", order.status)
+            cancel_reason = request.POST.get("cancel_reason", "").strip()
+            if not is_manager(request.user) and order.status != Order.STATUS_DRAFT:
+                if form.cleaned_data.get("order_type") != order.order_type or form.cleaned_data.get("table") != order.table:
+                    messages.error(request, "Modification de type/table non autorisée après validation.")
+                    return render(request, "orders/edit.html", {"form": form, "order": order})
+            if new_status != order.status:
+                if new_status == Order.STATUS_CANCELLED and not cancel_reason:
+                    messages.error(request, "Raison d'annulation obligatoire.")
+                    return render(request, "orders/edit.html", {"form": form, "order": order})
+                if not can_transition(request.user, order, new_status):
+                    messages.error(request, "Transition de statut non autorisée.")
+                    return render(request, "orders/edit.html", {"form": form, "order": order})
+            old_status = order.status
+            order = form.save(commit=False)
+            order.status = new_status
+            order.save()
             if order.status in [Order.STATUS_PENDING, Order.STATUS_PREPARING]:
                 KitchenUpdate.objects.create(
                     order=order,
@@ -123,26 +169,40 @@ def edit_view(request, pk):
                     note="Modification après envoi cuisine",
                     created_by=request.user if request.user.is_authenticated else None,
                 )
-            OrderStatusLog.objects.create(
-                order=order,
-                status=order.status,
-                actor=request.user if request.user.is_authenticated else None,
-                reason="Modification",
-            )
+            if old_status != order.status:
+                log_transition(order, request.user, old_status, order.status, reason=cancel_reason or "Modification")
+            else:
+                OrderStatusLog.objects.create(
+                    order=order,
+                    status=order.status,
+                    actor=request.user if request.user.is_authenticated else None,
+                    reason="Modification",
+                )
             messages.success(request, "Commande mise a jour.")
             return redirect("orders:detail", pk=order.id)
     else:
         form = OrderForm(instance=order)
+        if not is_manager(request.user):
+            form.fields.pop("status", None)
     return render(request, "orders/edit.html", {"form": form, "order": order})
 
 
 def notifications_view(request):
+    if not is_staff_user(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     notifications = OrderNotification.objects.all()[:50]
     return render(request, "orders/notifications.html", {"notifications": notifications})
 
 
 def split_view(request, pk):
+    if not is_staff_user(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     order = get_object_or_404(Order, pk=pk)
+    if not is_manager(request.user) and order.status not in [Order.STATUS_DRAFT, Order.STATUS_PENDING]:
+        messages.error(request, "Action non autorisée pour ce statut.")
+        return redirect("orders:detail", pk=order.id)
     items = order.items.select_related("dish")
     if request.method == "POST":
         action = request.POST.get("action")
@@ -177,3 +237,31 @@ def split_view(request, pk):
 
     candidates = Order.objects.filter(table=order.table).exclude(id=order.id) if order.table else Order.objects.none()
     return render(request, "orders/split.html", {"order": order, "items": items, "candidates": candidates})
+
+
+def cancel_view(request, pk):
+    if not is_staff_user(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
+    order = get_object_or_404(Order, pk=pk)
+    if not is_manager(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("orders:detail", pk=order.id)
+    if order.status in [Order.STATUS_PAID, Order.STATUS_CANCELLED]:
+        messages.error(request, "Annulation impossible pour ce statut.")
+        return redirect("orders:detail", pk=order.id)
+    if request.method == "POST":
+        reason = request.POST.get("reason", "").strip()
+        if not reason:
+            messages.error(request, "Raison d'annulation obligatoire.")
+            return render(request, "orders/cancel.html", {"order": order})
+        if not can_transition(request.user, order, Order.STATUS_CANCELLED):
+            messages.error(request, "Transition non autorisée.")
+            return redirect("orders:detail", pk=order.id)
+        old_status = order.status
+        order.status = Order.STATUS_CANCELLED
+        order.save(update_fields=["status"])
+        log_transition(order, request.user, old_status, order.status, reason=reason)
+        messages.success(request, "Commande annulée.")
+        return redirect("orders:detail", pk=order.id)
+    return render(request, "orders/cancel.html", {"order": order})

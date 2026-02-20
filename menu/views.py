@@ -1,11 +1,16 @@
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
 
 from .forms import CategoryForm, DishForm, DishOptionForm
 from .models import Category, Dish, DishOption
+from orders.utils import is_manager
 
 
 def list_view(request):
+    if not is_manager(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     categories = Category.objects.filter(is_active=True)
     q = request.GET.get("q", "").strip()
     cat = request.GET.get("category")
@@ -41,11 +46,17 @@ def list_view(request):
 
 
 def product_detail(request, pk):
+    if not is_manager(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     dish = get_object_or_404(Dish, pk=pk, is_active=True)
     return render(request, "menu/product_detail.html", {"dish": dish})
 
 
 def product_new(request):
+    if not is_manager(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     if request.method == "POST":
         form = DishForm(request.POST, request.FILES)
         if form.is_valid():
@@ -57,6 +68,9 @@ def product_new(request):
 
 
 def product_edit(request, pk):
+    if not is_manager(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     dish = get_object_or_404(Dish, pk=pk)
     if request.method == "POST":
         form = DishForm(request.POST, request.FILES, instance=dish)
@@ -69,6 +83,9 @@ def product_edit(request, pk):
 
 
 def categories_view(request):
+    if not is_manager(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     categories = Category.objects.all().order_by("name")
     if request.method == "POST":
         form = CategoryForm(request.POST)
@@ -81,6 +98,9 @@ def categories_view(request):
 
 
 def options_view(request):
+    if not is_manager(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
     q = request.GET.get("q", "").strip()
     options = DishOption.objects.select_related("dish").all().order_by("name")
     if q:

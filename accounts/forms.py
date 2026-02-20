@@ -13,8 +13,7 @@ ROLE_CHOICES = (
     ("cuisinier", "Cuisinier"),
     ("caissier", "Caissier"),
     ("livreur", "Livreur"),
-    ("manager", "Manager"),
-    ("admin", "Admin"),
+    ("gerant", "Gerant"),
 )
 
 
@@ -132,6 +131,9 @@ class StaffCreateForm(forms.ModelForm):
             user.save()
             role = self.cleaned_data.get("role")
             if role:
-                group, _ = Group.objects.get_or_create(name=role)
+                group = Group.objects.filter(name__iexact=role).first()
+                if not group:
+                    group_name = "Gerant" if role == "gerant" else role.capitalize()
+                    group = Group.objects.create(name=group_name)
                 user.groups.add(group)
         return user

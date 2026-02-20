@@ -27,3 +27,20 @@ class Address(models.Model):
 
     def __str__(self):
         return f"{self.label} ({self.profile})"
+
+
+class AuditLog(models.Model):
+    action = models.CharField(max_length=80)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    object_type = models.CharField(max_length=80)
+    object_id = models.CharField(max_length=64, blank=True)
+    old_value = models.TextField(blank=True)
+    new_value = models.TextField(blank=True)
+    reason = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.action} {self.object_type}#{self.object_id}"

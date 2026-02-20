@@ -51,7 +51,12 @@
       </ul>
     </div>
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-      <a class="btn-outline" href="{% url 'orders:edit' order.id %}">Modifier</a>
+      {% if is_manager or is_server or is_cook %}
+        <a class="btn-outline" href="{% url 'orders:edit' order.id %}">Modifier</a>
+      {% endif %}
+      {% if can_cancel and is_manager %}
+        <a class="btn-outline" href="{% url 'orders:cancel' order.id %}">Annuler la commande</a>
+      {% endif %}
     </div>
   </div>
 </div>

@@ -22,9 +22,42 @@ from .models import Address, CustomerProfile
 
 User = get_user_model()
 
+ROLE_ALIASES = {
+    "gerant": {"gerant", "manager", "admin", "gérant"},
+}
+
+
+def normalize_role(value):
+    if not value:
+        return "client"
+    v = str(value).strip().lower()
+    if v in ROLE_ALIASES["gerant"]:
+        return "gerant"
+    return v
+
+
+def user_dashboard_url(user):
+    if not user.is_authenticated:
+        return reverse("public:home")
+    if user.is_superuser or user.groups.filter(name__iexact="gerant").exists() or user.groups.filter(name__iexact="manager").exists():
+        return reverse("dashboard:home")
+    if user.groups.filter(name__iexact="serveur").exists():
+        return reverse("tables:plan")
+    if user.groups.filter(name__iexact="cuisinier").exists():
+        return reverse("kitchen:board")
+    if user.groups.filter(name__iexact="caissier").exists():
+        return reverse("billing:cashdesk")
+    if user.groups.filter(name__iexact="livreur").exists():
+        return reverse("delivery:dashboard")
+    return reverse("dashboard:client")
+
 
 def is_manager(user):
-    return user.is_authenticated and (user.is_superuser or user.groups.filter(name__in=["manager", "admin"]).exists())
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser:
+        return True
+    return user.groups.filter(name__iexact="gerant").exists() or user.groups.filter(name__iexact="manager").exists() or user.groups.filter(name__iexact="admin").exists()
 
 
 class LoginView(View):
@@ -39,7 +72,7 @@ class LoginView(View):
         if form.is_valid():
             identifier = form.cleaned_data["username_or_email"]
             password = form.cleaned_data["password"]
-            selected_role = form.cleaned_data.get("role")
+            selected_role = normalize_role(form.cleaned_data.get("role"))
             user = None
             if "@" in identifier:
                 user_obj = User.objects.filter(email__iexact=identifier).first()
@@ -51,10 +84,10 @@ class LoginView(View):
             if user and user.is_active:
                 # Determine actual role from DB
                 if user.is_superuser:
-                    actual_role = "admin"
+                    actual_role = "gerant"
                 else:
                     group = user.groups.first()
-                    actual_role = group.name if group else "client"
+                    actual_role = normalize_role(group.name if group else "client")
 
                 if selected_role != actual_role:
                     messages.error(request, "Role incorrect pour ce compte.")
@@ -62,7 +95,8 @@ class LoginView(View):
 
                 login(request, user)
                 messages.success(request, "Connexion reussie.")
-                return redirect("public:home")
+                next_url = request.GET.get("next")
+                return redirect(next_url) if next_url else redirect(user_dashboard_url(user))
             if user and not user.is_active:
                 messages.error(request, "Compte desactive. Contactez le restaurant.")
             else:
@@ -188,10 +222,11 @@ class UsersListView(ListView):
         qs = super().get_queryset()
         role = self.request.GET.get("role")
         q = self.request.GET.get("q")
+        role = normalize_role(role)
         if role == "client":
             qs = qs.filter(groups__isnull=True, is_staff=False)
         elif role:
-            qs = qs.filter(groups__name=role)
+            qs = qs.filter(groups__name__iexact=role)
         if q:
             qs = qs.filter(
                 username__icontains=q

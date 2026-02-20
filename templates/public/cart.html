@@ -17,6 +17,9 @@
           <div>
             <strong>{{ it.dish.name }}</strong>
             <div class="muted">{{ it.dish.price }} FCFA</div>
+            {% if not it.available %}
+              <div class="muted" style="color:#b01022;font-weight:700;">Indisponible</div>
+            {% endif %}
           </div>
           <form method="post" action="{% url 'public:cart_update' it.dish.id %}" class="qty">
             {% csrf_token %}
@@ -36,7 +39,10 @@
     <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
       <a class="btn-outline" href="{% url 'public:menu' %}">Continuer achats</a>
       {% if items %}
-        <a class="btn" href="{% url 'public:checkout' %}">Passer commande</a>
+        <a class="btn" href="{% url 'public:checkout' %}" {% if has_unavailable %}style="pointer-events:none;opacity:0.6;"{% endif %}>Passer commande</a>
+        {% if has_unavailable %}
+          <div class="muted" style="margin-top:6px;">Retirez les produits indisponibles pour continuer.</div>
+        {% endif %}
       {% endif %}
     </div>
   </div>

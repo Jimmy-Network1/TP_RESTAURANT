@@ -43,6 +43,7 @@
         <th>Ingredient</th>
         <th>Quantite</th>
         <th>Date</th>
+        <th>Utilisateur</th>
         <th>Motif</th>
       </tr>
     </thead>
@@ -57,10 +58,11 @@
         <td>{{ m.ingredient.name }}</td>
         <td>{{ m.quantity }} {{ m.ingredient.get_unit_display }}</td>
         <td>{{ m.created_at|date:"d/m H:i" }}</td>
+        <td>{{ m.created_by.username|default:"-" }}</td>
         <td>{{ m.note|default:'-' }}</td>
       </tr>
       {% empty %}
-      <tr><td colspan="5">Aucun mouvement.</td></tr>
+      <tr><td colspan="6">Aucun mouvement.</td></tr>
       {% endfor %}
     </tbody>
   </table>

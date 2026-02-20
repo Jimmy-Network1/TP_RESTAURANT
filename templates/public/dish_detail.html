@@ -61,7 +61,11 @@
       <span>Total estime</span>
       <strong id="total-price">{{ dish.price }}</strong>
     </div>
-    <button class="btn" style="width:100%;margin-top:12px;" type="button" data-add-detail data-id="{{ dish.id }}" data-name="{{ dish.name }}" data-price="{{ dish.price }}">Ajouter au panier</button>
+    {% if dish.can_order %}
+      <button class="btn" style="width:100%;margin-top:12px;" type="button" data-add-detail data-id="{{ dish.id }}" data-name="{{ dish.name }}" data-price="{{ dish.price }}">Ajouter au panier</button>
+    {% else %}
+      <button class="btn" style="width:100%;margin-top:12px;opacity:0.6;" type="button" disabled>Indisponible</button>
+    {% endif %}
   </div>
 </div>
 {% endif %}

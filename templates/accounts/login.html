@@ -41,7 +41,7 @@ body{min-height:100vh;background:linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.4
 <div class="auth-shell">
   <div class="auth-card">
     <div class="auth-logo">
-      <img src="{% static 'logo/logo2.png' %}">
+      <img src="{% static 'logo/logo.png' %}" alt="Saveur 237">
       <span>Saveur 237</span>
     </div>
     <h1>Se connecter</h1>
@@ -52,7 +52,7 @@ body{min-height:100vh;background:linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.4
         <div class="auth-field" style="color:#ffd2d2;">{{ form.non_field_errors }}</div>
       {% endif %}
       <div class="auth-field">
-        <label for="id_login">Nom d’utilisateur ou Email</label>
+        <label for="id_username_or_email">Nom d’utilisateur ou Email</label>
         {{ form.username_or_email }}
         {{ form.username_or_email.errors }}
       </div>

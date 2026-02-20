@@ -15,7 +15,9 @@
     <h2>Liste des commandes</h2>
     <p class="muted">Source table ou online.</p>
   </div>
-  <a class="btn" href="{% url 'orders:new' %}">Nouvelle commande</a>
+  {% if is_manager or is_server %}
+    <a class="btn" href="{% url 'orders:new' %}">Nouvelle commande</a>
+  {% endif %}
 </div>
 
 <div class="card" style="margin-top:12px;">

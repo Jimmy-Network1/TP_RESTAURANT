@@ -11,5 +11,6 @@ urlpatterns = [
     path("notifications/", views.notifications_view, name="notifications"),
     path("<int:pk>/", views.detail_view, name="detail"),
     path("<int:pk>/edit/", views.edit_view, name="edit"),
+    path("<int:pk>/cancel/", views.cancel_view, name="cancel"),
     path("<int:pk>/split/", views.split_view, name="split"),
 ]

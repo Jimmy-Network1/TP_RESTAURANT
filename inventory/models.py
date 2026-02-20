@@ -39,7 +39,26 @@ class StockMovement(models.Model):
     movement_type = models.CharField(max_length=10, choices=TYPE_CHOICES)
     quantity = models.DecimalField(max_digits=10, decimal_places=2)
     note = models.CharField(max_length=255, blank=True)
+    created_by = models.ForeignKey(
+        "auth.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="stock_movements"
+    )
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"{self.get_movement_type_display()} {self.quantity} {self.ingredient}"
+
+
+class InventoryAlert(models.Model):
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.PROTECT, related_name="alerts")
+    message = models.CharField(max_length=255)
+    created_by = models.ForeignKey(
+        "auth.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="inventory_alerts"
+    )
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.message

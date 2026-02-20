@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Livraison — Saveur 237{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/public.css' %}">
+  <style>
+    body{background:#f7f7f7;}
+    .deliver-nav{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #eee;}
+    .deliver-inner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;}
+    .deliver-title{display:flex;align-items:center;gap:10px;font-weight:800;}
+    .deliver-actions a{margin-left:8px;}
+    .container{max-width:980px;}
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header class="deliver-nav">
+    <div class="container deliver-inner">
+      <div class="deliver-title">
+        <img src="{% static 'logo/logo.png' %}" width="28" height="28" alt="Saveur 237" style="border-radius:8px;">
+        Livraison
+      </div>
+      <div class="deliver-actions">
+        <a class="btn-outline" href="{% url 'delivery:dashboard' %}">Dashboard</a>
+        <a class="btn-outline" href="{% url 'accounts:logout' %}">Déconnexion</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding:14px 0;">
+    {% if messages %}
+      <div class="card" style="margin:10px 0 16px;">
+        <ul style="margin:0;padding-left:18px;">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

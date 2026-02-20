@@ -26,10 +26,16 @@
         <label>Client</label>
         {{ form.customer }}
       </div>
+      {% if form.status %}
       <div>
         <label>Statut</label>
         {{ form.status }}
       </div>
+      {% endif %}
+    </div>
+    <div style="margin-top:12px;">
+      <label>Raison d'annulation (si annulation)</label>
+      <input class="form-control" type="text" name="cancel_reason" placeholder="Ex: client absent, erreur commande">
     </div>
     <div style="margin-top:12px;">
       <label>Note</label>

@@ -61,18 +61,36 @@
 <body>
   <div class="layout">
     <aside class="sidebar">
-      <strong>Saveur 237</strong>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <img src="{% static 'logo/logo.png' %}" width="28" height="28" alt="Saveur 237" style="border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:#fff;">
+        <strong>Saveur 237</strong>
+      </div>
       <a href="{% url 'dashboard:home' %}">🏠 Dashboard</a>
-      <a href="{% url 'accounts:users' %}">🔐 Accounts</a>
-      <a href="{% url 'menu:list' %}">🍽️ Menu</a>
-      <a href="{% url 'tables:plan' %}">🪑 Tables</a>
-      <a href="{% url 'orders:list' %}">🧾 Orders</a>
-      <a href="{% url 'kitchen:board' %}">👨‍🍳 Kitchen</a>
-      <a href="{% url 'billing:payments' %}">💳 Billing</a>
-      <a href="{% url 'reservations:staff_list' %}">📅 Réservations</a>
-      <a href="{% url 'inventory:stock' %}">📦 Inventory</a>
-      <a href="{% url 'delivery:deliveries' %}">🚚 Delivery</a>
-      <a href="{% url 'reports:dashboard' %}">📊 Reports</a>
+      {% if is_manager %}
+        <a href="{% url 'accounts:users' %}">🔐 Accounts</a>
+        <a href="{% url 'menu:list' %}">🍽️ Menu</a>
+        <a href="{% url 'tables:plan' %}">🪑 Tables</a>
+        <a href="{% url 'orders:list' %}">🧾 Orders</a>
+        <a href="{% url 'kitchen:board' %}">👨‍🍳 Kitchen</a>
+        <a href="{% url 'billing:payments' %}">💳 Billing</a>
+        <a href="{% url 'reservations:staff_list' %}">📅 Réservations</a>
+        <a href="{% url 'inventory:stock' %}">📦 Inventory</a>
+        <a href="{% url 'delivery:deliveries' %}">🚚 Delivery</a>
+        <a href="{% url 'reports:dashboard' %}">📊 Reports</a>
+      {% elif is_server %}
+        <a href="{% url 'tables:plan' %}">🪑 Tables</a>
+        <a href="{% url 'orders:list' %}">🧾 Orders</a>
+        <a href="{% url 'reservations:staff_list' %}">📅 Réservations</a>
+      {% elif is_cook %}
+        <a href="{% url 'kitchen:board' %}">👨‍🍳 Kitchen</a>
+        <a href="{% url 'orders:list' %}">🧾 Orders</a>
+      {% elif is_cashier %}
+        <a href="{% url 'billing:payments' %}">💳 Billing</a>
+        <a href="{% url 'orders:list' %}">🧾 Orders</a>
+        <a href="{% url 'billing:cashdesk' %}">🏦 Caisse</a>
+      {% elif is_delivery %}
+        <a href="{% url 'delivery:deliveries' %}">🚚 Delivery</a>
+      {% endif %}
     </aside>
     <div>
       <div class="topbar">

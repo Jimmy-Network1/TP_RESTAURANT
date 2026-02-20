@@ -16,6 +16,17 @@
   <a class="btn-outline" href="{% url 'inventory:stock' %}">Retour stock</a>
 </div>
 
+<div class="card" style="margin-bottom:12px;">
+  <h4 style="margin-top:0;">Dernières alertes</h4>
+  <div style="display:grid;gap:6px;">
+    {% for a in alerts %}
+      <div class="muted">{{ a.created_at|date:"d/m H:i" }} • {{ a.message }} • {{ a.created_by.username|default:"-" }}</div>
+    {% empty %}
+      <div class="muted">Aucune alerte récente.</div>
+    {% endfor %}
+  </div>
+</div>
+
 <div class="grid">
   {% for item in items %}
   <div class="card alert-card">

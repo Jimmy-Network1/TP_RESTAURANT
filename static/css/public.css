@@ -22,6 +22,13 @@ img{max-width:100%;display:block;}
 .navbar-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;}
 .brand-title{font-family:'Playfair Display', serif;font-size:20px;letter-spacing:0.2px;}
+.user-menu{position:relative;display:inline-flex;align-items:center;}
+.user-chip{background:#fff;border:1px solid #ddd;padding:6px 10px;border-radius:999px;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
+.user-role{background:#f1f1f1;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:700;}
+.user-dropdown{position:absolute;top:120%;right:0;min-width:160px;background:#fff;border:1px solid #eee;border-radius:10px;box-shadow:0 10px 24px rgba(0,0,0,0.12);padding:6px;display:none;z-index:30;}
+.user-dropdown a{display:block;padding:8px 10px;border-radius:8px;text-decoration:none;color:#222;font-weight:600;}
+.user-dropdown a:hover{background:#f6f6f6;}
+.user-menu:hover .user-dropdown{display:block;}
 .nav-links{display:flex;gap:14px;align-items:center;flex-wrap:wrap;}
 .nav-links a{color:#222;text-decoration:none;font-weight:700;font-size:14px;position:relative;}
 .nav-links a:hover{color:var(--green);} 

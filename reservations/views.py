@@ -1,15 +1,17 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.generic import DetailView, ListView
 
-from accounts.models import CustomerProfile
+from accounts.models import CustomerProfile, AuditLog
 from tablesapp.models import Table
 from .forms import ClientReservationForm, StaffReservationUpdateForm
+from .utils import available_slots
 from .models import Reservation
 
 
@@ -80,9 +82,23 @@ class ClientReservationDetailView(DetailView):
         reservation = get_object_or_404(self.get_queryset(), pk=pk)
         if reservation.status in [Reservation.STATUS_PENDING, Reservation.STATUS_CONFIRMED]:
             if reservation.reservation_datetime - timezone.now() > timezone.timedelta(hours=1):
+                old_status = reservation.status
+                reason = request.POST.get("reason", "").strip()[:200]
                 reservation.status = Reservation.STATUS_CANCELLED
-                reservation.save(update_fields=["status"])
+                reservation.cancelled_by = request.user
+                reservation.cancelled_at = timezone.now()
+                reservation.cancel_reason = reason
+                reservation.save(update_fields=["status", "cancelled_by", "cancelled_at", "cancel_reason"])
                 messages.success(request, "Reservation annulee.")
+                AuditLog.objects.create(
+                    action="RESERVATION_STATUS",
+                    user=request.user,
+                    object_type="Reservation",
+                    object_id=str(reservation.id),
+                    old_value=old_status,
+                    new_value=reservation.status,
+                    reason=reason or "Annulation client",
+                )
             else:
                 messages.error(request, "Annulation impossible a moins d'une heure.")
         return redirect("reservations:client_detail", pk=pk)
@@ -139,7 +155,12 @@ class StaffReservationDetailView(View):
         reservation = get_object_or_404(Reservation, pk=pk)
         form = StaffReservationUpdateForm(request.POST, instance=reservation)
         if form.is_valid():
+            old_status = reservation.status
             reservation = form.save(commit=False)
+            if reservation.status == Reservation.STATUS_CANCELLED:
+                reservation.cancelled_by = request.user
+                reservation.cancelled_at = timezone.now()
+                reservation.cancel_reason = request.POST.get("cancel_reason", "").strip()[:200]
             # Auto-assign table if confirmed without table
             if reservation.status == Reservation.STATUS_CONFIRMED and not reservation.table:
                 table_qs = Table.objects.filter(active=True, status=Table.STATUS_FREE).filter(
@@ -157,6 +178,16 @@ class StaffReservationDetailView(View):
                 if reservation.table.status == Table.STATUS_RESERVED:
                     reservation.table.status = Table.STATUS_FREE
                     reservation.table.save(update_fields=["status"])
+            if old_status != reservation.status:
+                AuditLog.objects.create(
+                    action="RESERVATION_STATUS",
+                    user=request.user,
+                    object_type="Reservation",
+                    object_id=str(reservation.id),
+                    old_value=old_status,
+                    new_value=reservation.status,
+                    reason="Mise à jour staff",
+                )
             messages.success(request, "Reservation mise a jour.")
             return redirect("reservations:staff_detail", pk=pk)
         return render(request, self.template_name, {"reservation": reservation, "form": form})
@@ -168,9 +199,34 @@ def reservation_checkin(request, pk):
         return redirect("public:home")
     reservation = get_object_or_404(Reservation, pk=pk)
     if reservation.table and reservation.status in [Reservation.STATUS_CONFIRMED, Reservation.STATUS_PENDING]:
+        old_status = reservation.status
         reservation.status = Reservation.STATUS_COMPLETED
         reservation.save(update_fields=["status"])
         reservation.table.status = Table.STATUS_OCCUPIED
         reservation.table.save(update_fields=["status"])
+        AuditLog.objects.create(
+            action="RESERVATION_STATUS",
+            user=request.user,
+            object_type="Reservation",
+            object_id=str(reservation.id),
+            old_value=old_status,
+            new_value=reservation.status,
+            reason="Check-in",
+        )
         messages.success(request, "Client enregistré, table occupée.")
     return redirect("reservations:staff_detail", pk=pk)
+
+
+def reservation_slots(request):
+    date_str = request.GET.get("date")
+    party_size = request.GET.get("party_size")
+    zone = request.GET.get("zone") or ""
+    if not date_str or not party_size:
+        return JsonResponse({"slots": []})
+    try:
+        date_value = timezone.datetime.fromisoformat(date_str).date()
+        party_size = int(party_size)
+    except Exception:
+        return JsonResponse({"slots": []})
+    slots = available_slots(date_value, max(party_size, 1), zone=zone or None)
+    return JsonResponse({"slots": slots})

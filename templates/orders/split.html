@@ -29,7 +29,11 @@
       {% empty %}
         <div class="muted">Aucun article.</div>
       {% endfor %}
-      <button class="btn" type="submit">Creer sous-commande</button>
+      {% if is_manager %}
+        <button class="btn" type="submit">Creer sous-commande</button>
+      {% else %}
+        <span class="muted">Action réservée au gérant.</span>
+      {% endif %}
     </form>
   </div>
 
@@ -52,7 +56,11 @@
           <option value="">Aucune commande compatible</option>
         {% endfor %}
       </select>
-      <button class="btn" type="submit" style="margin-top:10px;">Fusionner</button>
+      {% if is_manager %}
+        <button class="btn" type="submit" style="margin-top:10px;">Fusionner</button>
+      {% else %}
+        <span class="muted">Action réservée au gérant.</span>
+      {% endif %}
     </form>
   </div>
 </div>

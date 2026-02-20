@@ -7,7 +7,9 @@
     <h2>Livraisons</h2>
     <p class="muted">Suivi des commandes a livrer.</p>
   </div>
-  <a class="btn" href="{% url 'delivery:assign' %}">Attribuer</a>
+  {% if is_manager %}
+    <a class="btn" href="{% url 'delivery:assign' %}">Attribuer</a>
+  {% endif %}
 </div>
 
 <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px;">
@@ -48,10 +50,14 @@
           <td><span class="pill pill-route">{{ o.get_status_display }}</span></td>
           <td><div class="actions">
             <a class="icon-btn" href="{% url 'delivery:detail' o.id %}">Voir</a>
-            {% if o.status == 'PRETE' %}
-              <a class="icon-btn" href="{% url 'delivery:assign' %}">Assigner</a>
+            {% if is_manager %}
+              {% if o.status == 'PRETE' %}
+                <a class="icon-btn" href="{% url 'delivery:assign' %}">Assigner</a>
+              {% else %}
+                <span class="muted">Pas prete</span>
+              {% endif %}
             {% else %}
-              <span class="muted">Pas prete</span>
+              <span class="muted">Accès restreint</span>
             {% endif %}
           </div></td>
         </tr>
