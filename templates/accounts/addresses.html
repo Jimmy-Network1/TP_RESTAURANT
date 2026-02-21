@@ -1,27 +1,41 @@
 {% extends "base_public.html" %}
 {% block title %}Mes adresses — Saveur 237{% endblock %}
 {% block content %}
-<div class="section-title">
-  <div>
-    <h2>Mes adresses</h2>
-    <p class="muted">Gérez vos adresses de livraison.</p>
-  </div>
-  <a class="btn" href="{% url 'accounts:address_new' %}">Ajouter adresse</a>
-</div>
-
-<div class="grid">
-  {% for addr in addresses %}
-  <div class="card">
-    <strong>{{ addr.label }}</strong>
-    <p class="muted">{{ addr.city }} {{ addr.district }}</p>
-    <p>{{ addr.details }}</p>
-    {% if addr.is_default %}<span class="badge">Par défaut</span>{% endif %}
-    <div style="margin-top:8px;">
-      <a class="btn-outline" href="{% url 'accounts:address_edit' addr.id %}">Modifier</a>
+<section style="max-width:1000px;margin:0 auto;padding:30px 16px;">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:24px;" data-animate="fadeUp">
+    <div>
+      <span class="pill" style="background:var(--green-light);color:var(--green);">📍 Adresses</span>
+      <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Mes adresses de livraison</h2>
+      <p class="muted">Gérez vos adresses pour une livraison rapide.</p>
     </div>
+    <a class="btn" href="{% url 'accounts:address_new' %}">+ Ajouter adresse</a>
   </div>
-  {% empty %}
-  <div class="card">Aucune adresse.</div>
-  {% endfor %}
-</div>
+
+  <div class="grid" data-animate="fadeUp">
+    {% for addr in addresses %}
+    <div class="card" style="border-left:4px solid {% if addr.is_default %}var(--green){% else %}#eee{% endif %};">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+        <div>
+          <strong style="font-size:16px;">🏷️ {{ addr.label }}</strong>
+          <p class="muted" style="margin:4px 0;">{{ addr.city }} — {{ addr.district }}</p>
+          <p style="margin:4px 0;">{{ addr.details }}</p>
+        </div>
+        {% if addr.is_default %}
+          <span class="pill" style="background:var(--green-light);color:var(--green);white-space:nowrap;">✓ Par défaut</span>
+        {% endif %}
+      </div>
+      <div style="margin-top:12px;">
+        <a class="btn-outline" href="{% url 'accounts:address_edit' addr.id %}">✏️ Modifier</a>
+      </div>
+    </div>
+    {% empty %}
+    <div class="card" style="text-align:center;padding:40px 20px;">
+      <div style="font-size:48px;margin-bottom:12px;">📍</div>
+      <h3>Aucune adresse enregistrée</h3>
+      <p class="muted">Ajoutez une adresse pour commander plus rapidement.</p>
+      <a class="btn" href="{% url 'accounts:address_new' %}" style="margin-top:12px;">Ajouter ma première adresse</a>
+    </div>
+    {% endfor %}
+  </div>
+</section>
 {% endblock %}

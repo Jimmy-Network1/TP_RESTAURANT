@@ -1,0 +1,76 @@
+{% extends "base_staff.html" %}
+{% block title %}Table {{ table.name }} — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .status-pill{padding:6px 12px;border-radius:999px;font-weight:700;font-size:12px;}
+  .status-free{background:rgba(0,135,81,0.12);color:var(--green);} 
+  .status-occupied{background:rgba(206,17,38,0.12);color:var(--red);} 
+  .status-reserved{background:rgba(252,209,22,0.2);color:#9b6a00;} 
+  .status-cleaning{background:#f0f0f0;color:#555;} 
+  .item-row{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:8px 10px;background:#fafafa;}
+</style>
+
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Salle</p>
+    <h2>Table {{ table.name }}</h2>
+    <p class="muted">Zone : {{ table.zone|default:'-' }} • {{ table.capacity }} places</p>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+    {% if table.status == 'free' %}<span class="status-pill status-free">Libre</span>{% endif %}
+    {% if table.status == 'occupied' %}<span class="status-pill status-occupied">Occupée</span>{% endif %}
+    {% if table.status == 'reserved' %}<span class="status-pill status-reserved">Réservée</span>{% endif %}
+    {% if table.status == 'cleaning' %}<span class="status-pill status-cleaning">Nettoyage</span>{% endif %}
+    <a class="btn-outline" href="{% url 'tables:plan' %}">Retour plan</a>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h4>Commande active</h4>
+    {% if active_order %}
+      <div style="display:grid;gap:8px;">
+        {% for item in active_items %}
+          <div class="item-row">
+            <span>{{ item.dish.name }} x{{ item.quantity }}</span>
+            <strong>{{ item.line_total }} FCFA</strong>
+          </div>
+        {% endfor %}
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+        <strong>Total</strong><strong>{{ active_order.total_amount }} FCFA</strong>
+      </div>
+    {% else %}
+      <p class="muted">Aucune commande active.</p>
+    {% endif %}
+    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+      <a class="btn" href="{% url 'orders:new' %}?table={{ table.id }}">Ouvrir commande</a>
+      <a class="btn-outline" href="{% url 'tables:transfer' %}?from={{ table.id }}">Transférer table</a>
+      <a class="btn-outline" href="#">Fermer table</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h4>Réservation associée</h4>
+    {% if reservation %}
+      <p><strong>{{ reservation.customer_name }}</strong> — {{ reservation.customer_phone }}</p>
+      <p>{{ reservation.reservation_datetime|date:"d/m H:i" }} • {{ reservation.party_size }} pers</p>
+      <p>Statut: {{ reservation.get_status_display }}</p>
+      <a class="btn-outline" href="{% url 'reservations:staff_detail' reservation.id %}">Voir réservation</a>
+    {% else %}
+      <p class="muted">Aucune réservation associée.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <h4>Historique rapide</h4>
+  <ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px;">
+    {% for h in history %}
+      <li>#{{ h.id }} • {{ h.get_status_display }} • {{ h.created_at|date:"d/m H:i" }}</li>
+    {% empty %}
+      <li class="muted">Pas d'historique.</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

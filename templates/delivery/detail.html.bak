@@ -1,0 +1,95 @@
+{% extends "base_delivery.html" %}
+{% block title %}Détail livraison — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px;}
+  .badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-weight:800;font-size:12px;}
+  .badge-ready{background:#008751;color:#fff;}
+  .badge-route{background:#2d74da;color:#fff;}
+  .badge-done{background:#008751;color:#fff;}
+  .row{display:grid;gap:6px;}
+  .btn-primary{background:#3E2723;color:#fff;border:1px solid #3E2723;padding:10px 14px;border-radius:12px;font-weight:800;text-decoration:none;}
+  .btn-secondary{background:#fff;color:#111;border:1px solid #ddd;padding:10px 14px;border-radius:12px;font-weight:800;text-decoration:none;}
+  .muted{color:#666;font-size:13px;}
+</style>
+
+<div class="card">
+  <h3 style="margin:0 0 6px;">Commande #{{ order.id }}</h3>
+  <div class="muted">{{ order.created_at|date:"d/m H:i" }}</div>
+  <div style="margin-top:8px;">
+    {% if order.status == 'PRETE' %}<span class="badge badge-ready">PRÊTE</span>{% endif %}
+    {% if order.status == 'EN_ROUTE' %}<span class="badge badge-route">EN LIVRAISON</span>{% endif %}
+    {% if order.status == 'LIVREE' %}<span class="badge badge-done">LIVRÉE</span>{% endif %}
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <h4 style="margin:0 0 6px;">Livraison</h4>
+  <div class="row">
+    <div><strong>Adresse:</strong> {{ order.delivery_address|default:"-" }}</div>
+    <div><strong>Téléphone:</strong> {{ order.customer_profile.phone|default:"-" }}</div>
+    {% if order.note %}<div><strong>Note:</strong> {{ order.note }}</div>{% endif %}
+  </div>
+  <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+    {% if order.customer_profile.phone %}
+      <a class="btn-secondary" href="tel:{{ order.customer_profile.phone }}">Appeler client</a>
+    {% endif %}
+    {% if is_delivery or is_manager %}
+      {% if order.status == 'PRETE' %}
+        <form method="post">
+          {% csrf_token %}
+          <button class="btn-primary" name="action" value="start">Démarrer livraison</button>
+        </form>
+      {% endif %}
+      {% if order.status == 'EN_ROUTE' %}
+        <form method="post">
+          {% csrf_token %}
+          <button class="btn-primary" name="action" value="delivered">Marquer livrée</button>
+        </form>
+      {% endif %}
+      {% if order.status == 'LIVREE' %}
+        {% if not order.payments.exists %}
+        <form method="post">
+          {% csrf_token %}
+          <button class="btn-secondary" name="action" value="paid">Confirmé payé</button>
+        </form>
+        {% endif %}
+      {% endif %}
+    {% else %}
+      <span class="muted">Accès restreint</span>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <h4 style="margin:0 0 6px;">Timeline</h4>
+  <div class="row">
+    <div class="muted">EN_ATTENTE → EN_PREPARATION → PRETE → EN_LIVRAISON → LIVREE</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <h4 style="margin:0 0 6px;">Historique des statuts</h4>
+  <div class="row">
+    {% for log in logs %}
+      <div class="muted">{{ log.created_at|date:"H:i" }} • {{ log.get_status_display }} • {{ log.actor|default:"Systeme" }}{% if log.reason %} • {{ log.reason }}{% endif %}</div>
+    {% empty %}
+      <div class="muted">Aucun historique.</div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <h4 style="margin:0 0 6px;">Signaler un problème</h4>
+  {% if is_delivery or is_manager %}
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="issue">
+      <input class="form-control" name="reason" maxlength="200" placeholder="Client absent, adresse...">
+      <button class="btn-secondary" style="margin-top:8px;">Enregistrer</button>
+    </form>
+  {% else %}
+    <span class="muted">Accès restreint</span>
+  {% endif %}
+</div>
+{% endblock %}

@@ -11,6 +11,8 @@ from django.views.generic import TemplateView
 
 from .models import CashSession, Payment
 from accounts.models import AuditLog
+from accounts.notifications import create_notification
+from orders.utils import log_transition
 from orders.models import Order, OrderStatusLog
 
 ALLOW_PARTIAL_PAYMENTS = False
@@ -55,7 +57,14 @@ class CashDeskView(View):
             totals = session.payments.aggregate(count=models.Count("id"), sum=Sum("amount"))
             totals["count"] = totals["count"] or 0
             totals["sum"] = totals["sum"] or 0
-        context = {"session": session, "totals": totals}
+        opening_amount = session.opening_amount if session else 0
+        drawer_total = opening_amount + totals["sum"]
+        context = {
+            "session": session,
+            "totals": totals,
+            "opening_amount": opening_amount,
+            "drawer_total": drawer_total,
+        }
         return render(request, self.template_name, context)
 
     def post(self, request):
@@ -103,6 +112,14 @@ class CashDeskView(View):
             totals = session.payments.aggregate(count=models.Count("id"), sum=Sum("amount"))
             totals_count = totals["count"] or 0
             totals_sum = totals["sum"] or 0
+            open_orders = Order.objects.filter(status__in=[Order.STATUS_READY, Order.STATUS_SERVED]).count()
+            if open_orders:
+                create_notification(
+                    target_role="manager",
+                    message=f"Caisse fermée avec {open_orders} commande(s) non encaissée(s)",
+                    url="/billing/cashdesk/",
+                    level="warn",
+                )
             messages.success(request, f"Caisse fermée. Paiements: {totals_count} • Total: {totals_sum} FCFA.")
             return redirect("billing:cashdesk")
         messages.error(request, "Action invalide.")
@@ -120,7 +137,13 @@ class PaymentCreateView(View):
         eligible = Order.objects.filter(
             status__in=[Order.STATUS_READY, Order.STATUS_SERVED, Order.STATUS_ON_ROUTE]
         ).order_by("-created_at")
-        return render(request, self.template_name, {"session": session, "orders": eligible})
+        selected_order_id = request.GET.get("order_id")
+        return render(request, self.template_name, {
+            "session": session,
+            "orders": eligible,
+            "method_choices": Payment.METHOD_CHOICES,
+            "selected_order_id": str(selected_order_id) if selected_order_id else "",
+        })
 
     def post(self, request):
         if not _is_cashier_or_manager(request.user):
@@ -132,6 +155,9 @@ class PaymentCreateView(View):
             return redirect("billing:payment_new")
 
         order_id = request.POST.get("order_id")
+        if not order_id:
+            messages.error(request, "Sélectionnez une commande.")
+            return redirect("billing:payment_new")
         method = request.POST.get("method", Payment.METHOD_CASH)
         amount_raw = request.POST.get("amount")
         order = Order.objects.filter(id=order_id).first()
@@ -168,9 +194,13 @@ class PaymentCreateView(View):
                 amount=amount,
                 created_by=request.user,
             )
+            old_status = order.status
             order.status = Order.STATUS_PAID
             order.save(update_fields=["status"])
-            OrderStatusLog.objects.create(order=order, status=order.status, actor=request.user, reason="Paiement")
+            if order.table:
+                order.table.status = order.table.STATUS_FREE
+                order.table.save(update_fields=["status"])
+            log_transition(order, request.user, old_status, order.status, reason="Paiement")
             AuditLog.objects.create(
                 action="PAYMENT",
                 user=request.user,
@@ -179,8 +209,45 @@ class PaymentCreateView(View):
                 new_value=f"amount={amount} method={method}",
                 reason="Paiement",
             )
+            create_notification(
+                target_role="cashier",
+                message=f"Paiement reçu pour la commande #{order.id}",
+                url=f"/orders/{order.id}/",
+            )
+            create_notification(
+                target_role="manager",
+                message=f"Paiement reçu pour la commande #{order.id}",
+                url=f"/orders/{order.id}/",
+            )
         messages.success(request, "Paiement enregistré.")
-        return redirect("billing:payments")
+        return redirect("billing:invoice_detail", pk=order.id)
+
+
+class InvoicesView(View):
+    template_name = "billing/invoices.html"
+
+    def get(self, request):
+        if not _is_cashier_or_manager(request.user):
+            messages.error(request, "Accès refusé.")
+            return redirect("public:home")
+        payments = Payment.objects.select_related("order").order_by("-created_at")[:100]
+        total = payments.aggregate(sum=Sum("amount"))["sum"] or 0
+        return render(request, self.template_name, {"payments": payments, "total": total})
+
+
+class InvoiceDetailView(View):
+    template_name = "billing/invoice_detail.html"
+
+    def get(self, request, pk):
+        if not _is_cashier_or_manager(request.user):
+            messages.error(request, "Accès refusé.")
+            return redirect("public:home")
+        order = Order.objects.select_related("table", "customer").prefetch_related("items", "items__dish").filter(id=pk).first()
+        if not order:
+            messages.error(request, "Commande introuvable.")
+            return redirect("billing:invoices")
+        payment = order.payments.order_by("-created_at").first()
+        return render(request, self.template_name, {"order": order, "items": order.items.all(), "payment": payment})
 
 
 class SimplePage(TemplateView):

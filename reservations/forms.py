@@ -74,8 +74,8 @@ class StaffReservationUpdateForm(forms.ModelForm):
         if table:
             if not table.active:
                 self.add_error("table", "Cette table est inactive.")
-            if table.status == "occupied":
-                self.add_error("table", "Cette table est déjà occupée.")
+            if table.status != Table.STATUS_FREE:
+                self.add_error("table", "Cette table n'est pas libre.")
             if reservation.party_size and table.capacity < reservation.party_size:
                 self.add_error("table", "Capacité insuffisante pour cette table.")
             window_start, window_end = conflict_window(reservation.reservation_datetime)

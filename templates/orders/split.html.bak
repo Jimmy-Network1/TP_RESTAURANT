@@ -1,0 +1,67 @@
+{% extends "base_staff.html" %}
+{% block title %}Split / Fusion — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .split-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .split-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:12px;}
+  .item-row{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:8px 10px;margin-bottom:8px;background:#fff;}
+</style>
+
+<div class="split-head">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Orders</p>
+    <h2>Split / Fusion commande #{{ order.id }}</h2>
+    <p class="muted">Selectionnez les articles a deplacer.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'orders:detail' order.id %}">Retour</a>
+</div>
+
+<div class="split-grid" style="margin-top:12px;">
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="split">
+      {% for item in items %}
+        <label class="item-row">
+          <span>{{ item.dish.name }} x{{ item.quantity }}</span>
+          <input type="checkbox" name="item_ids" value="{{ item.id }}">
+        </label>
+      {% empty %}
+        <div class="muted">Aucun article.</div>
+      {% endfor %}
+      {% if is_manager %}
+        <button class="btn" type="submit">Creer sous-commande</button>
+      {% else %}
+        <span class="muted">Action réservée au gérant.</span>
+      {% endif %}
+    </form>
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0;">Fusionner dans</h4>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="merge">
+      {% for item in items %}
+        <label class="item-row">
+          <span>{{ item.dish.name }} x{{ item.quantity }}</span>
+          <input type="checkbox" name="item_ids" value="{{ item.id }}">
+        </label>
+      {% endfor %}
+      <label>Commande cible</label>
+      <select class="form-control" name="target_order">
+        {% for c in candidates %}
+          <option value="{{ c.id }}">#{{ c.id }} (Table {{ c.table.name }})</option>
+        {% empty %}
+          <option value="">Aucune commande compatible</option>
+        {% endfor %}
+      </select>
+      {% if is_manager %}
+        <button class="btn" type="submit" style="margin-top:10px;">Fusionner</button>
+      {% else %}
+        <span class="muted">Action réservée au gérant.</span>
+      {% endif %}
+    </form>
+  </div>
+</div>
+{% endblock %}

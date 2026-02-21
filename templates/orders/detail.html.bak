@@ -1,0 +1,76 @@
+{% extends "base_staff.html" %}
+{% block title %}Commande — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .detail-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:12px;}
+  .log{list-style:none;padding:0;margin:0;display:grid;gap:6px;}
+  .log li{background:#fafafa;border:1px solid #eee;border-radius:8px;padding:6px 8px;}
+</style>
+
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Orders</p>
+    <h2>Commande #{{ order.id }}</h2>
+    <p class="muted">{% if order.table %}TABLE • Table {{ order.table.name }}{% else %}ONLINE • {{ order.customer.username|default:'Client' }}{% endif %} • {{ order.created_at|date:"H:i" }}</p>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a class="btn-outline" href="{% url 'orders:list' %}">Retour</a>
+    {% if is_manager %}
+      <a class="btn-outline" href="{% url 'orders:split' order.id %}">Split/Fusion</a>
+    {% endif %}
+    {% if is_cashier or is_manager %}
+      <a class="btn" href="{% url 'billing:invoices' %}">Facture / Paiement</a>
+    {% endif %}
+    <a class="btn-outline" href="javascript:window.print()">Imprimer ticket</a>
+  </div>
+</div>
+
+<div class="detail-grid">
+  <div class="card">
+    <h4 style="margin-top:0;">Lignes commande</h4>
+    <div class="cart-list">
+      {% for item in items %}
+        <div class="cart-item"><div>{{ item.dish.name }} x{{ item.quantity }}</div><div>{{ item.line_total }} FCFA</div></div>
+      {% empty %}
+        <div class="muted">Aucune ligne.</div>
+      {% endfor %}
+    </div>
+    {% if is_cashier or is_manager %}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
+      <strong>Total</strong><strong>{{ total }} FCFA</strong>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h4 style="margin-top:0;">Statut</h4>
+    <div class="menu-filters">
+      <span class="chip active">{{ order.get_status_display }}</span>
+    </div>
+    <div style="margin-top:10px;">
+      <h4 style="margin:0 0 6px;">Historique</h4>
+      <ul class="log">
+        {% for log in logs %}
+          <li>{{ log.created_at|date:"H:i" }} • {{ log.get_status_display }} • {{ log.actor|default:'Systeme' }}</li>
+        {% empty %}
+          <li class="muted">Aucun historique.</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      {% if is_manager or is_server or is_cook %}
+        <a class="btn-outline" href="{% url 'orders:edit' order.id %}">Modifier</a>
+      {% endif %}
+      {% if can_serve and (is_server or is_manager) %}
+        <form method="post" action="{% url 'orders:serve' order.id %}">
+          {% csrf_token %}
+          <button class="btn" type="submit">Marquer servie</button>
+        </form>
+      {% endif %}
+      {% if can_cancel and is_manager %}
+        <a class="btn-outline" href="{% url 'orders:cancel' order.id %}">Annuler la commande</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

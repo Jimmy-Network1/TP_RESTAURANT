@@ -9,6 +9,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView
 
 from accounts.models import CustomerProfile, AuditLog
+from accounts.notifications import notify_reservation_status
 from tablesapp.models import Table
 from .forms import ClientReservationForm, StaffReservationUpdateForm
 from .utils import available_slots
@@ -16,7 +17,11 @@ from .models import Reservation
 
 
 def staff_required(user):
-    return user.is_authenticated and (user.is_staff or user.is_superuser)
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser or user.is_staff:
+        return True
+    return user.groups.filter(name__iexact="gerant").exists() or user.groups.filter(name__iexact="manager").exists() or user.groups.filter(name__iexact="admin").exists()
 
 
 class ClientReservationCreateView(View):
@@ -40,8 +45,21 @@ class ClientReservationCreateView(View):
             res.customer_profile = profile
             res.customer_name = request.user.get_full_name() or request.user.username
             res.customer_phone = profile.phone
-            res.status = Reservation.STATUS_PENDING
+            # Auto-assign a free table and reserve it
+            table_qs = Table.objects.filter(active=True, status=Table.STATUS_FREE).filter(
+                capacity__gte=res.party_size
+            )
+            if res.zone:
+                table_qs = table_qs.filter(zone=res.zone)
+            res.table = table_qs.order_by("capacity").first()
+            if not res.table:
+                messages.error(request, "Aucune table disponible pour ce créneau.")
+                return render(request, self.template_name, {"form": form})
+            res.status = Reservation.STATUS_CONFIRMED
             res.save()
+            res.table.status = Table.STATUS_RESERVED
+            res.table.save(update_fields=["status"])
+            notify_reservation_status(res, res.status)
             messages.success(request, "Votre demande a ete envoyee. Confirmation en attente.")
             return redirect("reservations:client_list")
         return render(request, self.template_name, {"form": form})
@@ -89,6 +107,10 @@ class ClientReservationDetailView(DetailView):
                 reservation.cancelled_at = timezone.now()
                 reservation.cancel_reason = reason
                 reservation.save(update_fields=["status", "cancelled_by", "cancelled_at", "cancel_reason"])
+                notify_reservation_status(reservation, Reservation.STATUS_CANCELLED)
+                if reservation.table and reservation.table.status == Table.STATUS_RESERVED:
+                    reservation.table.status = Table.STATUS_FREE
+                    reservation.table.save(update_fields=["status"])
                 messages.success(request, "Reservation annulee.")
                 AuditLog.objects.create(
                     action="RESERVATION_STATUS",
@@ -170,6 +192,8 @@ class StaffReservationDetailView(View):
                     table_qs = table_qs.filter(zone=reservation.zone)
                 reservation.table = table_qs.order_by("capacity").first()
             reservation.save()
+            if old_status != reservation.status:
+                notify_reservation_status(reservation, reservation.status)
             if reservation.status == Reservation.STATUS_CONFIRMED and reservation.table:
                 reservation.table.status = Table.STATUS_RESERVED
                 reservation.table.save(update_fields=["status"])
@@ -202,6 +226,7 @@ def reservation_checkin(request, pk):
         old_status = reservation.status
         reservation.status = Reservation.STATUS_COMPLETED
         reservation.save(update_fields=["status"])
+        notify_reservation_status(reservation, Reservation.STATUS_COMPLETED)
         reservation.table.status = Table.STATUS_OCCUPIED
         reservation.table.save(update_fields=["status"])
         AuditLog.objects.create(

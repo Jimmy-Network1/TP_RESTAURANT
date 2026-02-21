@@ -1,20 +1,33 @@
 {% extends "base_public.html" %}
 {% block title %}Checkout — Saveur 237{% endblock %}
-{% block content %}
+{% block extra_head %}
+<style>
+.checkout-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:24px;}
+.checkout-card{background:#fff;border-radius:16px;padding:28px;box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.04);}
+.order-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:8px;}
+.type-option{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 12px;border-radius:14px;border:2px solid rgba(0,0,0,0.08);cursor:pointer;transition:all .2s ease;text-align:center;}
+.type-option:hover{border-color:var(--green);background:var(--green-light);}
+.type-option input{display:none;}
+.type-option input:checked + .type-icon{transform:scale(1.1);}
+.type-option:has(input:checked){border-color:var(--green);background:var(--green-light);box-shadow:0 4px 12px rgba(0,135,81,0.15);}
+.type-icon{font-size:1.8rem;margin-bottom:2px;}
+.type-label{font-weight:700;font-size:0.9rem;}
+.payment-chip{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:12px;background:var(--green-light);color:var(--green);font-weight:700;border:1px solid rgba(0,135,81,0.2);}
+.summary-sticky{position:sticky;top:90px;}
+.summary-sticky h3{font-family:'Playfair Display',serif;margin:0 0 12px;}
+@media(max-width:768px){.checkout-grid{grid-template-columns:1fr;}.order-type-grid{grid-template-columns:1fr;}}
+</style>
 <script>
   function toggleAddress() {
     const type = document.querySelector('input[name="order_type"]:checked')?.value;
     const block = document.getElementById("address-block");
     const label = document.getElementById("payment-label");
     if (!block) return;
-    const show = type === "delivery";
-    block.style.display = show ? "block" : "none";
+    block.style.display = type === "delivery" ? "block" : "none";
     const tableBlock = document.getElementById("table-block");
-    if (tableBlock) {
-      tableBlock.style.display = type === "dine_in" ? "block" : "none";
-    }
+    if (tableBlock) tableBlock.style.display = type === "dine_in" ? "block" : "none";
     if (label) {
-      label.textContent = type === "takeaway" ? "Paiement au retrait" : (type === "dine_in" ? "Paiement au comptoir" : "Paiement a la livraison");
+      label.textContent = type === "takeaway" ? "💳 Paiement au retrait" : (type === "dine_in" ? "💳 Paiement au comptoir" : "💳 Paiement à la livraison");
     }
   }
   document.addEventListener("DOMContentLoaded", () => {
@@ -22,69 +35,85 @@
     toggleAddress();
   });
 </script>
-<div class="section-title">
-  <div>
-    <h2>Checkout</h2>
-    <p class="muted">Finalisez votre commande.</p>
-  </div>
+{% endblock %}
+{% block content %}
+<div style="margin-bottom:24px;">
+  <h2 style="font-family:'Playfair Display',serif;margin:0 0 6px;">✅ Finaliser la commande</h2>
+  <p class="muted">Vérifiez vos informations et validez.</p>
 </div>
 
-<div class="grid" style="grid-template-columns:2fr 1fr;gap:12px;">
-  <div class="card">
+<div class="checkout-grid">
+  <div class="checkout-card" data-animate="fadeUp">
     <form method="post">
       {% csrf_token %}
-      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
         <div>
           <label>Nom complet</label>
-          <input class="form-control" type="text" name="name" placeholder="Votre nom">
+          <input class="form-control" type="text" name="name" placeholder="Votre nom complet" pattern="[A-Za-z\s'\-]+">
         </div>
         <div>
           <label>Téléphone</label>
-          <input class="form-control" type="tel" name="phone" placeholder="+237 ...">
+          <input class="form-control" type="tel" name="phone" placeholder="+237 6xx xx xx xx" pattern="\+?\d[\d\s\-]{5,}">
         </div>
       </div>
 
-      <div style="margin-top:12px;">
-        <label>Type de commande</label>
-        <div class="menu-filters">
-          <label class="chip"><input type="radio" name="order_type" value="dine_in"> Sur place</label>
-          <label class="chip"><input type="radio" name="order_type" value="delivery" checked> Livraison</label>
-          <label class="chip"><input type="radio" name="order_type" value="takeaway"> A emporter</label>
+      <div style="margin-top:20px;">
+        <label style="font-weight:700;">Type de commande</label>
+        <div class="order-type-grid">
+          <label class="type-option">
+            <input type="radio" name="order_type" value="dine_in">
+            <span class="type-icon">🪑</span>
+            <span class="type-label">Sur place</span>
+          </label>
+          <label class="type-option">
+            <input type="radio" name="order_type" value="delivery" checked>
+            <span class="type-icon">🛵</span>
+            <span class="type-label">Livraison</span>
+          </label>
+          <label class="type-option">
+            <input type="radio" name="order_type" value="takeaway">
+            <span class="type-icon">🥡</span>
+            <span class="type-label">À emporter</span>
+          </label>
         </div>
       </div>
 
-      <div id="address-block" style="margin-top:12px;">
+      <div id="address-block" style="margin-top:16px;">
         <label>Adresse de livraison</label>
-        <input class="form-control" type="text" name="address" placeholder="Quartier, ville, details">
+        <input class="form-control" type="text" name="address" placeholder="Quartier, ville, détails supplémentaires">
       </div>
 
-      <div id="table-block" style="margin-top:12px;display:none;">
+      <div id="table-block" style="margin-top:16px;display:none;">
         <label>Numéro de table</label>
         <input class="form-control" type="text" name="table_number" placeholder="Ex: 12">
       </div>
 
-      <div style="margin-top:12px;">
+      <div style="margin-top:16px;">
         <label>Note pour la cuisine</label>
-        <textarea class="form-control" name="note" rows="3" placeholder="Ex: sans piment"></textarea>
+        <textarea class="form-control" name="note" rows="3" placeholder="Sans piment, allergies, instructions spéciales..."></textarea>
       </div>
 
-      <div style="margin-top:12px;">
+      <div style="margin-top:16px;">
         <label>Mode de paiement</label>
-        <div class="menu-filters">
-          <span class="chip active" id="payment-label">Paiement a la livraison</span>
+        <div style="margin-top:6px;">
+          <span class="payment-chip" id="payment-label">💳 Paiement à la livraison</span>
         </div>
       </div>
 
-      <div style="margin-top:12px;">
-        <button class="btn" type="submit">Valider commande</button>
+      <div style="margin-top:24px;">
+        <button class="btn" type="submit" style="padding:14px 28px;font-size:1rem;">Valider ma commande →</button>
       </div>
     </form>
   </div>
 
-  <div class="card">
-    <h3 style="margin-top:0;">Résumé</h3>
-    <p class="muted">Statut initial: EN_ATTENTE</p>
-    <a class="btn-outline" href="{% url 'public:cart' %}">Retour panier</a>
+  <div class="summary-sticky">
+    <div class="checkout-card" data-animate="fadeUp">
+      <h3>Récapitulatif</h3>
+      <div style="padding:12px 0;border-top:1px solid rgba(0,0,0,0.05);">
+        <p class="muted" style="margin:0;">Statut initial : <strong>EN_ATTENTE</strong></p>
+      </div>
+      <a class="btn-outline" href="{% url 'public:cart' %}" style="width:100%;text-align:center;">← Retour au panier</a>
+    </div>
   </div>
 </div>
 {% endblock %}

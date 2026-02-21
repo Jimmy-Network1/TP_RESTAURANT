@@ -1,0 +1,38 @@
+{% extends "base_staff.html" %}
+{% block title %}Créer utilisateur — Saveur 237{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:20px;">
+  <div>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">👥 Accounts</span>
+    <h2 style="margin:8px 0 4px;">Créer un utilisateur staff</h2>
+    <p class="muted">Uniquement accessible aux gérants.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'accounts:users' %}">← Retour</a>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="grid">
+      <div class="form-row"><label>Prénom</label>{{ form.first_name }}</div>
+      <div class="form-row"><label>Nom</label>{{ form.last_name }}</div>
+    </div>
+    <div class="grid">
+      <div class="form-row"><label>Username</label>{{ form.username }}</div>
+      <div class="form-row"><label>Email</label>{{ form.email }}</div>
+    </div>
+    <div class="grid">
+      <div class="form-row"><label>Rôle</label>{{ form.role }}</div>
+      <div class="form-row"><label>Actif</label>{{ form.is_active }}</div>
+    </div>
+    <div class="grid">
+      <div class="form-row"><label>Mot de passe</label>{{ form.password1 }}</div>
+      <div class="form-row"><label>Confirmer</label>{{ form.password2 }}</div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;">
+      <button class="btn" type="submit">Créer utilisateur</button>
+      <a class="btn-outline" href="{% url 'accounts:users' %}">Annuler</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

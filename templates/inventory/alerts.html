@@ -1,47 +1,44 @@
 {% extends "base_staff.html" %}
 {% block title %}Alertes stock — Saveur 237{% endblock %}
 {% block content %}
-<style>
-  .alert-card{display:grid;gap:6px;}
-  .progress{height:8px;background:#eee;border-radius:999px;overflow:hidden;}
-  .progress > span{display:block;height:100%;background:var(--red);} 
-</style>
-
-<div class="section-title">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(206,17,38,0.12);color:var(--red);">Alerte</p>
-    <h2>Stock faible</h2>
-    <p class="muted">Produits sous le seuil minimal.</p>
+    <span class="pill" style="background:rgba(206,17,38,.1);color:var(--red);">⚠️ Inventaire</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Alertes de stock</h2>
+    <p class="muted">Articles en dessous du seuil d'alerte.</p>
   </div>
-  <a class="btn-outline" href="{% url 'inventory:stock' %}">Retour stock</a>
+  <a class="btn-outline" href="{% url 'inventory:stock' %}">← Retour stock</a>
 </div>
 
-<div class="card" style="margin-bottom:12px;">
-  <h4 style="margin-top:0;">Dernières alertes</h4>
-  <div style="display:grid;gap:6px;">
-    {% for a in alerts %}
-      <div class="muted">{{ a.created_at|date:"d/m H:i" }} • {{ a.message }} • {{ a.created_by.username|default:"-" }}</div>
-    {% empty %}
-      <div class="muted">Aucune alerte récente.</div>
-    {% endfor %}
-  </div>
-</div>
-
-<div class="grid">
-  {% for item in items %}
-  <div class="card alert-card">
-    <strong>{{ item.name }}</strong>
-    <span class="muted">{{ item.quantity_in_stock }} {{ item.get_unit_display }} / seuil {{ item.alert_threshold }}</span>
-    <div class="progress"><span style="width:{{ percent_map[item.id]|default:0 }}%"></span></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <span class="badge" style="background:rgba(206,17,38,0.12);color:var(--red);">Stock faible</span>
-      {% if is_manager %}
-        <a class="btn-outline" href="{% url 'inventory:stock_edit' item.id %}">Ajouter stock</a>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;" data-animate="fadeUp">
+  {% for alert in alerts %}
+  <div class="card" style="border-left:4px solid {% if alert.ingredient.quantity <= 0 %}var(--red){% else %}var(--yellow){% endif %};transition:.25s;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <strong>{{ alert.ingredient.name }}</strong>
+      {% if alert.ingredient.quantity <= 0 %}
+      <span class="pill" style="background:rgba(206,17,38,.1);color:var(--red);font-size:11px;">🔴 Rupture</span>
+      {% else %}
+      <span class="pill" style="background:rgba(252,209,22,.18);color:#9b6a00;font-size:11px;">🟡 Faible</span>
       {% endif %}
     </div>
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
+        <span>Stock actuel : <strong>{{ alert.ingredient.quantity }} {{ alert.ingredient.unit }}</strong></span>
+        <span>Seuil : {{ alert.ingredient.alert_threshold }}</span>
+      </div>
+      <div style="background:#eee;border-radius:6px;height:8px;overflow:hidden;">
+        {% widthratio alert.ingredient.quantity alert.ingredient.alert_threshold 100 as pct %}
+        <div style="width:{% widthratio alert.ingredient.quantity alert.ingredient.alert_threshold 100 %}%;height:100%;background:{% if alert.ingredient.quantity <= 0 %}var(--red){% else %}var(--yellow){% endif %};border-radius:6px;transition:.3s;"></div>
+      </div>
+    </div>
+    <a class="btn-outline" href="{% url 'inventory:movement_new' %}?ingredient={{ alert.ingredient.id }}" style="width:100%;text-align:center;font-size:12px;">📥 Approvisionner</a>
   </div>
   {% empty %}
-  <div class="card">Aucune alerte.</div>
+  <div class="card" style="text-align:center;padding:40px;grid-column:1/-1;">
+    <div style="font-size:44px;">✅</div>
+    <h3>Aucune alerte</h3>
+    <p class="muted">Tous les stocks sont au-dessus du seuil d'alerte.</p>
+  </div>
   {% endfor %}
 </div>
 {% endblock %}

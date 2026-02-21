@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import Group
+import re
 
 from .models import CustomerProfile, Address
 
@@ -57,11 +58,32 @@ class RegisterForm(forms.ModelForm):
             raise forms.ValidationError("Cet email est deja utilise.")
         return email
 
+    def clean_phone(self):
+        phone = (self.cleaned_data.get("phone") or "").strip()
+        if phone:
+            normalized = re.sub(r"[\s\-]", "", phone)
+            if not re.fullmatch(r"\+?\d{6,15}", normalized):
+                raise forms.ValidationError("Numéro de téléphone invalide.")
+            return normalized
+        return phone
+
     def clean_username(self):
         username = self.cleaned_data.get("username")
         if username and User.objects.filter(username__iexact=username).exists():
             raise forms.ValidationError("Ce nom d'utilisateur est deja pris.")
         return username
+
+    def clean_first_name(self):
+        first = (self.cleaned_data.get("first_name") or "").strip()
+        if first and not re.fullmatch(r"[A-Za-z\s'\-]+", first):
+            raise forms.ValidationError("Prénom invalide.")
+        return first
+
+    def clean_last_name(self):
+        last = (self.cleaned_data.get("last_name") or "").strip()
+        if last and not re.fullmatch(r"[A-Za-z\s'\-]+", last):
+            raise forms.ValidationError("Nom invalide.")
+        return last
 
     def clean(self):
         cleaned = super().clean()
@@ -71,6 +93,15 @@ class RegisterForm(forms.ModelForm):
 
 
 class ClientProfileForm(forms.ModelForm):
+    def clean_phone(self):
+        phone = (self.cleaned_data.get("phone") or "").strip()
+        if phone:
+            normalized = re.sub(r"[\s\-]", "", phone)
+            if not re.fullmatch(r"\+?\d{6,15}", normalized):
+                raise forms.ValidationError("Numéro de téléphone invalide.")
+            return normalized
+        return phone
+
     class Meta:
         model = CustomerProfile
         fields = ["phone", "preferences"]
@@ -121,6 +152,18 @@ class StaffCreateForm(forms.ModelForm):
         if cleaned.get("password1") != cleaned.get("password2"):
             self.add_error("password2", "Les mots de passe ne correspondent pas.")
         return cleaned
+
+    def clean_first_name(self):
+        first = (self.cleaned_data.get("first_name") or "").strip()
+        if first and not re.fullmatch(r"[A-Za-z\s'\-]+", first):
+            raise forms.ValidationError("Prénom invalide.")
+        return first
+
+    def clean_last_name(self):
+        last = (self.cleaned_data.get("last_name") or "").strip()
+        if last and not re.fullmatch(r"[A-Za-z\s'\-]+", last):
+            raise forms.ValidationError("Nom invalide.")
+        return last
 
     def save(self, commit=True):
         user = super().save(commit=False)

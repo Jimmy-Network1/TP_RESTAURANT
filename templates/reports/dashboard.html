@@ -1,80 +1,70 @@
 {% extends "base_staff.html" %}
-{% block title %}Rapports — Dashboard{% endblock %}
+{% block title %}Tableau de bord rapports — Saveur 237{% endblock %}
 {% block content %}
-<style>
-  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
-  .kpi{display:grid;gap:6px;padding:16px;border-radius:14px;color:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.08);} 
-  .kpi.sales{background:linear-gradient(135deg,#3E2723,#6d4c41);} 
-  .kpi.orders{background:linear-gradient(135deg,#008751,#1b9b6a);} 
-  .kpi.progress{background:linear-gradient(135deg,#f1c40f,#f39c12);} 
-  .kpi.mix{background:linear-gradient(135deg,#2c3e50,#34495e);} 
-  .chips{display:flex;gap:8px;flex-wrap:wrap;}
-  .chip{border:1px solid #e4e4e4;background:#fff;padding:6px 12px;border-radius:999px;font-weight:700;font-size:13px;text-decoration:none;color:#333;}
-  .chip.active{border-color:var(--green);color:var(--green);} 
-  .notif{display:grid;gap:8px;}
-  .notif-item{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:8px 10px;background:#fafafa;}
-</style>
+{% if not is_manager %}<div class="card" style="text-align:center;padding:40px;"><h3>⛔ Accès réservé</h3><p class="muted">Seul le manager peut consulter les rapports.</p></div>{% else %}
+<div data-animate="fadeUp" style="margin-bottom:18px;">
+  <span class="pill" style="background:var(--green-light);color:var(--green);">📊 Rapports</span>
+  <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Tableau de bord</h2>
+  <p class="muted">Vue globale de l'activité du restaurant.</p>
+</div>
 
-<div class="section-title">
-  <div>
-    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Reports</p>
-    <h2>Dashboard Rapports</h2>
-    <p class="muted">Période: {{ start }} → {{ end }}</p>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;" data-animate="fadeUp">
+  <a class="pill {% if period == 'today' %}active{% endif %}" href="?period=today" style="{% if period == 'today' %}background:var(--green);color:#fff;{% else %}background:#f0f0f0;color:#555;{% endif %}padding:6px 14px;text-decoration:none;">Aujourd'hui</a>
+  <a class="pill" href="?period=week" style="{% if period == 'week' %}background:var(--green);color:#fff;{% else %}background:#f0f0f0;color:#555;{% endif %}padding:6px 14px;text-decoration:none;">Semaine</a>
+  <a class="pill" href="?period=month" style="{% if period == 'month' %}background:var(--green);color:#fff;{% else %}background:#f0f0f0;color:#555;{% endif %}padding:6px 14px;text-decoration:none;">Mois</a>
+</div>
+
+<div class="grid" data-animate="fadeUp" style="margin-bottom:18px;">
+  <div class="card" style="background:linear-gradient(135deg,var(--green),#00a86b);color:#fff;text-align:center;padding:24px;">
+    <div style="font-size:13px;opacity:.8;">💰 Chiffre d'affaires</div>
+    <div style="font-size:28px;font-weight:800;font-family:'Playfair Display',serif;">{{ revenue|default:0 }} FCFA</div>
   </div>
-  <div class="chips">
-    <a class="chip {% if preset == 'today' %}active{% endif %}" href="{% url 'reports:dashboard' %}?period=today">Aujourd’hui</a>
-    <a class="chip {% if preset == 'week' %}active{% endif %}" href="{% url 'reports:dashboard' %}?period=week">Semaine</a>
-    <a class="chip {% if preset == 'month' %}active{% endif %}" href="{% url 'reports:dashboard' %}?period=month">Mois</a>
+  <div class="card" style="background:linear-gradient(135deg,var(--brown),#5D4037);color:#fff;text-align:center;padding:24px;">
+    <div style="font-size:13px;opacity:.8;">📦 Commandes</div>
+    <div style="font-size:28px;font-weight:800;font-family:'Playfair Display',serif;">{{ orders_count|default:0 }}</div>
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,#2980b9,#3498db);color:#fff;text-align:center;padding:24px;">
+    <div style="font-size:13px;opacity:.8;">🛵 Livraisons</div>
+    <div style="font-size:28px;font-weight:800;font-family:'Playfair Display',serif;">{{ deliveries_count|default:0 }}</div>
+  </div>
+  <div class="card" style="background:linear-gradient(135deg,#8e44ad,#9b59b6);color:#fff;text-align:center;padding:24px;">
+    <div style="font-size:13px;opacity:.8;">🧾 Panier moyen</div>
+    <div style="font-size:28px;font-weight:800;font-family:'Playfair Display',serif;">{{ avg_basket|default:0 }} FCFA</div>
   </div>
 </div>
 
-{% if not is_manager %}
-  <div class="card" style="margin-top:12px;">
-    <p class="muted">Accès réservé au gérant.</p>
-  </div>
-{% else %}
-<div class="kpi-grid">
-  <div class="kpi sales">
-    <span>Total ventes</span>
-    <strong>{{ total_sales }} FCFA</strong>
-  </div>
-  <div class="kpi orders">
-    <span>Commandes payées</span>
-    <strong>{{ paid_orders_count }}</strong>
-  </div>
-  <div class="kpi progress">
-    <span>Commandes en cours</span>
-    <strong>{{ in_progress }}</strong>
-  </div>
-  <div class="kpi mix">
-    <span>Top produit</span>
-    <strong>{% if top_item %}{{ top_item.dish__name }}{% else %}-{% endif %}</strong>
-  </div>
-</div>
-
-<div class="grid" style="margin-top:12px;">
-  <div class="card">
-    <h4>Revenus par type</h4>
-    <p>Sur place: <strong>{{ by_type.dine_in }}</strong></p>
-    <p>Livraison: <strong>{{ by_type.delivery }}</strong></p>
-    <p>Emporter: <strong>{{ by_type.takeaway }}</strong></p>
-  </div>
-  <div class="card">
-    <h4>Alertes</h4>
-    <div class="notif">
-      <div class="notif-item"><span>Stock faible</span><span class="badge">{{ low_stock }}</span></div>
-      <div class="notif-item"><span>Livraisons en retard</span><span class="badge">{{ late_deliveries }}</span></div>
-      <div class="notif-item"><span>En attente cuisine</span><span class="badge">{{ kitchen_pending }}</span></div>
+{% if revenue_by_type %}
+<div class="card" style="margin-bottom:18px;" data-animate="fadeUp">
+  <h3 style="margin-top:0;">💳 CA par type</h3>
+  <div style="display:grid;gap:8px;">
+    {% for entry in revenue_by_type %}
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding-bottom:8px;">
+      <span>{{ entry.type }}</span>
+      <strong>{{ entry.total }} FCFA</strong>
     </div>
+    {% endfor %}
   </div>
 </div>
+{% endif %}
 
-<div class="card" style="margin-top:12px;">
-  <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <a class="btn-outline" href="{% url 'reports:daily' %}">Ventes journalières</a>
-    <a class="btn-outline" href="{% url 'reports:products' %}">Produits top</a>
-    <a class="btn-outline" href="{% url 'reports:delivery' %}">Livraisons</a>
-    <a class="btn-outline" href="{% url 'reports:export' %}">Export</a>
+{% if alerts %}
+<div class="card" style="margin-bottom:18px;border-left:4px solid var(--red);" data-animate="fadeUp">
+  <h3 style="margin-top:0;">⚠️ Alertes</h3>
+  <ul style="padding-left:16px;color:#555;font-size:13px;line-height:1.8;">
+    {% for a in alerts %}<li>{{ a }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+<div class="card" data-animate="fadeUp">
+  <h3 style="margin-top:0;">🔗 Navigation rapide</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;">
+    <a class="btn-outline" href="{% url 'reports:daily' %}" style="text-align:center;">📅 Rapport journalier</a>
+    <a class="btn-outline" href="{% url 'reports:products' %}" style="text-align:center;">🏆 Top produits</a>
+    <a class="btn-outline" href="{% url 'reports:delivery' %}" style="text-align:center;">🛵 Rapport livraisons</a>
+    <a class="btn-outline" href="{% url 'reports:stats' %}" style="text-align:center;">📈 Statistiques</a>
+    <a class="btn-outline" href="{% url 'reports:dashboard' %}" style="text-align:center;">📊 Rapport général</a>
+    <a class="btn-outline" href="{% url 'reports:export' %}" style="text-align:center;">📤 Exporter</a>
   </div>
 </div>
 {% endif %}

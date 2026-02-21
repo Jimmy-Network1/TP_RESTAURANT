@@ -1,54 +1,84 @@
 {% extends "base_public.html" %}
 {% block title %}Panier — Saveur 237{% endblock %}
+{% block extra_head %}
+<style>
+.cart-layout{display:grid;grid-template-columns:1.5fr 1fr;gap:24px;}
+.cart-card{background:#fff;border-radius:16px;padding:24px;box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.04);}
+.cart-item{display:grid;grid-template-columns:1fr auto auto auto;gap:14px;align-items:center;padding:16px 0;border-bottom:1px solid rgba(0,0,0,0.05);}
+.cart-item:last-child{border-bottom:none;}
+.cart-item-info strong{display:block;margin-bottom:2px;}
+.cart-item-info .muted{font-size:0.85rem;}
+.cart-unavailable{color:var(--red);font-weight:700;font-size:0.8rem;}
+.summary-card{background:#fff;border-radius:16px;padding:24px;box-shadow:var(--shadow-md);border:1px solid rgba(0,0,0,0.04);position:sticky;top:90px;}
+.summary-card h3{font-family:'Playfair Display',serif;margin:0 0 16px;}
+.summary-total{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-top:2px solid var(--green);margin-top:12px;font-size:1.2rem;}
+.empty-cart{text-align:center;padding:60px 20px;}
+.empty-cart p{font-size:1.1rem;color:#888;margin:0 0 16px;}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
+input[type=number]{-moz-appearance:textfield;}
+@media(max-width:768px){.cart-layout{grid-template-columns:1fr;}.cart-item{grid-template-columns:1fr;gap:8px;}}
+</style>
+{% endblock %}
 {% block content %}
-<div class="section-title">
-  <div>
-    <h2>Votre panier</h2>
-    <p class="muted">Modifiez les quantités et validez.</p>
-  </div>
+<div style="margin-bottom:24px;">
+  <h2 style="font-family:'Playfair Display',serif;margin:0 0 6px;">🛒 Votre panier</h2>
+  <p class="muted">Modifiez les quantités ou supprimez des articles.</p>
 </div>
 
-<div class="grid" style="grid-template-columns:1.4fr .6fr;gap:14px;">
-  <div class="card">
-    {% if items %}
-      <div class="cart-list" id="cart-items">
-        {% for it in items %}
-        <div class="cart-item" data-item-id="{{ it.dish.id }}">
-          <div>
-            <strong>{{ it.dish.name }}</strong>
-            <div class="muted">{{ it.dish.price }} FCFA</div>
-            {% if not it.available %}
-              <div class="muted" style="color:#b01022;font-weight:700;">Indisponible</div>
-            {% endif %}
-          </div>
-          <form method="post" action="{% url 'public:cart_update' it.dish.id %}" class="qty" data-ajax="1">
-            {% csrf_token %}
-            <input class="form-control" style="width:60px;" type="number" name="qty" value="{{ it.qty }}" min="0">
-            <button class="btn-outline" type="submit">Mettre à jour</button>
-          </form>
-          <form method="post" action="{% url 'public:cart_remove' it.dish.id %}" data-ajax="1">
-            {% csrf_token %}
-            <button class="btn-outline" type="submit">Supprimer</button>
-          </form>
-          <div class="muted js-line-total" data-line-total="{{ it.line_total }}">{{ it.line_total }} FCFA</div>
-        </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-    <p class="muted" id="cart-empty" {% if items %}style="display:none;"{% endif %}>Votre panier est vide.</p>
-    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;" id="cart-actions">
-      <a class="btn-outline" href="{% url 'public:menu' %}">Continuer achats</a>
+<div class="cart-layout">
+  <div>
+    <div class="cart-card" data-animate="fadeUp">
       {% if items %}
-        <a class="btn" id="checkout-btn" href="{% url 'public:checkout' %}" {% if has_unavailable %}style="pointer-events:none;opacity:0.6;"{% endif %}>Passer commande</a>
+        <div id="cart-items">
+          {% for it in items %}
+          <div class="cart-item" data-item-id="{{ it.dish.id }}">
+            <div class="cart-item-info">
+              <strong>{{ it.dish.name }}</strong>
+              <div class="muted">{{ it.dish.price }} FCFA / unité</div>
+              {% if not it.available %}
+                <div class="cart-unavailable">⚠ Indisponible</div>
+              {% endif %}
+            </div>
+            <form method="post" action="{% url 'public:cart_update' it.dish.id %}" style="display:flex;align-items:center;gap:6px;" data-ajax="1">
+              {% csrf_token %}
+              <button class="btn-outline" type="submit" name="action" value="dec" data-qty-action="dec" style="padding:8px 12px;">−</button>
+              <input class="form-control" style="width:60px;text-align:center;" type="number" name="qty" value="{{ it.qty }}" min="0">
+              <button class="btn-outline" type="submit" name="action" value="inc" data-qty-action="inc" style="padding:8px 12px;">+</button>
+            </form>
+            <form method="post" action="{% url 'public:cart_remove' it.dish.id %}" data-ajax="1">
+              {% csrf_token %}
+              <button class="btn-outline" type="submit" style="padding:8px 12px;color:var(--red);border-color:var(--red);">✕</button>
+            </form>
+            <div class="js-line-total" data-line-total="{{ it.line_total }}" style="font-weight:700;white-space:nowrap;">{{ it.line_total }} FCFA</div>
+          </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+      <div class="empty-cart" id="cart-empty" {% if items %}style="display:none;"{% endif %}>
+        <p>Votre panier est vide</p>
+        <a class="btn" href="{% url 'public:menu' %}">Parcourir le menu</a>
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;" id="cart-actions">
+      <a class="btn-outline" href="{% url 'public:menu' %}">← Continuer les achats</a>
+    </div>
+  </div>
+
+  <div>
+    <div class="summary-card" data-animate="fadeUp">
+      <h3>Récapitulatif</h3>
+      <div class="summary-total">
+        <span>Total</span>
+        <strong id="cart-total" data-total="{{ total }}">{{ total }} FCFA</strong>
+      </div>
+      {% if items %}
+        <a class="btn" id="checkout-btn" href="{% url 'public:checkout' %}" style="width:100%;margin-top:16px;text-align:center;padding:14px;" {% if has_unavailable %}style="pointer-events:none;opacity:0.5;"{% endif %}>Passer commande →</a>
         {% if has_unavailable %}
-          <div class="muted" id="cart-unavailable" style="margin-top:6px;">Retirez les produits indisponibles pour continuer.</div>
+          <p class="muted" id="cart-unavailable" style="margin-top:8px;color:var(--red);font-size:0.85rem;">⚠ Retirez les produits indisponibles pour continuer.</p>
         {% endif %}
       {% endif %}
     </div>
-  </div>
-  <div class="card">
-    <h3>Résumé</h3>
-    <p>Total: <strong id="cart-total" data-total="{{ total }}">{{ total }} FCFA</strong></p>
   </div>
 </div>
 {% endblock %}

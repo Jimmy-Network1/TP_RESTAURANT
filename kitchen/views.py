@@ -8,6 +8,7 @@ from django.views import View
 from django.views.generic import DetailView, ListView
 
 from orders.models import Order, OrderNotification
+from accounts.notifications import create_notification
 from orders.utils import can_transition, log_transition
 
 
@@ -37,11 +38,12 @@ class KitchenBoardView(ListView):
         qs = Order.objects.filter(status__in=[
             Order.STATUS_PENDING,
             Order.STATUS_PREPARING,
+            Order.STATUS_READY,
         ]).order_by("created_at")
         status = self.request.GET.get("status")
         source = self.request.GET.get("source")
         otype = self.request.GET.get("type")
-        if status in [Order.STATUS_PENDING, Order.STATUS_PREPARING]:
+        if status in [Order.STATUS_PENDING, Order.STATUS_PREPARING, Order.STATUS_READY]:
             qs = qs.filter(status=status)
         if source == "TABLE":
             qs = qs.filter(order_type=Order.TYPE_DINE_IN)
@@ -63,9 +65,15 @@ class KitchenBoardView(ListView):
         orders = list(self.object_list)
         kitchen_orders = []
         bar_orders = []
+        count_server = 0
+        count_courier = 0
         for o in orders:
             has_drink = False
             has_food = False
+            if o.order_type == Order.TYPE_DELIVERY:
+                count_courier += 1
+            else:
+                count_server += 1
             for it in o.items.all():
                 cat = (it.dish.category.name or "").lower()
                 if "boisson" in cat:
@@ -78,6 +86,8 @@ class KitchenBoardView(ListView):
                 bar_orders.append(o)
         ctx["kitchen_orders"] = kitchen_orders
         ctx["bar_orders"] = bar_orders
+        ctx["count_server"] = count_server
+        ctx["count_courier"] = count_courier
         ctx["latest_ticket_id"] = Order.objects.filter(status__in=[Order.STATUS_PENDING, Order.STATUS_PREPARING]).order_by("-created_at").values_list("id", flat=True).first() or 0
         return ctx
 
@@ -121,20 +131,30 @@ def kitchen_action(request, pk):
             order.status = Order.STATUS_READY
             order.save(update_fields=["status"])
             log_transition(order, request.user, old_status, order.status)
-            if order.order_type == Order.TYPE_DINE_IN:
-                OrderNotification.objects.create(
-                    order=order,
-                    target=OrderNotification.TARGET_SERVER,
-                    message=f"Commande #{order.id} prête pour table {order.table.name if order.table else '-'}",
-                )
-                messages.success(request, "Commande prête. Serveur notifié.")
-            else:
+            if order.order_type == Order.TYPE_DELIVERY:
                 OrderNotification.objects.create(
                     order=order,
                     target=OrderNotification.TARGET_DELIVERY,
                     message=f"Commande #{order.id} prête pour {order.get_order_type_display()}",
                 )
-                messages.success(request, "Commande prête. Livraison / pickup notifié.")
+                create_notification(
+                    target_role="delivery",
+                    message=f"Commande #{order.id} prête à livrer",
+                    url=f"/orders/{order.id}/",
+                )
+                messages.success(request, "Commande prête. Livraison notifiée.")
+            else:
+                OrderNotification.objects.create(
+                    order=order,
+                    target=OrderNotification.TARGET_SERVER,
+                    message=f"Commande #{order.id} prête pour table {order.table.name if order.table else '-'}",
+                )
+                create_notification(
+                    target_role="server",
+                    message=f"Commande #{order.id} prête à servir",
+                    url=f"/orders/{order.id}/",
+                )
+                messages.success(request, "Commande prête. Serveur notifié.")
         else:
             messages.error(request, "Transition non autorisée.")
     elif action == "issue":

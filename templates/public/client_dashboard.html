@@ -1,160 +1,151 @@
 {% extends "base_public.html" %}
 {% block title %}Mon espace — Saveur 237{% endblock %}
-{% block content %}
+{% block extra_head %}
 <style>
-  .dash-shell{display:grid;gap:16px;}
-  .hero{display:grid;gap:12px;padding:18px;border-radius:16px;background:linear-gradient(135deg,rgba(0,135,81,0.12),rgba(62,39,35,0.08));border:1px solid #e9e9e9;}
-  .hero h1{margin:0;font-size:1.6rem;}
-  .hero p{margin:0;color:#666;}
-  .cta-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
-  .btn-primary{display:inline-flex;align-items:center;gap:8px;background:#3E2723;color:#fff;text-decoration:none;padding:10px 14px;border-radius:12px;font-weight:700;border:1px solid #3E2723;}
-  .btn-primary:hover{filter:brightness(1.05);}
-  .btn-secondary{display:inline-flex;align-items:center;gap:8px;background:#fff;color:#3E2723;text-decoration:none;padding:10px 14px;border-radius:12px;font-weight:700;border:1px solid #d7d7d7;}
-  .btn-secondary:hover{border-color:#3E2723;}
-  .btn-cart{position:relative;}
-  .btn-cart .badge{background:#008751;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:800;}
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
-  .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px;}
-  .card h3{margin:0 0 8px;}
-  .row{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #eee;border-radius:10px;padding:8px 10px;background:#fff;}
-  .badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-weight:700;font-size:12px;background:#eee;color:#333;}
-  .badge-info{background:rgba(0,135,81,0.12);color:#008751;}
-  .badge-warn{background:rgba(241,196,15,0.2);color:#9b6a00;}
-  .badge-ok{background:rgba(0,135,81,0.12);color:#008751;}
-  .badge-off{background:rgba(206,17,38,0.12);color:#b01022;}
-  .badge-route{background:rgba(80,120,255,0.15);color:#2d4aa0;}
-  .badge-done{background:rgba(0,135,81,0.12);color:#008751;}
-  .badge-paid{background:rgba(0,135,81,0.12);color:#008751;}
-  .badge-cancel{background:rgba(206,17,38,0.12);color:#b01022;}
-  .timeline{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:10px;}
-  .step{padding:6px 8px;border-radius:10px;border:1px solid #eee;text-align:center;font-size:12px;}
-  .step.active{border-color:#008751;background:rgba(0,135,81,0.08);font-weight:700;}
-  .muted{color:#666;font-size:13px;}
+.dash-hero{background:linear-gradient(135deg,rgba(0,135,81,0.1),rgba(62,39,35,0.06));border-radius:20px;padding:28px 30px;border:1px solid rgba(0,0,0,0.04);}
+.dash-hero h1{font-family:'Playfair Display',serif;font-size:1.8rem;margin:0 0 6px;}
+.dash-hero p{color:#666;margin:0 0 16px;}
+.cta-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;margin-top:24px;}
+.dash-card{background:#fff;border-radius:16px;padding:22px;box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.04);}
+.dash-card h3{font-family:'Playfair Display',serif;margin:0 0 14px;font-size:1.15rem;}
+.timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px;}
+.step{padding:8px 6px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);text-align:center;font-size:0.72rem;font-weight:600;color:#888;transition:all .2s ease;}
+.step.active{border-color:var(--green);background:var(--green-light);color:var(--green);font-weight:800;}
+.order-row{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;border:1px solid rgba(0,0,0,0.04);background:#fafafa;transition:background .15s ease;}
+.order-row:hover{background:var(--green-light);}
+.badge-sm{padding:4px 10px;border-radius:999px;font-weight:700;font-size:0.72rem;}
+.badge-warn{background:rgba(241,196,15,0.2);color:#9b6a00;}
+.badge-route{background:rgba(80,120,255,0.15);color:#2d4aa0;}
+.badge-ok{background:rgba(0,135,81,0.12);color:var(--green);}
+.badge-done{background:rgba(0,135,81,0.12);color:var(--green);}
+.badge-paid{background:rgba(0,135,81,0.15);color:var(--green);}
+.badge-cancel{background:rgba(206,17,38,0.12);color:var(--red);}
+.badge-off{background:rgba(206,17,38,0.12);color:var(--red);}
+.badge-info{background:rgba(80,120,255,0.1);color:#2d4aa0;}
+.profile-card{background:linear-gradient(135deg,rgba(62,39,35,0.04),rgba(0,135,81,0.04));border-radius:16px;padding:22px;border:1px solid rgba(0,0,0,0.04);}
 </style>
+{% endblock %}
+{% block content %}
+<div class="dash-hero" data-animate="fadeUp">
+  <h1>Bienvenue, {{ request.user.first_name|default:request.user.username }} 👋</h1>
+  <p>Votre espace personnel pour commander, réserver et suivre vos actions.</p>
+  <div class="cta-row">
+    <a class="btn" href="{% url 'public:menu' %}">🍽️ Commander</a>
+    <a class="btn-outline" href="{% url 'reservations:client_new' %}">📅 Réserver</a>
+    <a class="btn-outline" href="{% url 'public:cart' %}">🛒 Panier <span class="pill" style="margin-left:4px;">{{ cart_count }}</span></a>
+  </div>
+  <p class="muted" style="margin-top:10px;font-size:0.85rem;">Annulation possible jusqu'à 1h avant l'heure de réservation.</p>
+</div>
 
-<div class="dash-shell">
-  <div class="hero">
-    <div>
-      <h1>Bienvenue, {{ request.user.first_name|default:request.user.username }}</h1>
-      <p>Votre espace personnel pour commander, réserver et suivre vos actions.</p>
-    </div>
-    <div class="cta-row">
-      <a class="btn-primary" href="{% url 'public:menu' %}">Commander maintenant</a>
-      <a class="btn-secondary" href="{% url 'reservations:client_new' %}">Réserver une table</a>
-      <a class="btn-secondary btn-cart" href="{% url 'public:cart' %}">
-        Mon panier <span class="badge">{{ cart_count }}</span>
-      </a>
-    </div>
-    <div class="muted">Annulation d’une réservation possible jusqu’à 1h avant l’heure prévue.</div>
+<div class="dash-grid">
+  <div class="dash-card" data-animate="fadeUp">
+    <h3>📦 Commande en cours</h3>
+    {% if last_order %}
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <strong>#{{ last_order.id }}</strong>
+        <span class="badge-sm
+          {% if last_order.status == 'EN_ATTENTE' %}badge-warn
+          {% elif last_order.status == 'PREPARATION' %}badge-route
+          {% elif last_order.status == 'PRETE' %}badge-ok
+          {% elif last_order.status == 'EN_ROUTE' %}badge-route
+          {% elif last_order.status == 'LIVREE' %}badge-done
+          {% elif last_order.status == 'PAYEE' %}badge-paid
+          {% elif last_order.status == 'ANNULEE' %}badge-cancel
+          {% else %}badge-info{% endif %}">{{ last_order.get_status_display }}</span>
+        <span class="muted" style="font-size:0.85rem;">{{ last_order.get_order_type_display }}</span>
+      </div>
+      <div class="timeline">
+        <div class="step {% if last_order.status == 'EN_ATTENTE' %}active{% endif %}">En attente</div>
+        <div class="step {% if last_order.status == 'PREPARATION' %}active{% endif %}">Préparation</div>
+        <div class="step {% if last_order.status == 'PRETE' %}active{% endif %}">Prête</div>
+        <div class="step {% if last_order.status == 'EN_ROUTE' %}active{% endif %}">En route</div>
+        <div class="step {% if last_order.status == 'LIVREE' %}active{% endif %}">Livrée</div>
+      </div>
+      <div style="margin-top:12px;">
+        <a class="btn-outline" href="{% url 'public:orders' %}">Voir le suivi →</a>
+      </div>
+    {% else %}
+      <p class="muted">Aucune commande active.</p>
+      <a class="btn-outline" href="{% url 'public:menu' %}">Commander maintenant</a>
+    {% endif %}
   </div>
 
-  <div class="grid">
-    <div class="card">
-      <h3>Commande en cours</h3>
-      {% if last_order %}
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-          <span><strong>#{{ last_order.id }}</strong></span>
-          <span class="badge
-            {% if last_order.status == 'EN_ATTENTE' %}badge-warn
-            {% elif last_order.status == 'PREPARATION' %}badge-route
-            {% elif last_order.status == 'PRETE' %}badge-ok
-            {% elif last_order.status == 'EN_ROUTE' %}badge-route
-            {% elif last_order.status == 'LIVREE' %}badge-done
-            {% elif last_order.status == 'PAYEE' %}badge-paid
-            {% elif last_order.status == 'ANNULEE' %}badge-cancel
-            {% else %}badge-info{% endif %}">{{ last_order.get_status_display }}</span>
-          <span class="muted">{{ last_order.get_order_type_display }}</span>
-        </div>
-        <div class="timeline">
-          <div class="step {% if last_order.status == 'EN_ATTENTE' %}active{% endif %}">En attente</div>
-          <div class="step {% if last_order.status == 'PREPARATION' %}active{% endif %}">Préparation</div>
-          <div class="step {% if last_order.status == 'PRETE' %}active{% endif %}">Prête</div>
-          <div class="step {% if last_order.status == 'EN_ROUTE' %}active{% endif %}">En route</div>
-          <div class="step {% if last_order.status == 'LIVREE' %}active{% endif %}">Livrée</div>
-        </div>
-        <div style="margin-top:10px;">
-          <a class="btn-secondary" href="{% url 'public:orders' %}">Voir suivi</a>
-        </div>
-      {% else %}
-        <p class="muted">Aucune commande active.</p>
-        <a class="btn-secondary" href="{% url 'public:menu' %}">Commander maintenant</a>
-      {% endif %}
-    </div>
+  <div class="dash-card" data-animate="fadeUp">
+    <h3>📅 Dernière réservation</h3>
+    {% if last_res %}
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span>{{ last_res.reservation_datetime|date:"d/m H:i" }}</span>
+        <span class="badge-sm {% if last_res.status == 'CONFIRMED' %}badge-ok{% elif last_res.status == 'CANCELLED' %}badge-off{% elif last_res.status == 'COMPLETED' %}badge-done{% elif last_res.status == 'NO_SHOW' %}badge-cancel{% else %}badge-warn{% endif %}">
+          {{ last_res.get_status_display }}
+        </span>
+      </div>
+      <p class="muted">Pour {{ last_res.party_size }} personnes</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+        <a class="btn-outline" href="{% url 'reservations:client_detail' last_res.id %}">Détail</a>
+        <a class="btn-outline" href="{% url 'reservations:client_list' %}">Toutes</a>
+      </div>
+    {% else %}
+      <p class="muted">Aucune réservation.</p>
+      <a class="btn-outline" href="{% url 'reservations:client_new' %}">Réserver une table</a>
+    {% endif %}
+  </div>
+</div>
 
-    <div class="card">
-      <h3>Dernière réservation</h3>
-      {% if last_res %}
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-          <span>{{ last_res.reservation_datetime|date:"d/m H:i" }}</span>
-          <span class="badge {% if last_res.status == 'CONFIRMED' %}badge-ok{% elif last_res.status == 'CANCELLED' %}badge-off{% elif last_res.status == 'COMPLETED' %}badge-done{% elif last_res.status == 'NO_SHOW' %}badge-cancel{% else %}badge-warn{% endif %}">
-            {{ last_res.get_status_display }}
-          </span>
+<div class="dash-grid">
+  <div class="dash-card" data-animate="fadeUp">
+    <h3>🕐 Commandes récentes</h3>
+    <div style="display:grid;gap:8px;">
+      {% for o in recent_orders %}
+        <div class="order-row">
+          <span>{{ o.created_at|date:"d/m" }} · #{{ o.id }}</span>
+          <span class="badge-sm
+            {% if o.status == 'EN_ATTENTE' %}badge-warn
+            {% elif o.status == 'PREPARATION' %}badge-route
+            {% elif o.status == 'PRETE' %}badge-ok
+            {% elif o.status == 'EN_ROUTE' %}badge-route
+            {% elif o.status == 'LIVREE' %}badge-done
+            {% elif o.status == 'PAYEE' %}badge-paid
+            {% elif o.status == 'ANNULEE' %}badge-cancel
+            {% else %}badge-info{% endif %}">{{ o.get_status_display }}</span>
         </div>
-        <p class="muted">Pour {{ last_res.party_size }} personnes</p>
-        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-          <a class="btn-secondary" href="{% url 'reservations:client_detail' last_res.id %}">Voir détail</a>
-          <a class="btn-secondary" href="{% url 'reservations:client_list' %}">Mes réservations</a>
+      {% empty %}
+        <p class="muted">Aucune commande.</p>
+      {% endfor %}
+    </div>
+    <div style="margin-top:10px;">
+      <a class="btn-outline" href="{% url 'public:orders' %}">Voir tout →</a>
+    </div>
+  </div>
+
+  <div class="dash-card" data-animate="fadeUp">
+    <h3>📋 Mes réservations</h3>
+    <div style="display:grid;gap:8px;">
+      {% for r in recent_reservations %}
+        <div class="order-row">
+          <span>{{ r.reservation_datetime|date:"d/m H:i" }}</span>
+          <span class="badge-sm {% if r.status == 'CONFIRMED' %}badge-ok{% elif r.status == 'CANCELLED' %}badge-off{% elif r.status == 'COMPLETED' %}badge-done{% elif r.status == 'NO_SHOW' %}badge-cancel{% else %}badge-warn{% endif %}">{{ r.get_status_display }}</span>
         </div>
-      {% else %}
+      {% empty %}
         <p class="muted">Aucune réservation.</p>
-        <a class="btn-secondary" href="{% url 'reservations:client_new' %}">Réserver une table</a>
-      {% endif %}
+      {% endfor %}
+    </div>
+    <div style="margin-top:10px;">
+      <a class="btn-outline" href="{% url 'reservations:client_list' %}">Voir tout →</a>
     </div>
   </div>
+</div>
 
-  <div class="grid">
-    <div class="card">
-      <h3>Mes commandes récentes</h3>
-      <div style="display:grid;gap:8px;">
-        {% for o in recent_orders %}
-          <div class="row">
-            <span>{{ o.created_at|date:"d/m" }} • #{{ o.id }}</span>
-            <span class="badge
-              {% if o.status == 'EN_ATTENTE' %}badge-warn
-              {% elif o.status == 'PREPARATION' %}badge-route
-              {% elif o.status == 'PRETE' %}badge-ok
-              {% elif o.status == 'EN_ROUTE' %}badge-route
-              {% elif o.status == 'LIVREE' %}badge-done
-              {% elif o.status == 'PAYEE' %}badge-paid
-              {% elif o.status == 'ANNULEE' %}badge-cancel
-              {% else %}badge-info{% endif %}">{{ o.get_status_display }}</span>
-          </div>
-        {% empty %}
-          <p class="muted">Aucune commande.</p>
-        {% endfor %}
-      </div>
-      <div style="margin-top:10px;">
-        <a class="btn-secondary" href="{% url 'public:orders' %}">Voir tout</a>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Mes réservations</h3>
-      <div style="display:grid;gap:8px;">
-        {% for r in recent_reservations %}
-          <div class="row">
-            <span>{{ r.reservation_datetime|date:"d/m H:i" }}</span>
-            <span class="badge {% if r.status == 'CONFIRMED' %}badge-ok{% elif r.status == 'CANCELLED' %}badge-off{% elif r.status == 'COMPLETED' %}badge-done{% elif r.status == 'NO_SHOW' %}badge-cancel{% else %}badge-warn{% endif %}">{{ r.get_status_display }}</span>
-          </div>
-        {% empty %}
-          <p class="muted">Aucune réservation.</p>
-        {% endfor %}
-      </div>
-      <div style="margin-top:10px;">
-        <a class="btn-secondary" href="{% url 'reservations:client_list' %}">Voir tout</a>
-      </div>
-    </div>
+<div class="profile-card" data-animate="fadeUp" style="margin-top:20px;">
+  <h3 style="font-family:'Playfair Display',serif;margin:0 0 12px;">👤 Profil rapide</h3>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+    <div><span class="muted">Adresse par défaut :</span> <strong>{{ default_address|default:"Non définie" }}</strong></div>
+    <div><span class="muted">Téléphone :</span> <strong>{{ profile.phone|default:"Non renseigné" }}</strong></div>
+    <div><span class="muted">Email :</span> <strong>{{ request.user.email|default:"Non renseigné" }}</strong></div>
   </div>
-
-  <div class="card">
-    <h3>Profil rapide</h3>
-    <p><strong>Adresse par défaut:</strong> {{ default_address|default:"-" }}</p>
-    <p><strong>Téléphone:</strong> {{ profile.phone|default:"-" }}</p>
-    <p><strong>Email:</strong> {{ request.user.email|default:"-" }}</p>
-    <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-      <a class="btn-secondary" href="{% url 'accounts:profile' %}">Modifier profil</a>
-      <a class="btn-secondary" href="{% url 'accounts:addresses' %}">Gérer mes adresses</a>
-    </div>
+  <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+    <a class="btn-outline" href="{% url 'accounts:profile' %}">Modifier le profil</a>
+    <a class="btn-outline" href="{% url 'accounts:addresses' %}">Gérer mes adresses</a>
   </div>
 </div>
 {% endblock %}

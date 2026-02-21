@@ -1,38 +1,50 @@
 {% extends "base_public.html" %}
 {% block title %}Mon profil — Saveur 237{% endblock %}
 {% block content %}
-<div class="grid">
-  <div class="card">
-    <h2>Informations personnelles</h2>
-    <form method="post">
-      {% csrf_token %}
-      <div class="form-row">
-        <label>Nom</label>
-        <input class="form-control" value="{{ request.user.get_full_name }}" readonly>
-      </div>
-      <div class="form-row">
-        <label>Email</label>
-        <input class="form-control" value="{{ request.user.email }}" readonly>
-      </div>
-      <div class="form-row">
-        <label>Téléphone</label>
-        {{ form.phone }}
-      </div>
-      <div class="form-row">
-        <label>Préférences</label>
-        {{ form.preferences }}
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn" type="submit">Mettre à jour</button>
-        <a class="btn-outline" href="{% url 'accounts:addresses' %}">Gérer mes adresses</a>
-      </div>
-    </form>
+<section style="max-width:900px;margin:0 auto;padding:30px 16px;">
+  <div style="margin-bottom:24px;" data-animate="fadeUp">
+    <span class="pill" style="background:var(--green-light);color:var(--green);">👤 Mon profil</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Informations personnelles</h2>
+    <p class="muted">Gérez votre profil et vos préférences.</p>
   </div>
 
-  <div class="card">
-    <h3>Adresses</h3>
-    <p class="muted">{{ profile.addresses.count }} adresse(s) enregistrée(s).</p>
-    <a class="btn" href="{% url 'accounts:addresses' %}">Voir mes adresses</a>
+  <div class="grid" style="grid-template-columns:1.5fr 1fr;gap:20px;" data-animate="fadeUp">
+    <div class="card">
+      <h3 style="margin-top:0;">📝 Modifier mon profil</h3>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-row">
+          <label>Nom complet</label>
+          <input class="form-control" value="{{ request.user.get_full_name }}" readonly style="background:#f8f9fb;">
+        </div>
+        <div class="form-row">
+          <label>Email</label>
+          <input class="form-control" value="{{ request.user.email }}" readonly style="background:#f8f9fb;">
+        </div>
+        <div class="form-row">
+          <label>📱 Téléphone</label>
+          {{ form.phone }}
+        </div>
+        <div class="form-row">
+          <label>🍽️ Préférences alimentaires</label>
+          {{ form.preferences }}
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+          <button class="btn" type="submit">Mettre à jour</button>
+          <a class="btn-outline" href="{% url 'accounts:addresses' %}">📍 Gérer mes adresses</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" style="align-self:start;">
+      <h3 style="margin-top:0;">📍 Mes adresses</h3>
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-size:36px;margin-bottom:8px;">🏠</div>
+        <div style="font-size:28px;font-weight:800;color:var(--brown);">{{ profile.addresses.count }}</div>
+        <p class="muted">adresse(s) enregistrée(s)</p>
+      </div>
+      <a class="btn" href="{% url 'accounts:addresses' %}" style="width:100%;text-align:center;">Voir mes adresses →</a>
+    </div>
   </div>
-</div>
+</section>
 {% endblock %}

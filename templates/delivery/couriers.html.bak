@@ -1,0 +1,32 @@
+{% extends "base_staff.html" %}
+{% block title %}Livreurs — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Livraison</p>
+    <h2>Gestion des livreurs</h2>
+    <p class="muted">Statuts et disponibilites.</p>
+  </div>
+  <a class="btn" href="#">Ajouter livreur</a>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <table class="ord-table">
+    <thead>
+      <tr><th>Nom</th><th>Telephone</th><th>Statut</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for c in couriers %}
+        <tr>
+          <td>{{ c.user.username }}</td>
+          <td>{{ c.user.email|default:'-' }}</td>
+          <td>{% if c.status == 'busy' %}<span class="pill pill-off">Occupe</span>{% else %}<span class="pill pill-ok">Disponible</span>{% endif %}</td>
+          <td><div class="actions"><a class="icon-btn" href="#">Edit</a><a class="icon-btn" href="#">Off</a></div></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">Aucun livreur.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

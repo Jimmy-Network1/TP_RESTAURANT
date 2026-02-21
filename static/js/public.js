@@ -32,10 +32,52 @@
   document.addEventListener('DOMContentLoaded', () => {
     updateBadge();
     checkoutBehavior();
+    fetch('/cart/summary/', { credentials: 'same-origin' })
+      .then(r => r.ok ? r.json() : null)
+      .then(json => {
+        if (!json) return;
+        document.querySelectorAll('.js-cart-count').forEach(el => {
+          el.dataset.count = json.count;
+          el.textContent = json.count;
+        });
+      })
+      .catch(() => {});
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-qty-action]');
+      if (!btn) return;
+      const form = btn.closest('form');
+      if (!form) return;
+      const qtyInput = form.querySelector('input[name="qty"]');
+      if (!qtyInput) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (btn.dataset.busy === '1') return;
+      btn.dataset.busy = '1';
+      setTimeout(() => { btn.dataset.busy = '0'; }, 200);
+      const current = parseInt(qtyInput.value || '0', 10) || 0;
+      const next = btn.dataset.qtyAction === 'inc' ? current + 1 : Math.max(0, current - 1);
+      qtyInput.value = String(next);
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit(btn);
+      } else {
+        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+      }
+    });
     document.querySelectorAll('form[data-ajax="1"]').forEach(form => {
+      const qtyInput = form.querySelector('input[name="qty"]');
+      if (qtyInput) {
+        let timer = null;
+        const submitNow = () => form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        qtyInput.addEventListener('change', submitNow);
+        qtyInput.addEventListener('input', () => {
+          if (timer) clearTimeout(timer);
+          timer = setTimeout(submitNow, 350);
+        });
+      }
+      // handled by global click handler
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const data = new FormData(form);
+        const data = e.submitter ? new FormData(form, e.submitter) : new FormData(form);
         const res = await fetch(form.action, {
           method: form.method || 'POST',
           headers: {

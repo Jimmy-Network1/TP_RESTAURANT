@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Saveur 237 — Public{% endblock %}</title>
+  <title>{% block title %}Saveur 237{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/public.css' %}">
   {% block extra_head %}{% endblock %}
 </head>
@@ -12,64 +12,69 @@
   <header class="navbar">
     <div class="container navbar-inner">
       <a class="brand" href="{% url 'public:home' %}">
-        <img src="{% static 'logo/logo.png' %}" width="36" height="36" alt="Saveur 237">
+        <img src="{% static 'logo/logo.png' %}" width="42" height="42" alt="Saveur 237">
         <strong class="brand-title">Saveur 237</strong>
       </a>
-      <a class="btn-outline" href="javascript:history.back()">Retour</a>
       <nav class="nav-links">
         {% if is_server %}
-          <a href="{% url 'public:cart' %}">Panier</a>
-          <a href="{% url 'public:menu' %}">Commande</a>
+          <a href="{% url 'public:menu' %}">🛒 Commande</a>
+          <a href="{% url 'public:cart' %}">🧺 Panier <span class="badge js-cart-count" data-count="{{ cart_count }}" style="background:var(--green);color:#fff;margin-left:4px;">{{ cart_count }}</span></a>
         {% endif %}
         {% if not is_staff_role %}
-          <a href="{% url 'public:menu' %}">Menu</a>
-          <a href="{% url 'public:cart' %}">Panier <span class="badge js-cart-count" data-count="{{ cart_count }}">{{ cart_count }}</span></a>
-          <a href="{% url 'public:orders' %}">Mes commandes</a>
-          <a href="{% url 'reservations:client_list' %}">Reservations</a>
+          <a href="{% url 'public:menu' %}">🍽️ Menu</a>
+          <a href="{% url 'public:cart' %}">🛒 Panier <span class="badge js-cart-count" data-count="{{ cart_count }}" style="background:var(--green);color:#fff;margin-left:4px;">{{ cart_count }}</span></a>
+          <a href="{% url 'public:orders' %}">📋 Commandes</a>
+          <a href="{% url 'reservations:client_list' %}">📅 Réservations</a>
         {% endif %}
         {% if user.is_authenticated %}
           <div class="user-menu">
             <button class="user-chip" type="button">
               {{ user.username }}
               <span class="user-role">
-                {% if user.is_superuser %}Gerant{% elif user.groups.first %}{{ user.groups.first.name }}{% else %}Client{% endif %}
+                {% if user.is_superuser %}Gérant{% elif user.groups.first %}{{ user.groups.first.name }}{% else %}Client{% endif %}
               </span>
             </button>
             <div class="user-dropdown">
               {% if is_manager %}
-                <a href="{% url 'dashboard:home' %}">Dashboard global</a>
-                <a href="{% url 'dashboard:home' %}">Paramètres</a>
+                <a href="{% url 'dashboard:home' %}">📊 Dashboard</a>
+                <a href="{% url 'dashboard:home' %}">⚙️ Paramètres</a>
               {% elif is_server %}
-                <a href="{% url 'tables:plan' %}">Dashboard Salle</a>
+                <a href="{% url 'tables:plan' %}">🪑 Salle</a>
               {% elif is_cook %}
-                <a href="{% url 'kitchen:board' %}">Dashboard Kitchen</a>
+                <a href="{% url 'kitchen:board' %}">👨‍🍳 Cuisine</a>
               {% elif is_cashier %}
-                <a href="{% url 'billing:cashdesk' %}">Dashboard Billing</a>
+                <a href="{% url 'billing:cashdesk' %}">💳 Caisse</a>
               {% elif is_delivery %}
-                <a href="{% url 'delivery:dashboard' %}">Dashboard Livraison</a>
+                <a href="{% url 'delivery:dashboard' %}">🚚 Livraison</a>
               {% else %}
-                <a href="{% url 'dashboard:client' %}">Dashboard Client</a>
-                <a href="{% url 'dashboard:client' %}">Mon espace</a>
+                <a href="{% url 'dashboard:client' %}">📱 Mon espace</a>
+                <a href="{% url 'accounts:profile' %}">👤 Profil</a>
               {% endif %}
-              <a href="{% url 'accounts:logout' %}">Deconnexion</a>
+              <a href="{% url 'accounts:logout' %}" style="color:var(--red);">🚪 Déconnexion</a>
             </div>
           </div>
+          <a class="btn-outline" href="{{ notification_url }}" style="padding:8px 12px;position:relative;">
+            🔔
+            {% if notification_count and notification_count > 0 %}
+              <span class="badge" style="position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;">{{ notification_count }}</span>
+            {% endif %}
+          </a>
         {% else %}
-          <a href="{% url 'accounts:login' %}">Connexion</a>
-          <a href="{% url 'accounts:register' %}" class="btn-outline">Inscription</a>
+          <a href="{% url 'accounts:login' %}" class="btn-outline" style="padding:8px 16px;">Connexion</a>
+          <a href="{% url 'accounts:register' %}" class="btn" style="padding:8px 16px;">Inscription</a>
         {% endif %}
       </nav>
     </div>
   </header>
 
-  <main class="container" style="padding:20px 0;">
+  <main class="container" style="padding:28px 24px;">
     {% if messages %}
-      <div class="card" style="margin:10px 0 16px;">
-        <ul style="margin:0;padding-left:18px;">
-          {% for message in messages %}
-            <li>{{ message }}</li>
-          {% endfor %}
-        </ul>
+      <div style="display:grid;gap:8px;margin-bottom:20px;">
+        {% for message in messages %}
+          <div class="card" style="border-left:4px solid {% if message.tags == 'success' %}var(--green){% elif message.tags == 'error' %}var(--red){% else %}var(--brown){% endif %};padding:14px 18px;animation:fadeUp 0.4s ease both;">
+            {{ message }}
+          </div>
+        {% endfor %}
       </div>
     {% endif %}
     {% block content %}{% endblock %}
@@ -79,16 +84,23 @@
     <div class="container footer-grid">
       <div>
         <strong>Saveur 237</strong>
-        <div class="muted">Cuisine camerounaise moderne.</div>
+        <p class="muted" style="color:#BDB3A8;margin-top:8px;">Cuisine camerounaise authentique,<br>saveurs du terroir.</p>
       </div>
       <div>
-        <div>Adresse: Douala, Cameroun</div>
-        <div>Tel: +237 6 99 00 00</div>
+        <div style="font-weight:600;margin-bottom:8px;color:#fff;">Contact</div>
+        <div style="color:#BDB3A8;">📍 Douala, Cameroun — Bonapriso</div>
+        <div style="color:#BDB3A8;">📞 +237 6 99 00 00</div>
+        <div style="color:#BDB3A8;">✉️ contact@saveur237.cm</div>
       </div>
       <div>
-        <div>Horaires: 10h - 23h</div>
-        <div>WhatsApp: +237 6 88 00 00</div>
+        <div style="font-weight:600;margin-bottom:8px;color:#fff;">Horaires</div>
+        <div style="color:#BDB3A8;">🕐 Lundi — Dimanche</div>
+        <div style="color:#BDB3A8;">10h00 — 23h00</div>
+        <div style="color:#BDB3A8;">📱 WhatsApp: +237 6 88 00 00</div>
       </div>
+    </div>
+    <div class="container" style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);text-align:center;">
+      <div style="color:#7A7067;font-size:13px;">© 2026 Saveur 237 — Tous droits réservés</div>
     </div>
   </footer>
 

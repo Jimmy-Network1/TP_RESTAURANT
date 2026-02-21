@@ -5,8 +5,10 @@ from django.db import models
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.views.generic import TemplateView
+import re
 
 from accounts.models import CustomerProfile, Address
+from accounts.notifications import notify_order_status, create_notification
 from menu.models import Dish, Category
 from inventory.models import Ingredient, StockMovement, InventoryAlert
 from orders.models import Order, OrderItem
@@ -29,10 +31,16 @@ def _dish_available(dish):
 def _maybe_alert(ingredient, old_qty, new_qty, user):
     if ingredient.alert_threshold and ingredient.alert_threshold > 0:
         if old_qty > ingredient.alert_threshold and new_qty <= ingredient.alert_threshold:
-            InventoryAlert.objects.create(
+            alert = InventoryAlert.objects.create(
                 ingredient=ingredient,
                 message=f"Stock faible: {ingredient.name} ({new_qty} {ingredient.get_unit_display()})",
                 created_by=user if user.is_authenticated else None,
+            )
+            create_notification(
+                target_role="manager",
+                message=alert.message,
+                url="/inventory/stock/",
+                level="warn",
             )
 
 
@@ -162,7 +170,12 @@ def cart_update(request, pk):
     cart = _get_cart(request)
     dish = Dish.objects.filter(pk=pk, is_active=True).first()
     key = str(pk)
-    qty = int(request.POST.get("qty", 1))
+    action = request.POST.get("action")
+    if action in {"inc", "dec"}:
+        current = int(cart.get(key, 0))
+        qty = current + 1 if action == "inc" else max(0, current - 1)
+    else:
+        qty = int(request.POST.get("qty", 1))
     if dish and qty > 0 and not _dish_available(dish):
         messages.error(request, f"{dish.name} est indisponible.")
         return redirect("public:cart")
@@ -189,6 +202,11 @@ def cart_remove(request, pk):
     return redirect("public:cart")
 
 
+def cart_summary(request):
+    cart = _get_cart(request)
+    return JsonResponse(_cart_summary(cart))
+
+
 def checkout_view(request):
     cart = _get_cart(request)
     if not cart:
@@ -208,11 +226,21 @@ def checkout_view(request):
                     messages.error(request, f"Stock insuffisant pour {dish.name}.")
                     return redirect("public:cart")
         order_type = request.POST.get("order_type", Order.TYPE_DELIVERY)
-        name = request.POST.get("name", "")
-        phone = request.POST.get("phone", "")
+        name = (request.POST.get("name", "") or "").strip()
+        phone = (request.POST.get("phone", "") or "").strip()
         address_line = request.POST.get("address", "")
         table_number = request.POST.get("table_number", "")
         note = request.POST.get("note", "")
+
+        if name and not re.fullmatch(r"[A-Za-z\s'\-]+", name):
+            messages.error(request, "Nom invalide.")
+            return redirect("public:checkout")
+        if phone:
+            normalized = re.sub(r"[\s\-]", "", phone)
+            if not re.fullmatch(r"\+?\d{6,15}", normalized):
+                messages.error(request, "Numéro de téléphone invalide.")
+                return redirect("public:checkout")
+            phone = normalized
 
         try:
             with transaction.atomic():
@@ -223,21 +251,25 @@ def checkout_view(request):
                     note=note,
                 )
 
+                if order_type == Order.TYPE_DINE_IN:
+                    if not table_number:
+                        messages.error(request, "Numéro de table requis pour sur place.")
+                        return redirect("public:checkout")
+                    table = Table.objects.filter(name__iexact=table_number).first()
+                    if not table:
+                        messages.error(request, "Table introuvable.")
+                        return redirect("public:checkout")
+                    if table.status != Table.STATUS_FREE:
+                        messages.error(request, "Cette table est déjà occupée.")
+                        return redirect("public:checkout")
+                    order.table = table
+
                 if request.user.is_authenticated:
                     profile, _ = CustomerProfile.objects.get_or_create(user=request.user)
                     order.customer_profile = profile
                     if phone:
                         profile.phone = phone
                         profile.save(update_fields=["phone"])
-                    if order_type == Order.TYPE_DINE_IN:
-                        if not table_number:
-                            messages.error(request, "Numéro de table requis pour sur place.")
-                            return redirect("public:checkout")
-                        table = Table.objects.filter(name__iexact=table_number).first()
-                        if not table:
-                            messages.error(request, "Table introuvable.")
-                            return redirect("public:checkout")
-                        order.table = table
                     if order_type == Order.TYPE_DELIVERY and address_line:
                         addr = Address.objects.create(
                             profile=profile,
@@ -281,6 +313,7 @@ def checkout_view(request):
 
                 order.total_amount = total
                 order.save(update_fields=["total_amount"])
+                notify_order_status(order, order.status)
         except ValueError as exc:
             messages.error(request, str(exc))
             return redirect("public:cart")

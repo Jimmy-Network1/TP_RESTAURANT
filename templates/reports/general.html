@@ -1,59 +1,59 @@
 {% extends "base_staff.html" %}
-{% block title %}Statistiques generales — Saveur 237{% endblock %}
+{% block title %}Rapport général — Saveur 237{% endblock %}
 {% block content %}
-<style>
-  .rep-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
-  .rep-graph{height:180px;background:linear-gradient(180deg,#f6f7fb 0%, #ffffff 100%);border:1px dashed #dcdcdc;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#777;}
-  .rep-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
-  .rep-table td{background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;}
-  .rep-table td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
-  .rep-table td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
-</style>
-
-<div class="rep-head">
+{% if not is_manager %}<div class="card" style="text-align:center;padding:40px;"><h3>⛔ Accès réservé</h3><p class="muted">Seul le manager peut consulter les rapports.</p></div>{% else %}
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Rapports</p>
-    <h2>Statistiques generales</h2>
-    <p class="muted">Tendances globales et comparaisons.</p>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">📊 Rapports</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Rapport général</h2>
+    <p class="muted">Vue complète des performances.</p>
   </div>
-  <div style="display:flex;gap:8px;">
-    <a class="btn-outline" href="#">Comparer</a>
-    <a class="btn" href="{% url 'reports:export' %}">Exporter</a>
-  </div>
+  <a class="btn-outline" href="{% url 'reports:dashboard' %}">← Retour</a>
 </div>
 
-{% if not is_manager %}
-  <div class="card" style="margin-top:12px;">
-    <p class="muted">Accès réservé au gérant.</p>
-  </div>
-{% else %}
-<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:12px;margin-top:12px;">
-  <div class="card">
-    <h4 style="margin-top:0;">Chiffre d'affaires mensuel</h4>
-    <div class="rep-graph">Graphique mensuel</div>
-  </div>
-  <div class="card">
-    <h4 style="margin-top:0;">Commandes par type</h4>
-    <table class="rep-table">
-      <thead><tr><th>Type</th><th>Volume</th></tr></thead>
-      <tbody>
-        <tr><td>Sur place</td><td>62%</td></tr>
-        <tr><td>Livraison</td><td>28%</td></tr>
-        <tr><td>A emporter</td><td>10%</td></tr>
-      </tbody>
-    </table>
-  </div>
+<div class="grid" data-animate="fadeUp" style="margin-bottom:18px;">
+  <div class="card" style="text-align:center;"><div style="font-size:24px;font-weight:800;font-family:'Playfair Display',serif;color:var(--green);">{{ total_revenue|default:0 }} <small>FCFA</small></div><div class="muted" style="font-size:12px;">💰 CA total</div></div>
+  <div class="card" style="text-align:center;"><div style="font-size:24px;font-weight:800;font-family:'Playfair Display',serif;">{{ total_orders|default:0 }}</div><div class="muted" style="font-size:12px;">📦 Commandes</div></div>
+  <div class="card" style="text-align:center;"><div style="font-size:24px;font-weight:800;font-family:'Playfair Display',serif;">{{ total_deliveries|default:0 }}</div><div class="muted" style="font-size:12px;">🛵 Livraisons</div></div>
+  <div class="card" style="text-align:center;"><div style="font-size:24px;font-weight:800;font-family:'Playfair Display',serif;">{{ total_reservations|default:0 }}</div><div class="muted" style="font-size:12px;">📅 Réservations</div></div>
 </div>
 
-<div class="card" style="margin-top:12px;">
-  <h4 style="margin-top:0;">Performance par serveur</h4>
-  <table class="rep-table">
-    <thead><tr><th>Serveur</th><th>Commandes</th><th>CA</th></tr></thead>
+{% if revenue_chart_data %}
+<div class="card" style="margin-bottom:18px;" data-animate="fadeUp">
+  <h3 style="margin-top:0;">📈 Évolution du CA</h3>
+  <div style="display:grid;gap:4px;">
+    {% for point in revenue_chart_data %}
+    <div style="display:flex;align-items:center;gap:10px;padding:4px 0;">
+      <span style="min-width:60px;font-size:12px;">{{ point.label }}</span>
+      <div style="flex:1;background:#eee;border-radius:6px;height:18px;overflow:hidden;">
+        <div style="width:{{ point.pct }}%;height:100%;background:linear-gradient(90deg,var(--green),#00a86b);border-radius:6px;transition:.3s;"></div>
+      </div>
+      <span style="min-width:80px;text-align:right;font-size:12px;font-weight:600;">{{ point.value }} FCFA</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if server_performance %}
+<div class="card" data-animate="fadeUp" style="overflow-x:auto;">
+  <h3 style="margin-top:0;">👨‍🍳 Performance serveurs</h3>
+  <table class="table">
+    <thead>
+      <tr><th>Serveur</th><th style="text-align:center;">Commandes</th><th style="text-align:right;">CA généré</th><th style="text-align:right;">Panier moyen</th></tr>
+    </thead>
     <tbody>
-      <tr><td>Fatou</td><td>26</td><td>180 000 FCFA</td></tr>
-      <tr><td>Junior</td><td>20</td><td>140 000 FCFA</td></tr>
+      {% for s in server_performance %}
+      <tr>
+        <td style="font-weight:600;">{{ s.name }}</td>
+        <td style="text-align:center;">{{ s.order_count }}</td>
+        <td style="text-align:right;font-weight:700;color:var(--green);">{{ s.revenue }} FCFA</td>
+        <td style="text-align:right;">{{ s.avg_basket }} FCFA</td>
+      </tr>
+      {% endfor %}
     </tbody>
   </table>
 </div>
+{% endif %}
 {% endif %}
 {% endblock %}

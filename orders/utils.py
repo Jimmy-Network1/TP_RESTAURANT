@@ -1,5 +1,6 @@
 from .models import Order, OrderStatusLog
 from accounts.models import AuditLog
+from accounts.notifications import notify_order_status
 
 
 def _group_names(user):
@@ -72,7 +73,7 @@ def can_transition(user, order, new_status):
         return new_status == Order.STATUS_DONE and (is_delivery(user) or is_manager(user))
 
     if order.status == Order.STATUS_DONE:
-        return new_status == Order.STATUS_PAID and (is_cashier(user) or is_manager(user))
+        return new_status == Order.STATUS_PAID and (is_cashier(user) or is_delivery(user) or is_manager(user))
 
     return False
 
@@ -106,3 +107,8 @@ def log_transition(order, user, old_status, new_status, reason=""):
         new_value=new_status,
         reason=reason or "",
     )
+    try:
+        notify_order_status(order, new_status)
+    except Exception:
+        # Avoid breaking flow if notification fails
+        pass

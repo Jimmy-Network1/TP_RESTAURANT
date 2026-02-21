@@ -1,0 +1,421 @@
+{% extends "base_staff.html" %}
+{% block title %}Dashboard — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .server-wrap{display:grid;gap:14px;}
+  .server-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .server-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}
+  .server-card{background:#fff;border:1px solid #eee;border-radius:12px;padding:14px;box-shadow:0 10px 20px rgba(0,0,0,0.06);}
+  .server-kpi .server-card{display:grid;gap:6px;}
+  .kpi-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;}
+  .kpi-value{font-size:24px;font-weight:800;}
+  .kpi-free{border-left:6px solid #008751;}
+  .kpi-occupied{border-left:6px solid #CE1126;}
+  .kpi-pending{border-left:6px solid #f1c40f;}
+  .kpi-ready{border-left:6px solid #0071bc;}
+  .urgent-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
+  .urgent-list{display:grid;gap:8px;}
+  .ticket{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #eee;border-radius:10px;padding:10px 12px;background:#fff;}
+  .pill-ready{background:rgba(0,113,188,0.15);color:#0a4f87;}
+  .pill-pending{background:rgba(241,196,15,0.2);color:#9b6a00;}
+  .table-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;}
+  .table-tile{border-radius:12px;padding:10px 12px;color:#1f1b1a;border:1px solid #eee;background:#fff;display:grid;gap:6px;text-decoration:none;}
+  .table-tile.free{border-left:6px solid #008751;}
+  .table-tile.occupied{border-left:6px solid #CE1126;}
+  .table-tile.reserved{border-left:6px solid #f1c40f;}
+  .quick-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .touch-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 16px;border-radius:12px;font-weight:700;text-decoration:none;border:1px solid #dcdcdc;background:#fff;color:#1f1b1a;}
+  .touch-btn.primary{background:var(--green);color:#fff;border-color:var(--green);}
+  .touch-btn.secondary{background:#fff;color:var(--brown);}
+  .manager-wrap{display:grid;gap:14px;}
+  .manager-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .manager-card{background:#fff;border:1px solid #eee;border-radius:12px;padding:14px;box-shadow:0 10px 20px rgba(0,0,0,0.06);}
+  .manager-kpi .manager-card{display:grid;gap:6px;}
+  .alert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+  .alert{border-left:6px solid #ccc;}
+  .alert.warn{border-left-color:#f39c12;}
+  .alert.danger{border-left-color:#CE1126;}
+  .alert.ok{border-left-color:#008751;}
+  .action-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;}
+  .action-btn{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid #eee;border-radius:12px;padding:12px 14px;text-decoration:none;background:#fff;color:#1f1b1a;font-weight:700;}
+  .action-btn:hover{border-color:var(--green);color:var(--green);}
+  .activity-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;}
+  .cashier-wrap{display:grid;gap:14px;}
+  .cashier-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .cashier-card{background:#fff;border:1px solid #eee;border-radius:12px;padding:14px;box-shadow:0 10px 20px rgba(0,0,0,0.06);}
+  .cashier-kpi .cashier-card{display:grid;gap:6px;}
+  .kpi-pay{border-left:6px solid #008751;}
+  .kpi-due{border-left:6px solid #f1c40f;}
+  .kpi-total{border-left:6px solid #0071bc;}
+  .cashier-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+  .cashier-table th{font-size:12px;text-transform:uppercase;letter-spacing:0.4px;color:#666;padding:6px 10px;}
+  .cashier-table td{background:#fff;padding:12px 10px;border-top:1px solid #eee;border-bottom:1px solid #eee;}
+  .cashier-table td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
+  .cashier-table td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
+  .cashier-actions{display:flex;gap:10px;flex-wrap:wrap;}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .kpi{display:grid;gap:6px;padding:16px;border-radius:14px;color:#fff;box-shadow:0 12px 24px rgba(0,0,0,0.08);} 
+  .kpi.pending{background:linear-gradient(135deg,#f1c40f,#f39c12);} 
+  .kpi.prep{background:linear-gradient(135deg,#0071bc,#0a4f87);} 
+  .kpi.ready{background:linear-gradient(135deg,#008751,#1b9b6a);} 
+  .kpi.tables{background:linear-gradient(135deg,#2c3e50,#34495e);} 
+  .kpi.sales{background:linear-gradient(135deg,#3E2723,#6d4c41);} 
+  .kpi.stock{background:linear-gradient(135deg,#CE1126,#8e0d1f);} 
+  .section{margin-top:12px;}
+  .row{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:8px 10px;background:#fff;}
+</style>
+
+{% if is_manager and not is_server and not is_cashier and not is_cook and not is_delivery %}
+<div class="manager-wrap">
+  <div class="server-hero">
+    <div>
+      <p class="badge" style="background:rgba(62,39,35,0.12);color:var(--brown);">Centre de contrôle</p>
+      <h2>Dashboard Gérant</h2>
+      <p class="muted">Vue globale du restaurant et actions rapides.</p>
+    </div>
+    <div class="quick-actions">
+      <a class="touch-btn primary" href="{% url 'reports:dashboard' %}">Rapports</a>
+      <a class="touch-btn secondary" href="{% url 'accounts:users' %}">Utilisateurs</a>
+      <a class="touch-btn secondary" href="{% url 'billing:cashdesk' %}">Caisse</a>
+    </div>
+  </div>
+
+  <div class="manager-kpi">
+    <div class="manager-card">
+      <div class="kpi-label">Ventes du jour</div>
+      <div class="kpi-value">{{ sales_today }} FCFA</div>
+    </div>
+    <div class="manager-card">
+      <div class="kpi-label">Total commandes</div>
+      <div class="kpi-value">{{ orders_total }}</div>
+    </div>
+    <div class="manager-card">
+      <div class="kpi-label">Salle vs Livraison</div>
+      <div class="kpi-value">{{ orders_dine_in }} / {{ orders_delivery }}</div>
+    </div>
+    <div class="manager-card">
+      <div class="kpi-label">Stock faible</div>
+      <div class="kpi-value">{{ low_stock }}</div>
+    </div>
+  </div>
+
+  <div class="alert-grid">
+    {% for a in alerts %}
+      <a class="manager-card alert {{ a.level }}" href="{% url a.url %}">
+        <div class="kpi-label">{{ a.label }}</div>
+        <div class="kpi-value">{{ a.count }}</div>
+      </a>
+    {% endfor %}
+  </div>
+
+  <div class="manager-card">
+    <h3>Actions rapides</h3>
+    <div class="action-grid">
+      <a class="action-btn" href="{% url 'menu:list' %}">Gérer le menu</a>
+      <a class="action-btn" href="{% url 'reservations:staff_list' %}">Confirmer réservations</a>
+      <a class="action-btn" href="{% url 'inventory:stock' %}">Gérer stock</a>
+      <a class="action-btn" href="{% url 'kitchen:board' %}">Voir cuisine</a>
+      <a class="action-btn" href="{% url 'delivery:deliveries' %}">Voir livraisons</a>
+      <a class="action-btn" href="{% url 'accounts:users' %}">Gérer utilisateurs</a>
+    </div>
+  </div>
+
+  <div class="activity-grid">
+    <div class="manager-card">
+      <h3>Dernières commandes</h3>
+      <div style="display:grid;gap:8px;">
+        {% for o in recent_orders %}
+          <div class="row">
+            <span>#{{ o.id }} • {{ o.get_order_type_display }}</span>
+            <span>{{ o.get_status_display }}</span>
+          </div>
+        {% empty %}
+          <p class="muted">Aucune commande.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="manager-card">
+      <h3>Derniers paiements</h3>
+      <div style="display:grid;gap:8px;">
+        {% for p in recent_payments %}
+          <div class="row">
+            <span>#{{ p.order.id }} • {{ p.get_method_display }}</span>
+            <span>{{ p.amount }} FCFA</span>
+          </div>
+        {% empty %}
+          <p class="muted">Aucun paiement.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="manager-card">
+    <h3>Paramétrage système</h3>
+    <div class="action-grid">
+      <a class="action-btn" href="{% url 'accounts:users' %}">Créer/Désactiver staff</a>
+      <a class="action-btn" href="{% url 'reports:dashboard' %}">Taxes & Rapports</a>
+      <a class="action-btn" href="{% url 'delivery:deliveries' %}">Zones livraison</a>
+      <a class="action-btn" href="{% url 'tables:plan' %}">Tables & zones</a>
+    </div>
+  </div>
+</div>
+{% elif is_server and not is_manager and not is_cashier and not is_cook and not is_delivery %}
+<div class="server-wrap">
+  <div class="server-hero">
+    <div>
+      <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Service salle</p>
+      <h2>Dashboard Serveur</h2>
+      <p class="muted">Vue rapide du service en salle.</p>
+    </div>
+    <div class="quick-actions">
+      <a class="touch-btn primary" href="{% url 'orders:new' %}">Nouvelle commande</a>
+      <a class="touch-btn secondary" href="{% url 'tables:plan' %}">Ouvrir une table</a>
+      <a class="touch-btn secondary" href="{% url 'tables:plan' %}">Voir plan des tables</a>
+    </div>
+  </div>
+
+  <div class="server-kpi">
+    <div class="server-card kpi-free">
+      <div class="kpi-label">Tables libres</div>
+      <div class="kpi-value">{{ tables_free }}</div>
+    </div>
+    <div class="server-card kpi-occupied">
+      <div class="kpi-label">Tables occupées</div>
+      <div class="kpi-value">{{ tables_occupied }}</div>
+    </div>
+    <div class="server-card kpi-pending">
+      <div class="kpi-label">Commandes en attente</div>
+      <div class="kpi-value">{{ pending_orders }}</div>
+    </div>
+    <div class="server-card kpi-ready">
+      <div class="kpi-label">Commandes prêtes</div>
+      <div class="kpi-value">{{ ready_orders }}</div>
+    </div>
+  </div>
+
+  <div class="urgent-grid">
+    <div class="server-card">
+      <h3>Tickets prêts à servir</h3>
+      <div class="urgent-list">
+        {% for o in ready_to_serve %}
+          <a class="ticket" href="{% url 'orders:detail' o.id %}">
+            <span>#{{ o.id }} • Table {{ o.table.name|default:'-' }}</span>
+            <span class="pill pill-ready">Prête</span>
+          </a>
+        {% empty %}
+          <p class="muted">Aucun ticket prêt.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="server-card">
+      <h3>Commandes en attente cuisine</h3>
+      <div class="urgent-list">
+        {% for o in pending_kitchen %}
+          <a class="ticket" href="{% url 'orders:detail' o.id %}">
+            <span>#{{ o.id }} • Table {{ o.table.name|default:'-' }}</span>
+            <span class="pill pill-pending">En attente</span>
+          </a>
+        {% empty %}
+          <p class="muted">Aucune commande en attente.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="server-card">
+    <h3>Plan rapide des tables</h3>
+    <div class="table-grid">
+      {% for t in tables %}
+        <a class="table-tile {% if t.status == 'free' %}free{% elif t.status == 'occupied' %}occupied{% else %}reserved{% endif %}" href="{% url 'tables:plan' %}">
+          <strong>Table {{ t.name }}</strong>
+          <span class="muted">{{ t.capacity }} places</span>
+        </a>
+      {% empty %}
+        <p class="muted">Aucune table disponible.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% elif is_cashier and not is_manager and not is_server and not is_cook and not is_delivery %}
+<div class="cashier-wrap">
+  <div class="server-hero">
+    <div>
+      <p class="badge" style="background:rgba(0,113,188,0.15);color:#0a4f87;">Caisse</p>
+      <h2>Dashboard Caissier</h2>
+      <p class="muted">Encaissement rapide et sécurisé.</p>
+    </div>
+    <div class="cashier-actions">
+      {% if cash_session %}
+        <a class="touch-btn primary" href="{% url 'billing:payments' %}">Encaisser</a>
+      {% else %}
+        <span class="touch-btn primary" style="opacity:.5;cursor:not-allowed;">Encaisser</span>
+      {% endif %}
+      <a class="touch-btn secondary" href="{% url 'billing:payments' %}">Historique paiements</a>
+      <a class="touch-btn secondary" href="{% url 'billing:cashdesk' %}">Clôture caisse</a>
+    </div>
+  </div>
+
+  <div class="cashier-kpi">
+    <div class="cashier-card kpi-pay">
+      <div class="kpi-label">Paiements du jour</div>
+      <div class="kpi-value">{{ paid_today }}</div>
+    </div>
+    <div class="cashier-card kpi-due">
+      <div class="kpi-label">Commandes à encaisser</div>
+      <div class="kpi-value">{{ to_cash|length }}</div>
+    </div>
+    <div class="cashier-card kpi-total">
+      <div class="kpi-label">Total encaissé</div>
+      <div class="kpi-value">{{ sales_today }} FCFA</div>
+    </div>
+  </div>
+
+  <div class="cashier-card">
+    <h3>À encaisser</h3>
+    <table class="cashier-table">
+      <thead>
+        <tr>
+          <th>Commande</th>
+          <th>Source</th>
+          <th>Statut</th>
+          <th>Montant</th>
+          <th>Heure</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for o in to_cash %}
+        <tr>
+          <td>#{{ o.id }}</td>
+          <td>{{ o.get_order_type_display }}</td>
+          <td>{{ o.get_status_display }}</td>
+          <td>{{ o.total_amount }} FCFA</td>
+          <td>{{ o.created_at|date:"H:i" }}</td>
+          <td><a class="btn-outline" href="{% url 'orders:detail' o.id %}">Encaisser</a></td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="6" class="muted">Aucune commande à encaisser.</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="cashier-card">
+    <h3>Session de caisse</h3>
+    <div class="row">
+      <span>État</span>
+      <strong>{% if cash_session %}Ouverte{% else %}Fermée{% endif %}</strong>
+    </div>
+    <div class="row">
+      <span>Montant initial</span>
+      <strong>{{ cash_session.opening_amount|default:"0" }} FCFA</strong>
+    </div>
+    <div class="row">
+      <span>Total encaissé</span>
+      <strong>{{ cash_totals.sum|default:"0" }} FCFA</strong>
+    </div>
+    <div class="row">
+      <span>Paiements</span>
+      <strong>{{ cash_totals.count|default:"0" }}</strong>
+    </div>
+    <a class="btn-outline" href="{% url 'billing:cashdesk' %}">Gérer la caisse</a>
+  </div>
+</div>
+{% else %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Dashboard</p>
+    <h2>Accueil staff</h2>
+    <p class="muted">Vue opérationnelle adaptée au rôle.</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    {% if is_server %}<a class="btn" href="{% url 'orders:new' %}">Nouvelle commande</a>{% endif %}
+    {% if is_cook %}<a class="btn" href="{% url 'kitchen:board' %}">Aller à cuisine</a>{% endif %}
+    {% if is_cashier %}<a class="btn" href="{% url 'billing:payments' %}">Encaisser</a>{% endif %}
+    {% if is_manager %}<a class="btn" href="{% url 'reports:dashboard' %}">Voir rapports</a>{% endif %}
+    <a class="btn-outline" href="{% url 'tables:plan' %}">Plan des tables</a>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi pending"><span>En attente</span><strong>{{ pending_orders }}</strong></div>
+  <div class="kpi prep"><span>En préparation</span><strong>{{ preparing_orders }}</strong></div>
+  <div class="kpi ready"><span>Prêtes</span><strong>{{ ready_orders }}</strong></div>
+  {% if is_server or is_manager %}
+    <div class="kpi tables"><span>Tables occupées / libres</span><strong>{{ tables_occupied }} / {{ tables_free }}</strong></div>
+  {% endif %}
+  {% if is_cashier or is_manager %}
+    <div class="kpi sales"><span>Ventes du jour</span><strong>{{ sales_today }} FCFA</strong></div>
+  {% endif %}
+  {% if is_manager %}
+    <div class="kpi stock"><span>Stock faible</span><strong>{{ low_stock }}</strong></div>
+  {% endif %}
+</div>
+
+<div class="grid section">
+  <div class="card">
+    <h4>Commandes récentes</h4>
+    <div style="display:grid;gap:8px;">
+      {% for o in recent_orders %}
+        <div class="row">
+          <span>#{{ o.id }} • {{ o.get_order_type_display }}</span>
+          <span>{{ o.get_status_display }}</span>
+        </div>
+      {% empty %}
+        <p class="muted">Aucune commande.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if is_manager or is_delivery %}
+  <div class="card">
+    <h4>Livraisons en cours</h4>
+    <div style="display:grid;gap:8px;">
+      {% for o in deliveries %}
+        <div class="row">
+          <span>#{{ o.id }} • {{ o.delivery_address|default:'-' }}</span>
+          <span>{{ o.get_status_display }}</span>
+        </div>
+      {% empty %}
+        <p class="muted">Aucune livraison en cours.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if is_server or is_manager %}
+  <div class="card">
+    <h4>Réservations du jour</h4>
+    <div style="display:grid;gap:8px;">
+      {% for r in reservations_today %}
+        <div class="row">
+          <span>{{ r.reservation_datetime|date:"H:i" }} • {{ r.customer_name }}</span>
+          <span>{{ r.get_status_display }}</span>
+        </div>
+      {% empty %}
+        <p class="muted">Aucune réservation.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if is_cashier %}
+  <div class="card">
+    <h4>À encaisser</h4>
+    <div style="display:grid;gap:8px;">
+      {% for o in to_cash %}
+        <div class="row">
+          <span>#{{ o.id }}</span>
+          <span>{{ o.total_amount }} FCFA</span>
+        </div>
+      {% empty %}
+        <p class="muted">Rien à encaisser.</p>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

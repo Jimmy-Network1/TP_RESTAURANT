@@ -7,40 +7,58 @@
   <title>{% block title %}Livraison — Saveur 237{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'css/public.css' %}">
   <style>
-    body{background:#f7f7f7;}
-    .deliver-nav{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid #eee;}
-    .deliver-inner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;}
-    .deliver-title{display:flex;align-items:center;gap:10px;font-weight:800;}
-    .deliver-actions a{margin-left:8px;}
-    .container{max-width:980px;}
+    body { background: #F3F0EA; }
+    .deliver-nav {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 1px 8px rgba(62,39,35,0.04);
+    }
+    .deliver-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 12px 0;
+    }
+    .deliver-brand {
+      display: flex; align-items: center; gap: 12px; font-weight: 800;
+    }
+    .deliver-brand img { border-radius: 10px; }
+    .deliver-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .notif-btn{position:relative;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;border:1.5px solid var(--border);background:#fff;text-decoration:none;color:var(--brown);font-size:13px;}
+    .notif-badge{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border-radius:999px;padding:2px 6px;font-size:10px;font-weight:800;}
+    .container { max-width: 1000px; }
   </style>
   {% block extra_head %}{% endblock %}
 </head>
 <body>
   <header class="deliver-nav">
     <div class="container deliver-inner">
-      <div class="deliver-title">
-        <img src="{% static 'logo/logo.png' %}" width="28" height="28" alt="Saveur 237" style="border-radius:8px;">
-        Livraison
+      <div class="deliver-brand">
+        <img src="{% static 'logo/logo.png' %}" width="32" height="32" alt="Saveur 237">
+        <span style="font-family:'Playfair Display',serif;font-size:18px;">Livraison</span>
       </div>
       <div class="deliver-actions">
-        <a class="btn-outline" href="javascript:history.back()">Retour</a>
-        <a class="btn-outline" href="{% url 'public:cart' %}">Panier</a>
-        <a class="btn-outline" href="{% url 'public:menu' %}">Commande</a>
-        <a class="btn-outline" href="{% url 'delivery:dashboard' %}">Dashboard</a>
-        <a class="btn-outline" href="{% url 'accounts:logout' %}">Déconnexion</a>
+        <a class="btn-outline" href="javascript:history.back()" style="padding:8px 14px;font-size:13px;">← Retour</a>
+        <a class="btn-outline" href="{% url 'delivery:dashboard' %}" style="padding:8px 14px;font-size:13px;">📊 Dashboard</a>
+        <a class="btn-outline" href="{% url 'accounts:logout' %}" style="padding:8px 14px;font-size:13px;color:var(--red);">Déconnexion</a>
+        <a class="notif-btn" href="{{ notification_url }}">
+          🔔 Notifications
+          {% if notification_count and notification_count > 0 %}
+            <span class="notif-badge">{{ notification_count }}</span>
+          {% endif %}
+        </a>
       </div>
     </div>
   </header>
 
-  <main class="container" style="padding:14px 0;">
+  <main class="container" style="padding:24px 24px;">
     {% if messages %}
-      <div class="card" style="margin:10px 0 16px;">
-        <ul style="margin:0;padding-left:18px;">
-          {% for message in messages %}
-            <li>{{ message }}</li>
-          {% endfor %}
-        </ul>
+      <div style="display:grid;gap:8px;margin-bottom:20px;">
+        {% for message in messages %}
+          <div class="card" style="border-left:4px solid {% if message.tags == 'success' %}var(--green){% else %}var(--yellow){% endif %};padding:14px 18px;">
+            {{ message }}
+          </div>
+        {% endfor %}
       </div>
     {% endif %}
     {% block content %}{% endblock %}

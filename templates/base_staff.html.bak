@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Saveur 237 — Staff{% endblock %}</title>
+  <style>
+    :root { --brown:#3E2723; --green:#008751; --red:#CE1126; --yellow:#FCD116; --bg:#f6f6f6; --card:#fff; }
+    body{margin:0;font-family:'Inter', Arial, sans-serif;background:var(--bg);color:#1f1b1a;}
+    .layout{display:grid;grid-template-columns:220px 1fr;min-height:100vh;}
+    .sidebar{background:var(--brown);color:#fff;padding:14px;display:grid;gap:8px;}
+    .sidebar a{color:#fff;text-decoration:none;padding:8px 10px;border-radius:8px;transition:background .2s ease;}
+    .sidebar a:hover{background:rgba(255,255,255,0.12);} 
+    .topbar{background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.08);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;}
+    .card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,0.06);border:1px solid #eee;}
+    .container{padding:16px;}
+    .btn{display:inline-flex;align-items:center;gap:6px;background:var(--green);color:#fff;text-decoration:none;padding:10px 14px;border-radius:10px;font-weight:600;border:1px solid var(--green);transition:all .2s ease;}
+    .btn:hover{filter:brightness(1.05);transform:translateY(-1px);} 
+    .btn-outline{display:inline-flex;align-items:center;gap:6px;background:#fff;color:var(--brown);text-decoration:none;padding:9px 13px;border-radius:10px;border:1px solid #d7d7d7;font-weight:600;transition:all .2s ease;}
+    .btn-outline:hover{border-color:var(--green);color:var(--green);} 
+    .section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+    .muted{color:#666;font-size:14px;}
+    .badge{padding:4px 10px;border-radius:999px;font-weight:700;font-size:12px;background:#eee;color:#333;}
+    .badge-free{background:rgba(0,135,81,0.12);color:var(--green);} 
+    .badge-occupied{background:rgba(206,17,38,0.12);color:var(--red);} 
+    .badge-reserved{background:rgba(252,209,22,0.18);color:#b07a00;}
+    .pill{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-weight:700;font-size:12px;}
+    .pill-ok{background:rgba(0,135,81,0.12);color:var(--green);} 
+    .pill-off{background:rgba(206,17,38,0.12);color:var(--red);} 
+    .pill-card{background:rgba(80,120,255,0.15);color:#2d4aa0;} 
+    .pill-momo{background:rgba(128,70,200,0.15);color:#5a2ea6;} 
+    .cat-chip{background:#f1f1f1;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;}
+    .actions{display:flex;gap:6px;justify-content:flex-end;}
+    .icon-btn{width:32px;height:32px;border-radius:8px;border:1px solid #e2e2e2;background:#fff;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:#333;}
+    .icon-btn:hover{border-color:var(--green);color:var(--green);} 
+    .kds-pill{padding:4px 10px;border-radius:999px;font-weight:700;font-size:12px;}
+    .p-pending{background:rgba(252,209,22,0.25);color:#9b6a00;}
+    .p-prep{background:rgba(80,120,255,0.15);color:#2d4aa0;}
+    .p-ready{background:rgba(0,135,81,0.12);color:var(--green);} 
+    .pill-pending{background:rgba(252,209,22,0.25);color:#9b6a00;}
+    .pill-route{background:rgba(80,120,255,0.15);color:#2d4aa0;}
+    .pill-done{background:rgba(0,135,81,0.12);color:var(--green);} 
+    table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+    th{text-align:left;font-size:13px;color:#666;padding:6px 10px;}
+    td{background:#fff;padding:12px 10px;border-top:1px solid #eee;border-bottom:1px solid #eee;}
+    tr td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
+    tr td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
+    .ord-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+    .ord-table td{background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;}
+    .ord-table td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
+    .ord-table td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;}
+    form .form-control, select.form-control, input.form-control, textarea.form-control{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #d9d9d9;font-size:14px;}
+    form .form-control:focus{outline:2px solid rgba(0,135,81,0.2);border-color:var(--green);} 
+    label{font-size:13px;font-weight:600;color:#333;margin-bottom:6px;display:block;}
+    .form-row{display:grid;gap:10px;margin-bottom:12px;}
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <img src="{% static 'logo/logo.png' %}" width="28" height="28" alt="Saveur 237" style="border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:#fff;">
+        <strong>Saveur 237</strong>
+      </div>
+      <a href="{% url 'dashboard:home' %}">🏠 Dashboard</a>
+      {% if is_manager %}
+        <a href="{% url 'accounts:users' %}">🔐 Accounts</a>
+        <a href="{% url 'menu:list' %}">🍽️ Menu</a>
+        <a href="{% url 'tables:plan' %}">🪑 Tables</a>
+        <a href="{% url 'orders:list' %}">🧾 Orders</a>
+        <a href="{% url 'kitchen:board' %}">👨‍🍳 Kitchen</a>
+        <a href="{% url 'billing:payments' %}">💳 Billing</a>
+        <a href="{% url 'reservations:staff_list' %}">📅 Réservations</a>
+        <a href="{% url 'inventory:stock' %}">📦 Inventory</a>
+        <a href="{% url 'delivery:deliveries' %}">🚚 Delivery</a>
+        <a href="{% url 'reports:dashboard' %}">📊 Reports</a>
+      {% elif is_server %}
+        <a href="{% url 'tables:plan' %}">🪑 Tables</a>
+        <a href="{% url 'orders:list' %}">🧾 Orders</a>
+        <a href="{% url 'reservations:staff_list' %}">📅 Réservations</a>
+      {% elif is_cook %}
+        <a href="{% url 'kitchen:board' %}">👨‍🍳 Kitchen</a>
+        <a href="{% url 'orders:list' %}">🧾 Orders</a>
+      {% elif is_cashier %}
+        <a href="{% url 'billing:payments' %}">💳 Billing</a>
+        <a href="{% url 'orders:list' %}">🧾 Orders</a>
+        <a href="{% url 'billing:cashdesk' %}">🏦 Caisse</a>
+      {% elif is_delivery %}
+        <a href="{% url 'delivery:deliveries' %}">🚚 Delivery</a>
+      {% endif %}
+    </aside>
+    <div>
+      <div class="topbar">
+        <div style="display:flex;gap:12px;align-items:center;">
+          <a class="btn-outline" href="javascript:history.back()">Retour</a>
+          <div>Connecté : {{ request.user.username|default:'staff' }}</div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:center;">
+          <a href="{% url 'orders:notifications' %}">Notifications</a>
+          <a href="{% url 'accounts:logout' %}">Déconnexion</a>
+        </div>
+      </div>
+      {% if is_server %}
+      <div style="background:#fff;border-bottom:1px solid #eee;">
+        <div class="container" style="padding:8px 16px;display:flex;gap:10px;flex-wrap:wrap;">
+          <a class="btn-outline" href="{% url 'public:cart' %}">Panier</a>
+          <a class="btn-outline" href="{% url 'public:menu' %}">Commande</a>
+        </div>
+      </div>
+      {% endif %}
+      <div class="container">
+        {% if messages %}
+          <div style="display:grid;gap:8px;margin-bottom:10px;">
+          {% for message in messages %}
+            <div class="card" style="border-left:4px solid {% if message.tags == 'success' %}var(--green){% else %}var(--brown){% endif %};">{{ message }}</div>
+          {% endfor %}
+          </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

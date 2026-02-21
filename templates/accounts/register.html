@@ -3,34 +3,29 @@
 {% block title %}Inscription — Saveur 237{% endblock %}
 {% block extra_head %}
 <style>
-:root {
-  --glass: rgba(255,255,255,0.12);
-  --glass-border: rgba(255,255,255,0.22);
-  --blur: 16px;
-  --radius: 20px;
-  --shadow: 0 18px 60px rgba(0,0,0,0.25);
-  --accent: #3E2723;
-  --accent-2: #FCD116;
-}
-body{min-height:100vh;background:linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)),radial-gradient(circle at 10% 10%,rgba(252,209,22,0.22),transparent 35%),radial-gradient(circle at 80% 20%,rgba(0,135,81,0.16),transparent 40%),linear-gradient(135deg, rgba(62,39,35,0.65), rgba(0,0,0,0.75));}
-.auth-shell{min-height:100vh;display:grid;place-items:center;padding:30px 12px;}
-.auth-card{width:100%;max-width:520px;background:var(--glass);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));border:1px solid var(--glass-border);border-radius:var(--radius);box-shadow:var(--shadow);padding:26px 26px 22px;color:#f7f7f7;animation:fadeUp .35s ease;}
-.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
-.auth-logo img{width:44px;height:44px;border-radius:12px;object-fit:cover;border:1px solid rgba(255,255,255,0.2);} 
-.auth-card h1{margin:6px 0 4px;font-size:1.9rem;}
-.auth-sub{color:rgba(255,255,255,0.82);margin:0 0 12px;}
-.auth-field{display:grid;gap:6px;margin-bottom:12px;}
-.auth-field label{font-weight:700;color:#f7f7f7;}
-.auth-field input,.auth-field select{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.28);background:rgba(255,255,255,0.08);color:#fff;}
-.auth-field input:focus,.auth-field select:focus{outline:none;border-color:var(--accent-2);box-shadow:0 0 0 3px rgba(252,209,22,0.25);}
-.auth-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px;}
-.btn-primary{background:var(--accent);color:#fff;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,0.25);font-weight:800;text-decoration:none;}
-.btn-primary:hover{background:#2f1d1a;}
-.btn-secondary{color:#fff;padding:11px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.35);text-decoration:none;}
-.small-link{color:var(--accent-2);text-decoration:none;}
-.footer-note{margin-top:10px;font-size:0.95rem;color:rgba(255,255,255,0.85);}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);} }
-@media(max-width:640px){.auth-card{padding:22px 18px;border-radius:18px;}}
+body{min-height:100vh;background:linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url('{% static "img/fond_du_site.png" %}') center/cover no-repeat fixed;}
+.auth-shell{min-height:100vh;display:grid;place-items:center;padding:30px 16px;}
+.auth-card{width:100%;max-width:540px;background:rgba(255,255,255,0.12);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.2);border-radius:24px;box-shadow:0 24px 64px rgba(0,0,0,0.3);padding:32px;color:#f7f7f7;animation:fadeUp .4s ease;}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.auth-logo img{width:48px;height:48px;border-radius:14px;object-fit:cover;border:1px solid rgba(255,255,255,0.2);}
+.auth-logo span{font-weight:800;font-size:1.1rem;}
+.auth-card h1{font-family:'Playfair Display',serif;margin:0 0 6px;font-size:2rem;}
+.auth-sub{color:rgba(255,255,255,0.8);margin:0 0 20px;font-size:0.95rem;}
+.auth-field{display:grid;gap:6px;margin-bottom:14px;}
+.auth-field label{font-weight:600;color:rgba(255,255,255,0.9);font-size:0.9rem;}
+.auth-field input,.auth-field select{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.08);color:#fff;font-size:0.95rem;transition:border-color .2s ease;}
+.auth-field input:focus,.auth-field select:focus{outline:none;border-color:var(--yellow);box-shadow:0 0 0 3px rgba(252,209,22,0.2);}
+.auth-field input::placeholder{color:rgba(255,255,255,0.4);}
+.auth-field small{color:rgba(255,255,255,0.6);font-size:0.8rem;}
+.fields-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.auth-submit{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:20px;}
+.auth-submit .btn{padding:13px 24px;background:var(--brown);border:1px solid rgba(255,255,255,0.15);}
+.auth-submit .btn-outline{padding:13px 24px;color:#fff;border-color:rgba(255,255,255,0.3);}
+.small-link{color:var(--yellow);text-decoration:none;font-weight:600;}
+.footer-note{margin-top:14px;font-size:0.88rem;color:rgba(255,255,255,0.75);}
+.auth-error{background:rgba(206,17,38,0.15);border:1px solid rgba(206,17,38,0.3);border-radius:10px;padding:10px 14px;color:#ffd2d2;margin-bottom:14px;font-size:0.9rem;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@media(max-width:540px){.auth-card{padding:24px 20px;}.fields-row{grid-template-columns:1fr;}}
 </style>
 {% endblock %}
 {% block content %}
@@ -45,27 +40,33 @@ body{min-height:100vh;background:linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.4
     <form method="post">
       {% csrf_token %}
       {% if form.non_field_errors %}
-        <div class="auth-field" style="color:#ffd2d2;">{{ form.non_field_errors }}</div>
+        <div class="auth-error">{{ form.non_field_errors }}</div>
       {% endif %}
-      <div class="auth-field"><label>Prénom</label>{{ form.first_name }}{{ form.first_name.errors }}</div>
-      <div class="auth-field"><label>Nom</label>{{ form.last_name }}{{ form.last_name.errors }}</div>
-      <div class="auth-field"><label>Nom d’utilisateur</label>{{ form.username }}{{ form.username.errors }}</div>
-      <div class="auth-field"><label>Email</label>{{ form.email }}{{ form.email.errors }}</div>
+      <div class="fields-row">
+        <div class="auth-field"><label>Prénom</label>{{ form.first_name }}{{ form.first_name.errors }}</div>
+        <div class="auth-field"><label>Nom</label>{{ form.last_name }}{{ form.last_name.errors }}</div>
+      </div>
+      <div class="fields-row">
+        <div class="auth-field"><label>Nom d'utilisateur</label>{{ form.username }}{{ form.username.errors }}</div>
+        <div class="auth-field"><label>Email</label>{{ form.email }}{{ form.email.errors }}</div>
+      </div>
       <div class="auth-field"><label>Téléphone</label>{{ form.phone }}{{ form.phone.errors }}</div>
-      <div class="auth-field"><label>Mot de passe</label>{{ form.password1 }}{{ form.password1.errors }}</div>
-      <div class="auth-field"><label>Confirmer le mot de passe</label>{{ form.password2 }}{{ form.password2.errors }}</div>
+      <div class="fields-row">
+        <div class="auth-field"><label>Mot de passe</label>{{ form.password1 }}{{ form.password1.errors }}</div>
+        <div class="auth-field"><label>Confirmer</label>{{ form.password2 }}{{ form.password2.errors }}</div>
+      </div>
       <div class="auth-field">
         <label>Rôle</label>
         <select name="role" readonly>
           <option value="client" selected>Client</option>
         </select>
-        <small style="color:rgba(255,255,255,0.8);">Un seul rôle disponible : Client. Pour les rôles staff, le gérant crée les comptes.</small>
+        <small>Seul le rôle Client est disponible. Les comptes staff sont créés par le gérant.</small>
       </div>
-      <div class="auth-actions" style="margin-top:14px;">
-        <button class="btn-primary" type="submit">Créer mon compte</button>
-        <a class="btn-secondary" href="{% url 'accounts:login' %}">J’ai déjà un compte</a>
+      <div class="auth-submit">
+        <button class="btn" type="submit">Créer mon compte →</button>
+        <a class="btn-outline" href="{% url 'accounts:login' %}">J'ai déjà un compte</a>
       </div>
-      <p class="footer-note">En créant un compte, vous acceptez nos conditions.</p>
+      <p class="footer-note">En créant un compte, vous acceptez nos conditions d'utilisation.</p>
       <p class="footer-note">Déjà inscrit ? <a class="small-link" href="{% url 'accounts:login' %}">Se connecter</a></p>
     </form>
   </div>

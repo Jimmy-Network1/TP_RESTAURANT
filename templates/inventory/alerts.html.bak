@@ -1,0 +1,47 @@
+{% extends "base_staff.html" %}
+{% block title %}Alertes stock — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .alert-card{display:grid;gap:6px;}
+  .progress{height:8px;background:#eee;border-radius:999px;overflow:hidden;}
+  .progress > span{display:block;height:100%;background:var(--red);} 
+</style>
+
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(206,17,38,0.12);color:var(--red);">Alerte</p>
+    <h2>Stock faible</h2>
+    <p class="muted">Produits sous le seuil minimal.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'inventory:stock' %}">Retour stock</a>
+</div>
+
+<div class="card" style="margin-bottom:12px;">
+  <h4 style="margin-top:0;">Dernières alertes</h4>
+  <div style="display:grid;gap:6px;">
+    {% for a in alerts %}
+      <div class="muted">{{ a.created_at|date:"d/m H:i" }} • {{ a.message }} • {{ a.created_by.username|default:"-" }}</div>
+    {% empty %}
+      <div class="muted">Aucune alerte récente.</div>
+    {% endfor %}
+  </div>
+</div>
+
+<div class="grid">
+  {% for item in items %}
+  <div class="card alert-card">
+    <strong>{{ item.name }}</strong>
+    <span class="muted">{{ item.quantity_in_stock }} {{ item.get_unit_display }} / seuil {{ item.alert_threshold }}</span>
+    <div class="progress"><span style="width:{{ percent_map[item.id]|default:0 }}%"></span></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <span class="badge" style="background:rgba(206,17,38,0.12);color:var(--red);">Stock faible</span>
+      {% if is_manager %}
+        <a class="btn-outline" href="{% url 'inventory:stock_edit' item.id %}">Ajouter stock</a>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <div class="card">Aucune alerte.</div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,50 +1,29 @@
 {% extends "base_staff.html" %}
 {% block title %}Liste des tables — Saveur 237{% endblock %}
 {% block content %}
-<div class="section-title">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:20px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Salle</p>
-    <h2>Liste des tables</h2>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">🪑 Salle</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Liste des tables</h2>
     <p class="muted">Suivez toutes les tables avec statuts en temps réel.</p>
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <a class="btn-outline" href="{% url 'tables:plan' %}">Vue plan</a>
+    <a class="btn-outline" href="{% url 'tables:plan' %}">🗺️ Vue plan</a>
     <a class="btn" href="{% url 'tables:new' %}">+ Ajouter</a>
   </div>
 </div>
 
-<div class="card" style="margin-bottom:12px;">
+<div class="card" style="margin-bottom:16px;" data-animate="fadeUp">
   <form method="get" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:end;">
-    <div>
-      <label for="q">Recherche</label>
-      <input id="q" type="text" name="q" value="{{ query }}" placeholder="Nom ou zone" class="form-control" />
-    </div>
-    <div>
-      <label for="status">Statut</label>
-      <select id="status" name="status" class="form-control">
-        <option value="">Tous</option>
-        {% for code,label in table.STATUS_CHOICES %}
-        <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div style="padding-top:4px;">
-      <button class="btn" type="submit">Filtrer</button>
-    </div>
+    <div><label>🔍 Recherche</label><input type="text" name="q" value="{{ query }}" placeholder="Nom ou zone" class="form-control"></div>
+    <div><label>Statut</label><select name="status" class="form-control"><option value="">Tous</option>{% for code,label in table.STATUS_CHOICES %}<option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+    <div><button class="btn" type="submit">Filtrer</button></div>
   </form>
 </div>
 
-<div class="card">
+<div class="card" data-animate="fadeUp">
   <table>
-    <thead>
-      <tr>
-        <th>Table</th>
-        <th>Zone</th>
-        <th>Places</th>
-        <th>Statut</th>
-        <th style="text-align:right;padding-right:16px;">Actions</th>
-      </tr>
-    </thead>
+    <thead><tr><th>Table</th><th>Zone</th><th>Places</th><th>Statut</th><th style="text-align:right;padding-right:16px;">Actions</th></tr></thead>
     <tbody>
       {% for t in tables %}
       <tr>
@@ -52,19 +31,14 @@
         <td>{{ t.zone|default:'-' }}</td>
         <td>{{ t.capacity }}</td>
         <td>
-          {% if t.status == 'free' %}<span class="badge badge-free">Libre</span>{% endif %}
-          {% if t.status == 'occupied' %}<span class="badge badge-occupied">Occupée</span>{% endif %}
-          {% if t.status == 'reserved' %}<span class="badge badge-reserved">Réservée</span>{% endif %}
-          {% if t.status == 'cleaning' %}<span class="badge" style="background:#f0f0f0;color:#444;">À nettoyer</span>{% endif %}
+          {% if t.status == 'free' %}<span class="pill" style="background:var(--green-light);color:var(--green);">Libre</span>{% endif %}
+          {% if t.status == 'occupied' %}<span class="pill" style="background:rgba(206,17,38,0.12);color:var(--red);">Occupée</span>{% endif %}
+          {% if t.status == 'reserved' %}<span class="pill" style="background:rgba(252,209,22,0.2);color:#9b6a00;">Réservée</span>{% endif %}
+          {% if t.status == 'cleaning' %}<span class="pill" style="background:#f0f0f0;color:#444;">À nettoyer</span>{% endif %}
         </td>
-        <td style="text-align:right;">
-          <a class="btn-outline" href="{% url 'tables:detail' t.pk %}">Voir</a>
-          <a class="btn-outline" href="{% url 'tables:edit' t.pk %}">Éditer</a>
-        </td>
+        <td style="text-align:right;"><a class="btn-outline" href="{% url 'tables:detail' t.pk %}">Voir</a> <a class="btn-outline" href="{% url 'tables:edit' t.pk %}">Éditer</a></td>
       </tr>
-      {% empty %}
-      <tr><td colspan="5">Aucune table pour le moment.</td></tr>
-      {% endfor %}
+      {% empty %}<tr><td colspan="5" class="muted" style="text-align:center;padding:20px;">Aucune table.</td></tr>{% endfor %}
     </tbody>
   </table>
 </div>

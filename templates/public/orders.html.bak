@@ -1,0 +1,25 @@
+{% extends "base_public.html" %}
+{% block title %}Mes commandes — Saveur 237{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Mes commandes</h2>
+  <table>
+    <thead>
+      <tr><th>Commande</th><th>Type</th><th>Statut</th><th>Total</th><th>Date</th></tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td><a href="{% url 'public:order_detail' o.id %}">#{{ o.id }}</a></td>
+        <td>{{ o.get_order_type_display }}</td>
+        <td>{{ o.get_status_display }}</td>
+        <td>{{ o.total_amount }} FCFA</td>
+        <td>{{ o.created_at|date:"d/m H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">Aucune commande.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

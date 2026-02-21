@@ -1,0 +1,100 @@
+{% extends "base_delivery.html" %}
+{% block title %}Dashboard Livreur — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .kpi{background:#fff;border:2px solid #111;border-radius:14px;padding:14px;text-decoration:none;color:#111;display:block;}
+  .kpi .label{font-size:13px;font-weight:800;letter-spacing:0.4px;}
+  .kpi .num{font-size:26px;font-weight:900;margin-top:6px;}
+  .kpi.active{border-color:#f1c40f;}
+  .kpi.done{border-color:#008751;}
+  .cards{display:grid;gap:12px;margin-top:12px;}
+  .card{background:#fff;border:1px solid #eee;border-radius:14px;padding:14px;}
+  .row{display:grid;gap:6px;}
+  .badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-weight:800;font-size:12px;}
+  .badge-ready{background:#008751;color:#fff;}
+  .badge-route{background:#2d74da;color:#fff;}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+  .btn-primary{background:#3E2723;color:#fff;border:1px solid #3E2723;padding:10px 14px;border-radius:12px;font-weight:800;text-decoration:none;}
+  .btn-secondary{background:#fff;color:#111;border:1px solid #ddd;padding:10px 14px;border-radius:12px;font-weight:800;text-decoration:none;}
+  .muted{color:#666;font-size:13px;}
+  .history{display:grid;gap:8px;}
+</style>
+
+<div class="kpis">
+  <a class="kpi active" href="{% url 'delivery:dashboard' %}">
+    <div class="label">EN COURS</div>
+    <div class="num">{{ counters.active }}</div>
+  </a>
+  <a class="kpi done" href="{% url 'delivery:dashboard' %}?status=LIVREE">
+    <div class="label">LIVRÉES AUJOURD’HUI</div>
+    <div class="num">{{ counters.done_today }}</div>
+  </a>
+</div>
+
+<div class="cards">
+  <div class="card">
+    <h3 style="margin:0 0 8px;">Mes livraisons</h3>
+    {% for o in orders %}
+      <div class="row" style="border-top:1px dashed #eee;padding-top:10px;margin-top:10px;">
+        <div><strong>#{{ o.id }}</strong> • {{ o.delivery_address|default:"-" }}</div>
+        <div class="muted">Tel: {{ o.customer_profile.phone|default:"-" }}</div>
+        {% if o.note %}<div class="muted">Note: {{ o.note }}</div>{% endif %}
+        <div>
+          {% if o.status == 'PRETE' %}
+            <span class="badge badge-ready">PRÊTE</span>
+          {% elif o.status == 'EN_ROUTE' %}
+            <span class="badge badge-route">EN LIVRAISON</span>
+          {% endif %}
+        </div>
+        <div class="btn-row">
+          {% if is_delivery or is_manager %}
+            {% if o.status == 'PRETE' %}
+              <form method="post" action="{% url 'delivery:detail' o.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="start">
+                <button class="btn-primary" type="submit">Démarrer livraison</button>
+              </form>
+            {% endif %}
+            {% if o.status == 'EN_ROUTE' %}
+              <form method="post" action="{% url 'delivery:detail' o.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delivered">
+                <button class="btn-primary" type="submit">Marquer livrée</button>
+              </form>
+            {% endif %}
+            {% if o.status == 'LIVREE' %}
+              {% if not o.payments.exists %}
+              <form method="post" action="{% url 'delivery:detail' o.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="paid">
+                <button class="btn-secondary" type="submit">Confirmé payé</button>
+              </form>
+              {% endif %}
+            {% endif %}
+          {% else %}
+            <span class="muted">Accès restreint</span>
+          {% endif %}
+          <a class="btn-secondary" href="{% url 'delivery:detail' o.id %}">Détail</a>
+        </div>
+      </div>
+    {% empty %}
+      <p class="muted">Aucune livraison assignée.</p>
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <h3 style="margin:0 0 8px;">Historique du jour</h3>
+    <div class="history">
+      {% for h in history %}
+        <div class="row">
+          <div><strong>#{{ h.id }}</strong> • {{ h.delivery_address|default:"-" }}</div>
+          <div class="muted">{{ h.updated_at|date:"H:i" }} • {{ h.get_status_display }}</div>
+        </div>
+      {% empty %}
+        <p class="muted">Aucune livraison terminée aujourd’hui.</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

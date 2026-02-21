@@ -1,70 +1,66 @@
 {% extends "base_staff.html" %}
-{% block title %}Mouvements stock — Saveur 237{% endblock %}
+{% block title %}Mouvements de stock — Saveur 237{% endblock %}
 {% block content %}
-<style>
-  .badge-in{background:rgba(0,135,81,0.12);color:var(--green);} 
-  .badge-out{background:rgba(206,17,38,0.12);color:var(--red);} 
-  .badge-adjust{background:rgba(252,209,22,0.25);color:#9b6a00;} 
-</style>
-
-<div class="section-title">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:18px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Stock</p>
-    <h2>Mouvements de stock</h2>
-    <p class="muted">Historique des entrees et sorties.</p>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">📋 Inventaire</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Mouvements de stock</h2>
+    <p class="muted">Entrées, sorties et ajustements.</p>
   </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <a class="btn-outline" href="{% url 'inventory:stock' %}">Retour stock</a>
-    {% if is_manager %}
-      <a class="btn" href="{% url 'inventory:movement_new' %}">Ajouter mouvement</a>
-    {% endif %}
-  </div>
+  <a class="btn" href="{% url 'inventory:movement_new' %}">+ Nouveau mouvement</a>
 </div>
 
-<div class="card" style="margin-bottom:12px;">
-  <form method="get" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:end;">
-    <div>
-      <label for="start">Date debut</label>
-      <input id="start" type="date" name="start" value="{{ start }}" class="form-control" />
-    </div>
-    <div>
-      <label for="end">Date fin</label>
-      <input id="end" type="date" name="end" value="{{ end }}" class="form-control" />
-    </div>
-    <div>
-      <button class="btn" type="submit">Filtrer</button>
-    </div>
+<div class="card" style="margin-bottom:14px;" data-animate="fadeUp">
+  <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+    <label style="display:flex;flex-direction:column;gap:4px;">
+      <span style="font-size:12px;font-weight:600;color:#555;">📅 Du</span>
+      <input type="date" name="date_from" value="{{ date_from|default:'' }}" style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;">
+    </label>
+    <label style="display:flex;flex-direction:column;gap:4px;">
+      <span style="font-size:12px;font-weight:600;color:#555;">📅 Au</span>
+      <input type="date" name="date_to" value="{{ date_to|default:'' }}" style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;">
+    </label>
+    <label style="display:flex;flex-direction:column;gap:4px;">
+      <span style="font-size:12px;font-weight:600;color:#555;">📦 Type</span>
+      <select name="type" style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;">
+        <option value="">Tous</option>
+        <option value="in" {% if filter_type == 'in' %}selected{% endif %}>Entrée</option>
+        <option value="out" {% if filter_type == 'out' %}selected{% endif %}>Sortie</option>
+        <option value="adjustment" {% if filter_type == 'adjustment' %}selected{% endif %}>Ajustement</option>
+      </select>
+    </label>
+    <button class="btn" type="submit" style="padding:8px 16px;">Filtrer</button>
   </form>
 </div>
 
-<div class="card">
-  <table>
+<div class="card" data-animate="fadeUp" style="overflow-x:auto;">
+  <table class="table">
     <thead>
       <tr>
-        <th>Type</th>
-        <th>Ingredient</th>
-        <th>Quantite</th>
         <th>Date</th>
-        <th>Utilisateur</th>
-        <th>Motif</th>
+        <th>Article</th>
+        <th>Type</th>
+        <th style="text-align:center;">Quantité</th>
+        <th>Note</th>
+        <th>Par</th>
       </tr>
     </thead>
     <tbody>
       {% for m in movements %}
       <tr>
+        <td>{{ m.created_at|date:"d/m/Y H:i" }}</td>
+        <td style="font-weight:600;">{{ m.ingredient.name }}</td>
         <td>
-          {% if m.movement_type == 'in' %}<span class="badge badge-in">Entree</span>{% endif %}
-          {% if m.movement_type == 'out' %}<span class="badge badge-out">Sortie</span>{% endif %}
-          {% if m.movement_type == 'adjust' %}<span class="badge badge-adjust">Ajustement</span>{% endif %}
+          {% if m.movement_type == 'in' %}<span class="pill" style="background:var(--green-light);color:var(--green);">📥 Entrée</span>{% endif %}
+          {% if m.movement_type == 'out' %}<span class="pill" style="background:rgba(206,17,38,.1);color:var(--red);">📤 Sortie</span>{% endif %}
+          {% if m.movement_type == 'adjustment' %}<span class="pill" style="background:rgba(52,152,219,.12);color:#2980b9;">🔄 Ajustement</span>{% endif %}
         </td>
-        <td>{{ m.ingredient.name }}</td>
-        <td>{{ m.quantity }} {{ m.ingredient.get_unit_display }}</td>
-        <td>{{ m.created_at|date:"d/m H:i" }}</td>
-        <td>{{ m.created_by.username|default:"-" }}</td>
-        <td>{{ m.note|default:'-' }}</td>
+        <td style="text-align:center;font-weight:700;">{{ m.quantity }}</td>
+        <td class="muted" style="font-size:13px;">{{ m.note|default:'-' }}</td>
+        <td>{{ m.created_by|default:'-' }}</td>
       </tr>
       {% empty %}
-      <tr><td colspan="6">Aucun mouvement.</td></tr>
+      <tr><td colspan="6" style="text-align:center;padding:30px;" class="muted">Aucun mouvement enregistré.</td></tr>
       {% endfor %}
     </tbody>
   </table>

@@ -1,34 +1,44 @@
 {% extends "base_public.html" %}
 {% block title %}Adresse — Saveur 237{% endblock %}
 {% block content %}
-<div class="card">
-  <h2>{% if address %}Modifier adresse{% else %}Ajouter adresse{% endif %}</h2>
-  <form method="post">
-    {% csrf_token %}
-    <div class="form-row">
-      <label>Label</label>
-      {{ form.label }}
-    </div>
-    <div class="form-row">
-      <label>Ville / Quartier</label>
-      {{ form.city }}
-    </div>
-    <div class="form-row">
-      <label>Zone</label>
-      {{ form.district }}
-    </div>
-    <div class="form-row">
-      <label>Détails</label>
-      {{ form.details }}
-    </div>
-    <div class="form-row">
-      <label>Par défaut</label>
-      {{ form.is_default }}
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button class="btn" type="submit">Enregistrer</button>
-      <a class="btn-outline" href="{% url 'accounts:addresses' %}">Annuler</a>
-    </div>
-  </form>
-</div>
+<section style="max-width:600px;margin:0 auto;padding:30px 16px;">
+  <div style="margin-bottom:24px;" data-animate="fadeUp">
+    <span class="pill" style="background:var(--green-light);color:var(--green);">📍 Adresse</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">{% if address %}Modifier adresse{% else %}Ajouter une adresse{% endif %}</h2>
+    <p class="muted">Renseignez les détails pour la livraison.</p>
+  </div>
+
+  <div class="card" data-animate="fadeUp">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <label>🏷️ Label</label>
+        {{ form.label }}
+      </div>
+      <div class="grid">
+        <div class="form-row">
+          <label>🏙️ Ville</label>
+          {{ form.city }}
+        </div>
+        <div class="form-row">
+          <label>📍 Quartier</label>
+          {{ form.district }}
+        </div>
+      </div>
+      <div class="form-row">
+        <label>📝 Détails (indications)</label>
+        {{ form.details }}
+      </div>
+      <div class="form-row">
+        <label style="display:flex;align-items:center;gap:8px;">
+          {{ form.is_default }} Définir comme adresse par défaut
+        </label>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+        <button class="btn" type="submit">💾 Enregistrer</button>
+        <a class="btn-outline" href="{% url 'accounts:addresses' %}">Annuler</a>
+      </div>
+    </form>
+  </div>
+</section>
 {% endblock %}

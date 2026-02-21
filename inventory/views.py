@@ -10,6 +10,7 @@ from django.shortcuts import redirect
 from .forms import IngredientForm, StockMovementForm
 from .models import Ingredient, StockMovement, InventoryAlert
 from accounts.models import AuditLog
+from accounts.notifications import create_notification
 
 def _group_names(user):
     if not user.is_authenticated:
@@ -179,10 +180,16 @@ class StockMovementCreateView(CreateView):
             ingredient.save(update_fields=["quantity_in_stock"])
             if ingredient.alert_threshold and ingredient.alert_threshold > 0:
                 if old_qty > ingredient.alert_threshold and new_qty <= ingredient.alert_threshold:
-                    InventoryAlert.objects.create(
+                    alert = InventoryAlert.objects.create(
                         ingredient=ingredient,
                         message=f"Stock faible: {ingredient.name} ({new_qty} {ingredient.get_unit_display()})",
                         created_by=self.request.user,
+                    )
+                    create_notification(
+                        target_role="manager",
+                        message=alert.message,
+                        url="/inventory/stock/",
+                        level="warn",
                     )
             AuditLog.objects.create(
                 action="STOCK_MOVE",

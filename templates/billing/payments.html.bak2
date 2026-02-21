@@ -1,0 +1,60 @@
+{% extends "base_staff.html" %}
+{% block title %}Paiements — Saveur 237{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:18px;" data-animate="fadeUp">
+  <div>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">💳 Caisse</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Historique des paiements</h2>
+    <p class="muted">Tous les encaissements enregistrés.</p>
+  </div>
+  <a class="btn" href="{% url 'billing:payment_form' %}">+ Nouveau paiement</a>
+</div>
+
+<div class="card" style="margin-bottom:14px;" data-animate="fadeUp">
+  <form method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+    <label style="display:flex;flex-direction:column;gap:4px;">
+      <span style="font-size:12px;font-weight:600;color:#555;">📅 Du</span>
+      <input type="date" name="date_from" value="{{ date_from|default:'' }}" style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;">
+    </label>
+    <label style="display:flex;flex-direction:column;gap:4px;">
+      <span style="font-size:12px;font-weight:600;color:#555;">📅 Au</span>
+      <input type="date" name="date_to" value="{{ date_to|default:'' }}" style="padding:8px 10px;border:1px solid #ddd;border-radius:8px;">
+    </label>
+    <button class="btn" type="submit" style="padding:8px 16px;">Filtrer</button>
+    <a class="btn-outline" href="{% url 'billing:payments' %}" style="padding:8px 16px;">Réinitialiser</a>
+  </form>
+</div>
+
+<div class="card" data-animate="fadeUp" style="overflow-x:auto;">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Commande</th>
+        <th>Méthode</th>
+        <th>Montant</th>
+        <th>Date</th>
+        <th>Caissier</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td>#{{ p.id }}</td>
+        <td>#{{ p.order.id }}</td>
+        <td>
+          {% if p.method == 'cash' %}<span class="pill" style="background:var(--green-light);color:var(--green);">💵 Cash</span>{% endif %}
+          {% if p.method == 'card' %}<span class="pill" style="background:rgba(52,152,219,.12);color:#2980b9;">💳 Carte</span>{% endif %}
+          {% if p.method == 'momo' %}<span class="pill" style="background:rgba(252,209,22,.18);color:#9b6a00;">📱 MoMo</span>{% endif %}
+        </td>
+        <td style="font-weight:700;">{{ p.amount }} FCFA</td>
+        <td>{{ p.created_at|date:"d/m/Y H:i" }}</td>
+        <td>{{ p.created_by|default:'-' }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" style="text-align:center;padding:30px;" class="muted">Aucun paiement trouvé.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

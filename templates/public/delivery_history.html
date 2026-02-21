@@ -1,19 +1,49 @@
 {% extends "base_public.html" %}
 {% block title %}Historique livraisons — Saveur 237{% endblock %}
+{% block extra_head %}
+<style>
+.delivery-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+.delivery-table th{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.5px;color:#888;padding:8px 12px;font-weight:700;}
+.delivery-table td{background:#fff;padding:14px 12px;border-top:1px solid rgba(0,0,0,0.04);border-bottom:1px solid rgba(0,0,0,0.04);}
+.delivery-table td:first-child{border-left:1px solid rgba(0,0,0,0.04);border-radius:12px 0 0 12px;}
+.delivery-table td:last-child{border-right:1px solid rgba(0,0,0,0.04);border-radius:0 12px 12px 0;}
+.delivery-table tr:hover td{background:var(--green-light);}
+</style>
+{% endblock %}
 {% block content %}
-<div class="section-title">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap;">
   <div>
-    <h2>Historique livraisons</h2>
-    <p class="muted">Vos livraisons terminees.</p>
+    <h2 style="font-family:'Playfair Display',serif;margin:0 0 6px;">🛵 Historique livraisons</h2>
+    <p class="muted">Toutes vos livraisons terminées.</p>
   </div>
 </div>
 
-<div class="card">
-  <table style="width:100%;border-collapse:separate;border-spacing:0 8px;">
-    <thead><tr><th>Commande</th><th>Date</th><th>Total</th><th>Statut</th><th></th></tr></thead>
+<div class="card" data-animate="fadeUp">
+  <table class="delivery-table">
+    <thead>
+      <tr>
+        <th>Commande</th>
+        <th>Date</th>
+        <th>Total</th>
+        <th>Statut</th>
+        <th></th>
+      </tr>
+    </thead>
     <tbody>
-      <tr><td>#1010</td><td>19/02</td><td>18 000</td><td><span class="status status-ok">LIVREE</span></td><td><a class="btn-outline" href="#">Voir</a></td></tr>
-      <tr><td>#1011</td><td>18/02</td><td>24 000</td><td><span class="status status-ok">LIVREE</span></td><td><a class="btn-outline" href="#">Voir</a></td></tr>
+      <tr>
+        <td><strong>#1010</strong></td>
+        <td>19/02</td>
+        <td>18 000 FCFA</td>
+        <td><span class="pill" style="background:rgba(0,135,81,0.12);color:var(--green);">Livrée</span></td>
+        <td><a class="btn-outline" href="#">Voir</a></td>
+      </tr>
+      <tr>
+        <td><strong>#1011</strong></td>
+        <td>18/02</td>
+        <td>24 000 FCFA</td>
+        <td><span class="pill" style="background:rgba(0,135,81,0.12);color:var(--green);">Livrée</span></td>
+        <td><a class="btn-outline" href="#">Voir</a></td>
+      </tr>
     </tbody>
   </table>
 </div>

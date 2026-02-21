@@ -1,42 +1,46 @@
 {% extends "base_staff.html" %}
 {% block title %}Commandes livraison — Saveur 237{% endblock %}
 {% block content %}
-<div class="section-title">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:20px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Orders</p>
-    <h2>Livraisons</h2>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">🛵 Orders</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Livraisons</h2>
     <p class="muted">Commandes en livraison et suivi.</p>
   </div>
-  {% if is_manager %}
-    <a class="btn" href="{% url 'delivery:assign' %}">Assigner livreur</a>
-  {% endif %}
+  {% if is_manager %}<a class="btn" href="{% url 'delivery:assign' %}">📦 Assigner livreur</a>{% endif %}
 </div>
 
-<div class="card" style="margin-top:12px;">
-  <table class="ord-table">
-    <thead>
-      <tr>
-        <th>Commande</th><th>Client</th><th>Adresse</th><th>Livreur</th><th>Statut</th><th></th>
-      </tr>
-    </thead>
+<div class="card" data-animate="fadeUp">
+  <table>
+    <thead><tr><th>Commande</th><th>Client</th><th>Adresse</th><th>Livreur</th><th>Statut</th><th></th></tr></thead>
     <tbody>
       {% for o in orders %}
-        <tr>
-          <td>#{{ o.id }}</td>
-          <td>{{ o.customer.username|default:'Client' }}</td>
-          <td>{{ o.delivery_address|default:'-' }}</td>
-          <td>{{ o.assigned_delivery.username|default:'-' }}</td>
-          <td><span class="pill pill-route">{{ o.get_status_display }}</span></td>
-          <td>
-            {% if is_manager or is_delivery %}
-              <a class="icon-btn" href="{% url 'orders:detail' o.id %}">Voir</a>
-            {% else %}
-              <span class="muted">Accès restreint</span>
-            {% endif %}
-          </td>
-        </tr>
+      <tr>
+        <td><strong>#{{ o.id }}</strong></td>
+        <td>{{ o.customer.username|default:'Client' }}</td>
+        <td>{{ o.delivery_address|default:'-' }}</td>
+        <td>{{ o.assigned_delivery.username|default:'-' }}</td>
+        <td>
+          {% if o.status == 'PREPARATION' %}
+            <span class="pill pill-route">{{ o.get_status_display }}</span>
+          {% elif o.status == 'PRETE' %}
+            <span class="pill pill-pending">{{ o.get_status_display }}</span>
+          {% elif o.status == 'EN_ROUTE' %}
+            <span class="pill pill-route">{{ o.get_status_display }}</span>
+          {% elif o.status == 'LIVREE' %}
+            <span class="pill pill-done">{{ o.get_status_display }}</span>
+          {% elif o.status == 'PAYEE' %}
+            <span class="pill pill-cash">{{ o.get_status_display }}</span>
+          {% elif o.status == 'ANNULEE' %}
+            <span class="pill pill-off">{{ o.get_status_display }}</span>
+          {% else %}
+            <span class="pill">{{ o.get_status_display }}</span>
+          {% endif %}
+        </td>
+        <td>{% if is_manager or is_delivery %}<a class="btn-outline" href="{% url 'orders:detail' o.id %}">Voir</a>{% else %}<span class="muted">Restreint</span>{% endif %}</td>
+      </tr>
       {% empty %}
-        <tr><td colspan="6">Aucune livraison.</td></tr>
+      <tr><td colspan="6" class="muted" style="text-align:center;padding:20px;">Aucune livraison.</td></tr>
       {% endfor %}
     </tbody>
   </table>

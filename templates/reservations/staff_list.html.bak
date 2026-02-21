@@ -1,0 +1,91 @@
+{% extends "base_staff.html" %}
+{% block title %}Réservations — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .badge-pending{background:rgba(252,209,22,0.25);color:#9b6a00;} 
+  .badge-confirmed{background:rgba(0,135,81,0.12);color:var(--green);} 
+  .badge-cancel{background:rgba(206,17,38,0.12);color:var(--red);} 
+  .badge-done{background:#2c2c2c;color:#fff;} 
+</style>
+
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Salle</p>
+    <h2>Réservations</h2>
+    <p class="muted">Confirmer, assigner et suivre les réservations.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:12px;">
+  <form method="get" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:end;">
+    <div>
+      <label for="q">Recherche</label>
+      <input id="q" type="text" name="q" value="{{ query }}" class="form-control" placeholder="Nom ou téléphone" />
+    </div>
+    <div>
+      <label for="status">Statut</label>
+      <select id="status" name="status" class="form-control">
+        <option value="">Tous</option>
+        <option value="PENDING" {% if status_filter == 'PENDING' %}selected{% endif %}>En attente</option>
+        <option value="CONFIRMED" {% if status_filter == 'CONFIRMED' %}selected{% endif %}>Confirmée</option>
+        <option value="CANCELLED" {% if status_filter == 'CANCELLED' %}selected{% endif %}>Annulée</option>
+        <option value="COMPLETED" {% if status_filter == 'COMPLETED' %}selected{% endif %}>Terminée</option>
+      </select>
+    </div>
+    <div>
+      <label for="zone">Zone</label>
+      <select id="zone" name="zone" class="form-control">
+        <option value="">Toutes</option>
+        <option value="VIP" {% if zone_filter == 'VIP' %}selected{% endif %}>VIP</option>
+        <option value="Terrasse" {% if zone_filter == 'Terrasse' %}selected{% endif %}>Terrasse</option>
+        <option value="Interieur" {% if zone_filter == 'Interieur' %}selected{% endif %}>Interieur</option>
+      </select>
+    </div>
+    <div>
+      <button class="btn" type="submit">Filtrer</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Client</th>
+        <th>Date</th>
+        <th>Personnes</th>
+        <th>Zone</th>
+        <th>Statut</th>
+        <th>Table</th>
+        <th style="text-align:right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in reservations %}
+      <tr>
+        <td>{{ r.customer_name }}<br><span class="muted">{{ r.customer_phone }}</span></td>
+        <td>{{ r.reservation_datetime|date:"d/m H:i" }}</td>
+        <td>{{ r.party_size }}</td>
+        <td>{{ r.zone|default:'-' }}</td>
+        <td>
+          {% if r.status == 'PENDING' %}<span class="badge badge-pending">En attente</span>{% endif %}
+          {% if r.status == 'CONFIRMED' %}<span class="badge badge-confirmed">Confirmée</span>{% endif %}
+          {% if r.status == 'CANCELLED' %}<span class="badge badge-cancel">Annulée</span>{% endif %}
+          {% if r.status == 'COMPLETED' %}<span class="badge badge-done">Terminée</span>{% endif %}
+        </td>
+        <td>{% if r.table %}{{ r.table.name }}{% else %}-{% endif %}</td>
+        <td style="text-align:right;">
+          {% if is_manager or is_server %}
+            <a class="btn-outline" href="{% url 'reservations:staff_detail' r.id %}">Gérer</a>
+          {% else %}
+            <span class="muted">Accès restreint</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7">Aucune réservation.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

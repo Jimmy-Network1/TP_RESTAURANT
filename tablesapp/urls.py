@@ -9,6 +9,7 @@ urlpatterns = [
     path("new/", views.TableCreateView.as_view(), name="new"),
     path("<int:pk>/", views.TableDetailView.as_view(), name="detail"),
     path("<int:pk>/edit/", views.TableUpdateView.as_view(), name="edit"),
+    path("<int:pk>/status/", views.table_status, name="status"),
     path("transfer/", views.TableTransferView.as_view(), name="transfer"),
     path("reservations/", views.TableReservationsView.as_view(), name="reservations"),
 ]

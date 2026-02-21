@@ -1,0 +1,82 @@
+{% extends "base_staff.html" %}
+{% block title %}Commandes — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .ord-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .ord-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+  .ord-table td{background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;}
+  .ord-table td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
+  .ord-table td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
+</style>
+
+<div class="ord-head">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Orders</p>
+    <h2>Liste des commandes</h2>
+    <p class="muted">Source table ou online.</p>
+  </div>
+  {% if is_manager or is_server %}
+    <a class="btn" href="{% url 'orders:new' %}">Nouvelle commande</a>
+  {% endif %}
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <form method="get" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;">
+    <div><label>Recherche</label><input class="form-control" type="search" name="q" value="{{ query }}" placeholder="N°, client, table"></div>
+    <div><label>Statut</label>
+      <select class="form-control" name="status">
+        <option value="" {% if not status %}selected{% endif %}>Tous</option>
+        {% for code,label in orders.model.STATUS_CHOICES %}
+          <option value="{{ code }}" {% if status == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div><label>Source</label>
+      <select class="form-control" name="source">
+        <option value="" {% if not source %}selected{% endif %}>Toutes</option>
+        <option value="TABLE" {% if source == 'TABLE' %}selected{% endif %}>TABLE</option>
+        <option value="ONLINE" {% if source == 'ONLINE' %}selected{% endif %}>ONLINE</option>
+      </select>
+    </div>
+    <div><label>Type</label>
+      <select class="form-control" name="type">
+        <option value="" {% if not type_filter %}selected{% endif %}>Tous</option>
+        {% for code,label in orders.model.TYPE_CHOICES %}
+          <option value="{{ code }}" {% if type_filter == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div><button class="btn" type="submit">Filtrer</button></div>
+  </form>
+
+  <table class="ord-table" style="margin-top:12px;">
+    <thead>
+      <tr>
+        <th>N°</th><th>Source</th><th>Table/Client</th><th>Type</th><th>Statut</th>{% if is_manager or is_cashier %}<th>Total</th>{% endif %}<th>Heure</th><th style="text-align:right;padding-right:14px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td>#{{ o.id }}</td>
+        <td>{% if o.table %}TABLE{% else %}ONLINE{% endif %}</td>
+        <td>{% if o.table %}Table {{ o.table.name }}{% else %}{{ o.customer.username|default:'Client' }}{% endif %}</td>
+        <td>{{ o.get_order_type_display }}</td>
+        <td><span class="pill pill-ok">{{ o.get_status_display }}</span></td>
+        {% if is_manager or is_cashier %}<td>{{ o.total_amount }} FCFA</td>{% endif %}
+        <td>{{ o.created_at|date:"H:i" }}</td>
+        <td><div class="actions">
+          {% if is_manager or is_server or is_cook or is_cashier %}
+            <a class="icon-btn" href="{% url 'orders:detail' o.id %}">Voir</a>
+          {% else %}
+            <span class="muted">Accès restreint</span>
+          {% endif %}
+        </div></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8">Aucune commande.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,76 +1,55 @@
 {% extends "base_staff.html" %}
 {% block title %}Stock — Saveur 237{% endblock %}
 {% block content %}
-<style>
-  .badge-ok{background:rgba(0,135,81,0.12);color:var(--green);} 
-  .badge-warn{background:rgba(252,209,22,0.25);color:#9b6a00;} 
-  .badge-low{background:rgba(206,17,38,0.12);color:var(--red);} 
-</style>
-
-<div class="section-title">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:18px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Stock</p>
-    <h2>Liste du stock</h2>
-    <p class="muted">Suivi des ingredients et seuils d'alerte.</p>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">📦 Inventaire</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Gestion du stock</h2>
+    <p class="muted">Vue d'ensemble des articles en stock.</p>
   </div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    {% if is_manager %}
-      <a class="btn-outline" href="{% url 'inventory:alerts' %}">Alertes</a>
-      <a class="btn" href="{% url 'inventory:stock_new' %}">Ajouter article</a>
-    {% endif %}
+    <a class="btn" href="{% url 'inventory:stock_new' %}">+ Nouvel article</a>
+    <a class="btn-outline" href="{% url 'inventory:movements' %}">📋 Mouvements</a>
+    <a class="btn-outline" href="{% url 'inventory:alerts' %}">⚠️ Alertes</a>
   </div>
 </div>
 
-<div class="card" style="margin-bottom:12px;">
-  <form method="get" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:end;">
-    <div>
-      <label for="q">Recherche</label>
-      <input id="q" type="text" name="q" value="{{ query }}" class="form-control" placeholder="Nom ingredient" />
-    </div>
-    <div>
-      <button class="btn" type="submit">Filtrer</button>
-    </div>
-  </form>
-</div>
-
-<div class="card">
-  <table>
+<div class="card" data-animate="fadeUp" style="overflow-x:auto;">
+  <table class="table">
     <thead>
       <tr>
-        <th>Ingredient</th>
-        <th>Quantite</th>
-        <th>Unite</th>
-        <th>Seuil</th>
+        <th>Article</th>
+        <th>Catégorie</th>
+        <th style="text-align:center;">Quantité</th>
+        <th style="text-align:center;">Seuil alerte</th>
+        <th>Unité</th>
         <th>Statut</th>
-        <th style="text-align:right;">Actions</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
-      {% for item in items %}
+      {% for item in stock_items %}
       <tr>
-        <td><strong>{{ item.name }}</strong></td>
-        <td>{{ item.quantity_in_stock }}</td>
-        <td>{{ item.get_unit_display }}</td>
-        <td>{{ item.alert_threshold }}</td>
+        <td style="font-weight:600;">{{ item.name }}</td>
+        <td>{{ item.category|default:'-' }}</td>
+        <td style="text-align:center;font-weight:700;">{{ item.quantity }}</td>
+        <td style="text-align:center;">{{ item.alert_threshold|default:'-' }}</td>
+        <td>{{ item.unit|default:'-' }}</td>
         <td>
-          {% if item.quantity_in_stock <= item.alert_threshold %}
-            <span class="badge badge-low">Stock faible</span>
-          {% elif item.quantity_in_stock <= item.alert_threshold|add:2 %}
-            <span class="badge badge-warn">Alerte</span>
+          {% if item.quantity <= 0 %}
+          <span class="pill" style="background:rgba(206,17,38,.1);color:var(--red);">🔴 Rupture</span>
+          {% elif item.quantity <= item.alert_threshold %}
+          <span class="pill" style="background:rgba(252,209,22,.18);color:#9b6a00;">🟡 Alerte</span>
           {% else %}
-            <span class="badge badge-ok">OK</span>
+          <span class="pill" style="background:var(--green-light);color:var(--green);">🟢 OK</span>
           {% endif %}
         </td>
-        <td style="text-align:right;">
-          {% if is_manager %}
-            <a class="btn-outline" href="{% url 'inventory:stock_edit' item.id %}">Modifier</a>
-          {% else %}
-            <span class="muted">Accès restreint</span>
-          {% endif %}
+        <td>
+          <a class="btn-outline" href="{% url 'inventory:stock_edit' item.id %}" style="font-size:12px;padding:4px 10px;">✏️</a>
         </td>
       </tr>
       {% empty %}
-      <tr><td colspan="6">Aucun article en stock.</td></tr>
+      <tr><td colspan="7" style="text-align:center;padding:30px;" class="muted">Aucun article en stock.</td></tr>
       {% endfor %}
     </tbody>
   </table>

@@ -1,0 +1,75 @@
+{% extends "base_staff.html" %}
+{% block title %}Historique paiements — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .hist-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .hist-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+  .hist-table td{background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;}
+  .hist-table td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
+  .hist-table td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
+</style>
+
+<div class="hist-head">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Caisse</p>
+    <h2>Historique des paiements</h2>
+    <p class="muted">Suivi de toutes les transactions.</p>
+  </div>
+  {% if is_cashier or is_manager %}
+    <a class="btn" href="{% url 'billing:cashdesk' %}">Caisse</a>
+  {% endif %}
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <form method="get" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;">
+    <div>
+      <label>Du</label>
+      <input class="form-control" type="date">
+    </div>
+    <div>
+      <label>Au</label>
+      <input class="form-control" type="date">
+    </div>
+    <div>
+      <button class="btn" type="submit">Filtrer</button>
+    </div>
+  </form>
+
+  {% if is_cashier or is_manager %}
+  <table class="hist-table" style="margin-top:12px;">
+    <thead>
+      <tr>
+        <th>Facture</th>
+        <th>Mode</th>
+        <th>Montant</th>
+        <th>Date</th>
+        <th>Caissier</th>
+        <th style="text-align:right;padding-right:14px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td>#{{ p.order.id }}</td>
+        <td>
+          {% if p.method == 'cash' %}<span class="pill pill-ok">Especes</span>
+          {% elif p.method == 'card' %}<span class="pill pill-card">Carte</span>
+          {% else %}<span class="pill pill-momo">Mobile Money</span>{% endif %}
+        </td>
+        <td>{{ p.amount }} FCFA</td>
+        <td>{{ p.created_at|date:"d/m H:i" }}</td>
+        <td>{{ p.created_by.username|default:p.session.opened_by.username|default:"-" }}</td>
+        <td><div class="actions"><a class="icon-btn" href="{% url 'billing:invoice_detail' p.order.id %}">Voir</a></div></td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="muted">Aucun paiement.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <div class="muted">Accès réservé au caissier/gerant.</div>
+  {% endif %}
+</div>
+{% endblock %}

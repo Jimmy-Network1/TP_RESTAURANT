@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.views.generic import DetailView, FormView, ListView, CreateView, UpdateView
 
 from orders.models import Order
+from orders.utils import is_manager, is_server
 from .forms import TableForm, TableTransferForm
 from .models import Table
 
@@ -24,6 +25,12 @@ class TablePlanView(ListView):
         if status:
             qs = qs.filter(status=status)
         return qs
+
+    def dispatch(self, request, *args, **kwargs):
+        if not (is_manager(request.user) or is_server(request.user)):
+            messages.error(request, "Accès refusé.")
+            return redirect("public:home")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -69,6 +76,12 @@ class TableListView(ListView):
         ctx["table"] = Table
         return ctx
 
+    def dispatch(self, request, *args, **kwargs):
+        if not is_manager(request.user):
+            messages.error(request, "Accès refusé.")
+            return redirect("public:home")
+        return super().dispatch(request, *args, **kwargs)
+
 
 class TableDetailView(DetailView):
     model = Table
@@ -97,6 +110,41 @@ class TableDetailView(DetailView):
         })
         return ctx
 
+    def dispatch(self, request, *args, **kwargs):
+        if not (is_manager(request.user) or is_server(request.user)):
+            messages.error(request, "Accès refusé.")
+            return redirect("public:home")
+        return super().dispatch(request, *args, **kwargs)
+
+
+def table_status(request, pk):
+    if request.method != "POST":
+        return redirect("tables:detail", pk=pk)
+    if not (is_manager(request.user) or is_server(request.user)):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
+    table = Table.objects.filter(pk=pk).first()
+    if not table:
+        messages.error(request, "Table introuvable.")
+        return redirect("tables:plan")
+    status = request.POST.get("status")
+    if status not in dict(Table.STATUS_CHOICES):
+        messages.error(request, "Statut invalide.")
+        return redirect("tables:detail", pk=pk)
+    active_order = table.orders.filter(status__in=[
+        Order.STATUS_PENDING,
+        Order.STATUS_PREPARING,
+        Order.STATUS_READY,
+        Order.STATUS_ON_ROUTE,
+    ]).order_by("-created_at").first()
+    if active_order and status == Table.STATUS_FREE and not is_manager(request.user):
+        messages.error(request, "Impossible de libérer une table avec commande active.")
+        return redirect("tables:detail", pk=pk)
+    table.status = status
+    table.save(update_fields=["status"])
+    messages.success(request, "Statut de table mis à jour.")
+    return redirect("tables:detail", pk=pk)
+
 
 class TableCreateView(CreateView):
     model = Table
@@ -108,6 +156,12 @@ class TableCreateView(CreateView):
         messages.success(self.request, "Table créée avec succès.")
         return super().form_valid(form)
 
+    def dispatch(self, request, *args, **kwargs):
+        if not is_manager(request.user):
+            messages.error(request, "Accès refusé.")
+            return redirect("public:home")
+        return super().dispatch(request, *args, **kwargs)
+
 
 class TableUpdateView(UpdateView):
     model = Table
@@ -118,6 +172,12 @@ class TableUpdateView(UpdateView):
     def form_valid(self, form):
         messages.success(self.request, "Table mise à jour.")
         return super().form_valid(form)
+
+    def dispatch(self, request, *args, **kwargs):
+        if not is_manager(request.user):
+            messages.error(request, "Accès refusé.")
+            return redirect("public:home")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class TableTransferView(FormView):
@@ -158,8 +218,20 @@ class TableTransferView(FormView):
             initial["source"] = from_id
         return initial
 
+    def dispatch(self, request, *args, **kwargs):
+        if not is_manager(request.user):
+            messages.error(request, "Accès refusé.")
+            return redirect("public:home")
+        return super().dispatch(request, *args, **kwargs)
+
 
 class TableReservationsView(ListView):
     model = Table
     template_name = "tables/reservations.html"
     context_object_name = "tables"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not (is_manager(request.user) or is_server(request.user)):
+            messages.error(request, "Accès refusé.")
+            return redirect("public:home")
+        return super().dispatch(request, *args, **kwargs)

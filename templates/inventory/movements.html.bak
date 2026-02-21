@@ -1,0 +1,72 @@
+{% extends "base_staff.html" %}
+{% block title %}Mouvements stock — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .badge-in{background:rgba(0,135,81,0.12);color:var(--green);} 
+  .badge-out{background:rgba(206,17,38,0.12);color:var(--red);} 
+  .badge-adjust{background:rgba(252,209,22,0.25);color:#9b6a00;} 
+</style>
+
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Stock</p>
+    <h2>Mouvements de stock</h2>
+    <p class="muted">Historique des entrees et sorties.</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a class="btn-outline" href="{% url 'inventory:stock' %}">Retour stock</a>
+    {% if is_manager %}
+      <a class="btn" href="{% url 'inventory:movement_new' %}">Ajouter mouvement</a>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:12px;">
+  <form method="get" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:end;">
+    <div>
+      <label for="start">Date debut</label>
+      <input id="start" type="date" name="start" value="{{ start }}" class="form-control" />
+    </div>
+    <div>
+      <label for="end">Date fin</label>
+      <input id="end" type="date" name="end" value="{{ end }}" class="form-control" />
+    </div>
+    <div>
+      <button class="btn" type="submit">Filtrer</button>
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Ingredient</th>
+        <th>Quantite</th>
+        <th>Date</th>
+        <th>Utilisateur</th>
+        <th>Motif</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in movements %}
+      <tr>
+        <td>
+          {% if m.movement_type == 'in' %}<span class="badge badge-in">Entree</span>{% endif %}
+          {% if m.movement_type == 'out' %}<span class="badge badge-out">Sortie</span>{% endif %}
+          {% if m.movement_type == 'adjust' %}<span class="badge badge-adjust">Ajustement</span>{% endif %}
+        </td>
+        <td>{{ m.ingredient.name }}</td>
+        <td>{{ m.quantity }} {{ m.ingredient.get_unit_display }}</td>
+        <td>{{ m.created_at|date:"d/m H:i" }}</td>
+        <td>{{ m.created_by.username|default:"-" }}</td>
+        <td>{{ m.note|default:'-' }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6">Aucun mouvement.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

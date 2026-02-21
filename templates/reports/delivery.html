@@ -1,34 +1,46 @@
 {% extends "base_staff.html" %}
-{% block title %}Rapport livraisons{% endblock %}
+{% block title %}Rapport livraisons — Saveur 237{% endblock %}
 {% block content %}
-<div class="section-title">
+{% if not is_manager %}<div class="card" style="text-align:center;padding:40px;"><h3>⛔ Accès réservé</h3><p class="muted">Seul le manager peut consulter les rapports.</p></div>{% else %}
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Reports</p>
-    <h2>Livraisons</h2>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">🛵 Rapports</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Rapport livraisons</h2>
+    <p class="muted">Performance et statistiques de livraison.</p>
   </div>
-  <a class="btn-outline" href="{% url 'reports:dashboard' %}">Retour</a>
+  <a class="btn-outline" href="{% url 'reports:dashboard' %}">← Retour</a>
 </div>
 
-{% if not is_manager %}
-  <div class="card" style="margin-top:12px;">
-    <p class="muted">Accès réservé au gérant.</p>
-  </div>
-{% else %}
-<div class="card">
-  <table>
+<div class="card" data-animate="fadeUp" style="overflow-x:auto;">
+  <table class="table">
     <thead>
-      <tr><th>Commande</th><th>Client</th><th>Total</th><th>Statut</th></tr>
+      <tr>
+        <th>Commande</th>
+        <th>Livreur</th>
+        <th>Client</th>
+        <th>Adresse</th>
+        <th>Statut</th>
+        <th>Date</th>
+        <th>Durée</th>
+      </tr>
     </thead>
     <tbody>
-      {% for o in deliveries %}
+      {% for d in deliveries %}
       <tr>
-        <td>#{{ o.id }}</td>
-        <td>{% if o.customer %}{{ o.customer.username }}{% else %}-{% endif %}</td>
-        <td>{{ o.total_amount }} FCFA</td>
-        <td>{{ o.get_status_display }}</td>
+        <td><strong>#{{ d.order.id }}</strong></td>
+        <td>{{ d.courier.get_full_name|default:'-' }}</td>
+        <td>{{ d.order.customer_name|default:'-' }}</td>
+        <td class="muted" style="font-size:13px;">{{ d.delivery_address|default:'-' }}</td>
+        <td>
+          {% if d.status == 'delivered' %}<span class="pill" style="background:var(--green-light);color:var(--green);">✅</span>{% endif %}
+          {% if d.status == 'picked_up' %}<span class="pill" style="background:rgba(252,209,22,.18);color:#9b6a00;">🛵</span>{% endif %}
+          {% if d.status == 'pending' %}<span class="pill" style="background:#f0f0f0;color:#555;">⏳</span>{% endif %}
+        </td>
+        <td>{{ d.created_at|date:"d/m H:i" }}</td>
+        <td>{% if d.delivered_at %}{{ d.created_at|timesince:d.delivered_at }}{% else %}-{% endif %}</td>
       </tr>
       {% empty %}
-      <tr><td colspan="4">Aucune livraison.</td></tr>
+      <tr><td colspan="7" style="text-align:center;padding:20px;" class="muted">Aucune livraison.</td></tr>
       {% endfor %}
     </tbody>
   </table>

@@ -1,0 +1,70 @@
+{% extends "base_staff.html" %}
+{% block title %}Livraisons — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Livraison</p>
+    <h2>Livraisons</h2>
+    <p class="muted">Suivi des commandes a livrer.</p>
+  </div>
+  {% if is_manager %}
+    <a class="btn" href="{% url 'delivery:assign' %}">Attribuer</a>
+  {% endif %}
+</div>
+
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:12px;">
+  <div class="card"><div class="muted">En preparation</div><div style="font-size:20px;font-weight:800;">{{ counters.preparing }}</div></div>
+  <div class="card"><div class="muted">Pretes</div><div style="font-size:20px;font-weight:800;">{{ counters.ready }}</div></div>
+  <div class="card"><div class="muted">En livraison</div><div style="font-size:20px;font-weight:800;">{{ counters.on_route }}</div></div>
+  <div class="card"><div class="muted">Livrees</div><div style="font-size:20px;font-weight:800;">{{ counters.done }}</div></div>
+</div>
+
+<div class="card">
+  <form method="get" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;">
+    <div><label>Recherche</label><input class="form-control" type="search" name="q" value="{{ q }}" placeholder="N° commande / client"></div>
+    <div>
+      <label>Statut</label>
+      <select class="form-control" name="status">
+        <option value="" {% if not status %}selected{% endif %}>Tous</option>
+        {% for code,label in orders.model.STATUS_CHOICES %}
+          <option value="{{ code }}" {% if status == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div><button class="btn" type="submit">Filtrer</button></div>
+  </form>
+
+  <table class="ord-table" style="margin-top:12px;">
+    <thead>
+      <tr>
+        <th>Commande</th><th>Client</th><th>Adresse</th><th>Livreur</th><th>Statut</th><th style="text-align:right;padding-right:14px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+        <tr>
+          <td>#{{ o.id }}</td>
+          <td>{{ o.customer.username|default:'Client' }}</td>
+          <td>{{ o.delivery_address|default:'-' }}</td>
+          <td>{{ o.assigned_delivery.username|default:'Non assigne' }}</td>
+          <td><span class="pill pill-route">{{ o.get_status_display }}</span></td>
+          <td><div class="actions">
+            <a class="icon-btn" href="{% url 'delivery:detail' o.id %}">Voir</a>
+            {% if is_manager %}
+              {% if o.status == 'PRETE' %}
+                <a class="icon-btn" href="{% url 'delivery:assign' %}">Assigner</a>
+              {% else %}
+                <span class="muted">Pas prete</span>
+              {% endif %}
+            {% else %}
+              <span class="muted">Accès restreint</span>
+            {% endif %}
+          </div></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6">Aucune livraison.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

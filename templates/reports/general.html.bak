@@ -1,0 +1,59 @@
+{% extends "base_staff.html" %}
+{% block title %}Statistiques generales — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .rep-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .rep-graph{height:180px;background:linear-gradient(180deg,#f6f7fb 0%, #ffffff 100%);border:1px dashed #dcdcdc;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#777;}
+  .rep-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+  .rep-table td{background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;}
+  .rep-table td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
+  .rep-table td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
+</style>
+
+<div class="rep-head">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Rapports</p>
+    <h2>Statistiques generales</h2>
+    <p class="muted">Tendances globales et comparaisons.</p>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <a class="btn-outline" href="#">Comparer</a>
+    <a class="btn" href="{% url 'reports:export' %}">Exporter</a>
+  </div>
+</div>
+
+{% if not is_manager %}
+  <div class="card" style="margin-top:12px;">
+    <p class="muted">Accès réservé au gérant.</p>
+  </div>
+{% else %}
+<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:12px;margin-top:12px;">
+  <div class="card">
+    <h4 style="margin-top:0;">Chiffre d'affaires mensuel</h4>
+    <div class="rep-graph">Graphique mensuel</div>
+  </div>
+  <div class="card">
+    <h4 style="margin-top:0;">Commandes par type</h4>
+    <table class="rep-table">
+      <thead><tr><th>Type</th><th>Volume</th></tr></thead>
+      <tbody>
+        <tr><td>Sur place</td><td>62%</td></tr>
+        <tr><td>Livraison</td><td>28%</td></tr>
+        <tr><td>A emporter</td><td>10%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <h4 style="margin-top:0;">Performance par serveur</h4>
+  <table class="rep-table">
+    <thead><tr><th>Serveur</th><th>Commandes</th><th>CA</th></tr></thead>
+    <tbody>
+      <tr><td>Fatou</td><td>26</td><td>180 000 FCFA</td></tr>
+      <tr><td>Junior</td><td>20</td><td>140 000 FCFA</td></tr>
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

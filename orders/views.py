@@ -9,8 +9,20 @@ from reservations.models import Reservation
 from tablesapp.models import Table
 from .forms import OrderForm
 from kitchen.models import KitchenUpdate
+from accounts.notifications import notify_order_status
 from .models import Order, OrderItem, OrderStatusLog, OrderNotification
-from .utils import can_transition, can_edit_order, is_manager, log_transition, is_staff_user
+from accounts.models import Notification
+from .utils import (
+    can_transition,
+    can_edit_order,
+    is_manager,
+    is_server,
+    is_cook,
+    is_cashier,
+    is_delivery,
+    is_staff_user,
+    log_transition,
+)
 
 
 def list_view(request):
@@ -84,6 +96,7 @@ def detail_view(request, pk):
             "logs": logs,
             "total": total,
             "can_cancel": is_manager(request.user) and order.status not in [Order.STATUS_PAID, Order.STATUS_CANCELLED],
+            "can_serve": order.status == Order.STATUS_READY and order.order_type == Order.TYPE_DINE_IN,
         },
     )
 
@@ -92,7 +105,13 @@ def new_view(request):
     if not is_staff_user(request.user):
         messages.error(request, "Accès refusé.")
         return redirect("public:home")
-    tables = Table.objects.all()
+    tables = Table.objects.filter(status=Table.STATUS_FREE)
+    table_id = request.GET.get("table")
+    if table_id:
+        t = Table.objects.filter(id=table_id).first()
+        if t and t.status != Table.STATUS_FREE:
+            messages.error(request, "Cette table est déjà occupée.")
+            return redirect("tables:plan")
     reservations = Reservation.objects.filter(status=Reservation.STATUS_CONFIRMED).order_by("reservation_datetime")
     dishes = Dish.objects.filter(is_active=True).order_by("name")
 
@@ -113,6 +132,13 @@ def new_view(request):
                     status=order.status,
                     actor=request.user if request.user.is_authenticated else None,
                 )
+                if order.status == Order.STATUS_PENDING and order.order_type == Order.TYPE_DINE_IN and order.table:
+                    if order.table.status != Table.STATUS_FREE:
+                        form.add_error("table", "Cette table est déjà occupée.")
+                        order.delete()
+                        return render(request, "orders/new.html", {"form": form, "tables": tables, "reservations": reservations, "dishes": dishes})
+                    order.table.status = Table.STATUS_OCCUPIED
+                    order.table.save(update_fields=["status"])
 
                 total = 0
                 for dish in dishes:
@@ -140,6 +166,7 @@ def new_view(request):
 
                 order.total_amount = total
                 order.save(update_fields=["total_amount"])
+                notify_order_status(order, order.status)
 
                 res_id = request.POST.get("reservation_id")
                 if res_id:
@@ -149,6 +176,10 @@ def new_view(request):
                         reservation.status = Reservation.STATUS_COMPLETED
                         reservation.save(update_fields=["table", "status"])
                         if order.table:
+                            if order.table.status != Table.STATUS_FREE:
+                                form.add_error("table", "Cette table est déjà occupée.")
+                                order.delete()
+                                return render(request, "orders/new.html", {"form": form, "tables": tables, "reservations": reservations, "dishes": dishes})
                             order.table.status = Table.STATUS_OCCUPIED
                             order.table.save(update_fields=["status"])
 
@@ -216,11 +247,30 @@ def edit_view(request, pk):
 
 
 def notifications_view(request):
-    if not is_staff_user(request.user):
+    if not request.user.is_authenticated:
         messages.error(request, "Accès refusé.")
         return redirect("public:home")
-    notifications = OrderNotification.objects.all()[:50]
-    return render(request, "orders/notifications.html", {"notifications": notifications})
+
+    qs = Notification.objects.all().order_by("-created_at")
+    if is_delivery(request.user):
+        qs = qs.filter(target_role=Notification.ROLE_DELIVERY)
+    elif is_server(request.user):
+        qs = qs.filter(target_role=Notification.ROLE_SERVER)
+    elif is_cashier(request.user):
+        qs = qs.filter(target_role=Notification.ROLE_CASHIER)
+    elif is_cook(request.user):
+        qs = qs.filter(target_role=Notification.ROLE_COOK)
+    elif is_manager(request.user):
+        qs = qs.filter(target_role=Notification.ROLE_MANAGER)
+    else:
+        qs = qs.filter(target_role=Notification.ROLE_CLIENT, user=request.user)
+
+    notifications = list(qs[:50])
+    for n in notifications:
+        n.read_by.add(request.user)
+
+    template = "orders/notifications.html" if is_staff_user(request.user) else "public/notifications.html"
+    return render(request, template, {"notifications": notifications})
 
 
 def split_view(request, pk):
@@ -293,3 +343,20 @@ def cancel_view(request, pk):
         messages.success(request, "Commande annulée.")
         return redirect("orders:detail", pk=order.id)
     return render(request, "orders/cancel.html", {"order": order})
+
+
+def serve_view(request, pk):
+    if not is_staff_user(request.user):
+        messages.error(request, "Accès refusé.")
+        return redirect("public:home")
+    order = get_object_or_404(Order, pk=pk)
+    if request.method == "POST":
+        if not can_transition(request.user, order, Order.STATUS_SERVED):
+            messages.error(request, "Transition non autorisée.")
+            return redirect("orders:detail", pk=order.id)
+        old_status = order.status
+        order.status = Order.STATUS_SERVED
+        order.save(update_fields=["status"])
+        log_transition(order, request.user, old_status, order.status, reason="Servie")
+        messages.success(request, "Commande marquée servie.")
+    return redirect("orders:detail", pk=order.id)

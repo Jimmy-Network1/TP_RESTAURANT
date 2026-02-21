@@ -1,17 +1,18 @@
 {% extends "base_public.html" %}
-{% block title %}Reservations — Saveur 237{% endblock %}
+{% block title %}Réservations — Saveur 237{% endblock %}
 {% block content %}
-<div class="section-title">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;" data-animate="fadeUp">
   <div>
-    <h2>Reserver une table</h2>
-    <p class="muted">Choisissez une date, une zone et confirmez.</p>
+    <h2 style="font-family:'Playfair Display',serif;margin:0 0 6px;">📅 Réserver une table</h2>
+    <p class="muted">Choisissez une date, une zone et confirmez votre réservation.</p>
   </div>
 </div>
 
-<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:12px;">
-  <div class="card">
+<div class="grid" style="grid-template-columns:1.3fr 1fr;gap:24px;">
+  <div class="card" data-animate="fadeUp">
+    <h3 style="font-family:'Playfair Display',serif;margin:0 0 16px;">Nouvelle réservation</h3>
     <form>
-      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
         <div>
           <label>Date</label>
           <input class="form-control" type="date">
@@ -21,42 +22,42 @@
           <input class="form-control" type="time">
         </div>
         <div>
-          <label>Personnes</label>
+          <label>Nombre de personnes</label>
           <input class="form-control" type="number" min="1" value="2">
         </div>
         <div>
-          <label>Zone</label>
+          <label>Zone souhaitée</label>
           <select class="form-control">
             <option>Terrasse</option>
             <option>Salle VIP</option>
-            <option>Interieur</option>
+            <option>Intérieur</option>
           </select>
         </div>
       </div>
-      <div style="margin-top:12px;">
-        <label>Note</label>
-        <textarea class="form-control" rows="3" placeholder="Ex: table pres de la fenetre"></textarea>
+      <div style="margin-top:14px;">
+        <label>Note spéciale</label>
+        <textarea class="form-control" rows="3" placeholder="Table près de la fenêtre, anniversaire..."></textarea>
       </div>
-      <button class="btn" style="margin-top:12px;" type="button">Envoyer demande</button>
+      <button class="btn" style="margin-top:16px;padding:12px 28px;" type="button">Envoyer la demande</button>
     </form>
   </div>
 
-  <div class="card">
-    <h3 style="margin-top:0;">Mes reservations</h3>
-    <div class="cart-list">
-      <div class="cart-item">
+  <div class="card" data-animate="fadeUp">
+    <h3 style="font-family:'Playfair Display',serif;margin:0 0 16px;">Mes réservations</h3>
+    <div style="display:grid;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:12px;border:1px solid rgba(0,0,0,0.05);background:#fafafa;">
         <div>
-          <strong>20/02 20:00 • 4 pers</strong>
+          <strong>20/02 20:00 · 4 pers</strong>
           <div class="muted">Terrasse</div>
         </div>
-        <span class="status status-ok">PENDING</span>
+        <span class="pill" style="background:rgba(241,196,15,0.2);color:#9b6a00;">En attente</span>
       </div>
-      <div class="cart-item">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:12px;border:1px solid rgba(0,0,0,0.05);background:#fafafa;">
         <div>
-          <strong>18/02 19:30 • 2 pers</strong>
-          <div class="muted">Interieur</div>
+          <strong>18/02 19:30 · 2 pers</strong>
+          <div class="muted">Intérieur</div>
         </div>
-        <span class="status" style="background:rgba(0,135,81,0.12);color:var(--green);">CONFIRMED</span>
+        <span class="pill" style="background:rgba(0,135,81,0.12);color:var(--green);">Confirmée</span>
       </div>
     </div>
   </div>

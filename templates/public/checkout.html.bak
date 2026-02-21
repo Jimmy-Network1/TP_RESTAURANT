@@ -1,0 +1,90 @@
+{% extends "base_public.html" %}
+{% block title %}Checkout — Saveur 237{% endblock %}
+{% block content %}
+<script>
+  function toggleAddress() {
+    const type = document.querySelector('input[name="order_type"]:checked')?.value;
+    const block = document.getElementById("address-block");
+    const label = document.getElementById("payment-label");
+    if (!block) return;
+    const show = type === "delivery";
+    block.style.display = show ? "block" : "none";
+    const tableBlock = document.getElementById("table-block");
+    if (tableBlock) {
+      tableBlock.style.display = type === "dine_in" ? "block" : "none";
+    }
+    if (label) {
+      label.textContent = type === "takeaway" ? "Paiement au retrait" : (type === "dine_in" ? "Paiement au comptoir" : "Paiement a la livraison");
+    }
+  }
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('input[name="order_type"]').forEach(r => r.addEventListener("change", toggleAddress));
+    toggleAddress();
+  });
+</script>
+<div class="section-title">
+  <div>
+    <h2>Checkout</h2>
+    <p class="muted">Finalisez votre commande.</p>
+  </div>
+</div>
+
+<div class="grid" style="grid-template-columns:2fr 1fr;gap:12px;">
+  <div class="card">
+    <form method="post">
+      {% csrf_token %}
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+        <div>
+          <label>Nom complet</label>
+          <input class="form-control" type="text" name="name" placeholder="Votre nom">
+        </div>
+        <div>
+          <label>Téléphone</label>
+          <input class="form-control" type="tel" name="phone" placeholder="+237 ...">
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>Type de commande</label>
+        <div class="menu-filters">
+          <label class="chip"><input type="radio" name="order_type" value="dine_in"> Sur place</label>
+          <label class="chip"><input type="radio" name="order_type" value="delivery" checked> Livraison</label>
+          <label class="chip"><input type="radio" name="order_type" value="takeaway"> A emporter</label>
+        </div>
+      </div>
+
+      <div id="address-block" style="margin-top:12px;">
+        <label>Adresse de livraison</label>
+        <input class="form-control" type="text" name="address" placeholder="Quartier, ville, details">
+      </div>
+
+      <div id="table-block" style="margin-top:12px;display:none;">
+        <label>Numéro de table</label>
+        <input class="form-control" type="text" name="table_number" placeholder="Ex: 12">
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>Note pour la cuisine</label>
+        <textarea class="form-control" name="note" rows="3" placeholder="Ex: sans piment"></textarea>
+      </div>
+
+      <div style="margin-top:12px;">
+        <label>Mode de paiement</label>
+        <div class="menu-filters">
+          <span class="chip active" id="payment-label">Paiement a la livraison</span>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;">
+        <button class="btn" type="submit">Valider commande</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Résumé</h3>
+    <p class="muted">Statut initial: EN_ATTENTE</p>
+    <a class="btn-outline" href="{% url 'public:cart' %}">Retour panier</a>
+  </div>
+</div>
+{% endblock %}

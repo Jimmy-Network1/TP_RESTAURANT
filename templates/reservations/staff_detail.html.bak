@@ -1,0 +1,49 @@
+{% extends "base_staff.html" %}
+{% block title %}Réservation — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Salle</p>
+    <h2>Détail réservation</h2>
+  </div>
+  <a class="btn-outline" href="{% url 'reservations:staff_list' %}">Retour</a>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h3>Client</h3>
+    <p><strong>{{ reservation.customer_name }}</strong></p>
+    <p class="muted">{{ reservation.customer_phone }}</p>
+    <p>Date: {{ reservation.reservation_datetime|date:"d/m/Y H:i" }}</p>
+    <p>Personnes: {{ reservation.party_size }}</p>
+    <p>Zone: {{ reservation.zone|default:'-' }}</p>
+    <p>Note: {{ reservation.note|default:'-' }}</p>
+  </div>
+  <div class="card">
+    <h3>Statut & Table</h3>
+    {% if is_manager or is_server %}
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-row">
+          <label>Statut</label>
+          {{ form.status }}
+        </div>
+        <div class="form-row">
+          <label>Raison d'annulation (si annulation)</label>
+          <input class="form-control" type="text" name="cancel_reason" placeholder="Ex: client absent, erreur">
+        </div>
+        <div class="form-row">
+          <label>Table assignée</label>
+          {{ form.table }}
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn" type="submit">Mettre à jour</button>
+          <a class="btn-outline" href="{% url 'reservations:staff_checkin' reservation.id %}">Check-in client</a>
+        </div>
+      </form>
+    {% else %}
+      <div class="muted">Accès restreint.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

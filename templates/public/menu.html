@@ -1,23 +1,47 @@
 {% extends "base_public.html" %}
 {% block title %}Menu — Saveur 237{% endblock %}
+{% block extra_head %}
+<style>
+.menu-hero{background:linear-gradient(135deg,var(--brown),rgba(0,135,81,0.8));border-radius:20px;padding:30px 32px;color:#fff;margin-bottom:24px;}
+.menu-hero h2{font-family:'Playfair Display',serif;font-size:2rem;margin:0 0 6px;}
+.menu-hero p{color:rgba(255,255,255,0.85);margin:0;}
+.filter-bar{background:#fff;border-radius:16px;padding:20px;box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.04);margin-bottom:24px;}
+.filter-bar form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;align-items:end;}
+.dishes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;}
+.dish-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm);border:1px solid rgba(0,0,0,0.04);transition:all .25s ease;}
+.dish-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);}
+.dish-card img{width:100%;height:200px;object-fit:cover;display:block;}
+.dish-placeholder{height:200px;background:linear-gradient(135deg,var(--brown-light),var(--green-light));display:flex;align-items:center;justify-content:center;font-size:3rem;color:rgba(62,39,35,0.3);}
+.dish-body{padding:16px;}
+.dish-body .dish-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;}
+.dish-body h4{margin:0;font-size:1.05rem;color:var(--brown);}
+.dish-price{font-weight:800;color:var(--green);white-space:nowrap;}
+.dish-desc{color:#666;font-size:0.88rem;margin:0 0 12px;line-height:1.5;}
+.dish-footer{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.avail{display:inline-flex;align-items:center;gap:4px;font-size:0.8rem;font-weight:700;}
+.avail-dot{width:8px;height:8px;border-radius:50%;}
+.avail-ok .avail-dot{background:var(--green);}
+.avail-ok{color:var(--green);}
+.avail-off .avail-dot{background:var(--red);}
+.avail-off{color:var(--red);}
+</style>
+{% endblock %}
 {% block content %}
-<div class="section-title">
-  <div>
-    <h2>Menu</h2>
-    <p class="muted">Choisissez vos plats et ajoutez-les au panier.</p>
-  </div>
+<div class="menu-hero" data-animate="fadeUp">
+  <h2>🍽️ Notre Menu</h2>
+  <p>Choisissez vos plats favoris et ajoutez-les au panier.</p>
 </div>
 
-<div class="card" style="margin-bottom:12px;">
-  <form method="get" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;">
+<div class="filter-bar" data-animate="fadeUp">
+  <form method="get">
     <div>
       <label>Recherche</label>
-      <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Plat...">
+      <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Rechercher un plat...">
     </div>
     <div>
-      <label>Categorie</label>
+      <label>Catégorie</label>
       <select class="form-control" name="category">
-        <option value="">Toutes</option>
+        <option value="">Toutes les catégories</option>
         {% for c in categories %}
           <option value="{{ c.id }}" {% if cat|default:'' == c.id|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>
         {% endfor %}
@@ -29,52 +53,59 @@
     </div>
     <div>
       <label>Prix max</label>
-      <input class="form-control" type="number" name="max" placeholder="10000" value="{{ max_price }}">
+      <input class="form-control" type="number" name="max" placeholder="50 000" value="{{ max_price }}">
     </div>
     <div>
       <label>Tri</label>
       <select class="form-control" name="sort">
         <option value="" {% if not sort %}selected{% endif %}>Populaire</option>
-        <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Prix croissant</option>
-        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Prix decroissant</option>
+        <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Prix ↑</option>
+        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Prix ↓</option>
       </select>
     </div>
     <div><button class="btn" type="submit">Filtrer</button></div>
   </form>
 </div>
 
-<div class="grid">
+<div class="dishes-grid">
   {% for dish in dishes %}
-  <div class="card menu-card">
+  <div class="dish-card" data-animate="fadeUp">
     {% if dish.photo %}
-      <img src="{{ dish.photo.url }}">
+      <img src="{{ dish.photo.url }}" alt="{{ dish.name }}">
+    {% else %}
+      <div class="dish-placeholder">🍲</div>
     {% endif %}
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <strong>{{ dish.name }}</strong>
-      <span class="price">{{ dish.price }} FCFA</span>
-    </div>
-    <p class="muted">{{ dish.description|default:'Description a venir.' }}</p>
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      {% if dish.can_order %}
-        <span class="status status-ok">Disponible</span>
-      {% else %}
-        <span class="status status-off">Rupture</span>
-      {% endif %}
+    <div class="dish-body">
+      <div class="dish-top">
+        <h4>{{ dish.name }}</h4>
+        <span class="dish-price">{{ dish.price }} FCFA</span>
+      </div>
+      <p class="dish-desc">{{ dish.description|default:'Un délice à découvrir.' }}</p>
+      <div class="dish-footer">
+        {% if dish.can_order %}
+          <span class="avail avail-ok"><span class="avail-dot"></span> Disponible</span>
+        {% else %}
+          <span class="avail avail-off"><span class="avail-dot"></span> Rupture</span>
+        {% endif %}
 
-      {% if not dish.can_order %}
-        <button class="btn" type="button" disabled>Indisponible</button>
-      {% elif dish.options.all|length > 0 %}
-        <a class="btn" href="{% url 'public:menu_detail' dish.pk %}">Voir detail</a>
-      {% else %}
-        <form method="post" action="{% url 'public:cart_add' dish.id %}" data-ajax="1">
-          {% csrf_token %}
-          <button class="btn" type="submit">Ajouter</button>
-        </form>
-      {% endif %}
+        {% if not dish.can_order %}
+          <button class="btn" type="button" disabled style="opacity:0.5;">Indisponible</button>
+        {% elif dish.options.all|length > 0 %}
+          <a class="btn" href="{% url 'public:menu_detail' dish.pk %}">Voir détail</a>
+        {% else %}
+          <form method="post" action="{% url 'public:cart_add' dish.id %}" data-ajax="1">
+            {% csrf_token %}
+            <button class="btn" type="submit">+ Ajouter</button>
+          </form>
+        {% endif %}
+      </div>
     </div>
   </div>
   {% empty %}
-    <div class="card">Aucun plat trouve.</div>
+    <div class="card" style="grid-column:1/-1;text-align:center;padding:40px;">
+      <p style="font-size:1.1rem;color:#888;">Aucun plat trouvé pour cette recherche.</p>
+      <a class="btn-outline" href="{% url 'public:menu' %}">Voir tout le menu</a>
+    </div>
   {% endfor %}
 </div>
 {% endblock %}

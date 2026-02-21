@@ -1,0 +1,21 @@
+{% extends "base_public.html" %}
+{% block title %}Détail réservation — Saveur 237{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Réservation</h2>
+  <p><strong>Date:</strong> {{ reservation.reservation_datetime|date:"d/m/Y H:i" }}</p>
+  <p><strong>Personnes:</strong> {{ reservation.party_size }}</p>
+  <p><strong>Zone:</strong> {{ reservation.zone|default:'-' }}</p>
+  <p><strong>Statut:</strong> {{ reservation.get_status_display }}</p>
+  <p><strong>Note:</strong> {{ reservation.note|default:'-' }}</p>
+
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <form method="post">
+      {% csrf_token %}
+      <input class="form-control" type="text" name="reason" placeholder="Raison d'annulation (optionnel)" style="margin-bottom:8px;">
+      <button class="btn-outline" type="submit">Annuler réservation</button>
+    </form>
+    <a class="btn" href="{% url 'reservations:client_list' %}">Retour</a>
+  </div>
+</div>
+{% endblock %}

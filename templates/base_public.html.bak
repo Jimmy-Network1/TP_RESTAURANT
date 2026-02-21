@@ -1,0 +1,99 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Saveur 237 — Public{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/public.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header class="navbar">
+    <div class="container navbar-inner">
+      <a class="brand" href="{% url 'public:home' %}">
+        <img src="{% static 'logo/logo.png' %}" width="36" height="36" alt="Saveur 237">
+        <strong class="brand-title">Saveur 237</strong>
+      </a>
+      <a class="btn-outline" href="javascript:history.back()">Retour</a>
+      <nav class="nav-links">
+        {% if is_server %}
+          <a href="{% url 'public:cart' %}">Panier</a>
+          <a href="{% url 'public:menu' %}">Commande</a>
+        {% endif %}
+        {% if not is_staff_role %}
+          <a href="{% url 'public:menu' %}">Menu</a>
+          <a href="{% url 'public:cart' %}">Panier <span class="badge js-cart-count" data-count="{{ cart_count }}">{{ cart_count }}</span></a>
+          <a href="{% url 'public:orders' %}">Mes commandes</a>
+          <a href="{% url 'reservations:client_list' %}">Reservations</a>
+        {% endif %}
+        {% if user.is_authenticated %}
+          <div class="user-menu">
+            <button class="user-chip" type="button">
+              {{ user.username }}
+              <span class="user-role">
+                {% if user.is_superuser %}Gerant{% elif user.groups.first %}{{ user.groups.first.name }}{% else %}Client{% endif %}
+              </span>
+            </button>
+            <div class="user-dropdown">
+              {% if is_manager %}
+                <a href="{% url 'dashboard:home' %}">Dashboard global</a>
+                <a href="{% url 'dashboard:home' %}">Paramètres</a>
+              {% elif is_server %}
+                <a href="{% url 'tables:plan' %}">Dashboard Salle</a>
+              {% elif is_cook %}
+                <a href="{% url 'kitchen:board' %}">Dashboard Kitchen</a>
+              {% elif is_cashier %}
+                <a href="{% url 'billing:cashdesk' %}">Dashboard Billing</a>
+              {% elif is_delivery %}
+                <a href="{% url 'delivery:dashboard' %}">Dashboard Livraison</a>
+              {% else %}
+                <a href="{% url 'dashboard:client' %}">Dashboard Client</a>
+                <a href="{% url 'dashboard:client' %}">Mon espace</a>
+              {% endif %}
+              <a href="{% url 'accounts:logout' %}">Deconnexion</a>
+            </div>
+          </div>
+        {% else %}
+          <a href="{% url 'accounts:login' %}">Connexion</a>
+          <a href="{% url 'accounts:register' %}" class="btn-outline">Inscription</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" style="padding:20px 0;">
+    {% if messages %}
+      <div class="card" style="margin:10px 0 16px;">
+        <ul style="margin:0;padding-left:18px;">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <div class="container footer-grid">
+      <div>
+        <strong>Saveur 237</strong>
+        <div class="muted">Cuisine camerounaise moderne.</div>
+      </div>
+      <div>
+        <div>Adresse: Douala, Cameroun</div>
+        <div>Tel: +237 6 99 00 00</div>
+      </div>
+      <div>
+        <div>Horaires: 10h - 23h</div>
+        <div>WhatsApp: +237 6 88 00 00</div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast"></div>
+  <script src="{% static 'js/public.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

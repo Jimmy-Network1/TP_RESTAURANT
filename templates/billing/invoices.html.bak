@@ -1,0 +1,75 @@
+{% extends "base_staff.html" %}
+{% block title %}Factures — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .bill-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .bill-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+  .bill-card{background:#fff;border:1px solid #eee;border-radius:14px;padding:12px;box-shadow:0 10px 22px rgba(0,0,0,0.06);} 
+  .pill-cash{background:rgba(0,135,81,0.12);color:var(--green);} 
+  .pill-card{background:rgba(80,120,255,0.15);color:#2d4aa0;} 
+  .pill-momo{background:rgba(128,70,200,0.15);color:#5a2ea6;} 
+  .invoice-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+  .invoice-table td{background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;}
+  .invoice-table td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
+  .invoice-table td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
+</style>
+
+<div class="bill-head">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Caisse</p>
+    <h2>Factures</h2>
+    <p class="muted">Recapitulatif avant encaissement.</p>
+  </div>
+  {% if is_cashier or is_manager %}
+    <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
+  {% endif %}
+</div>
+
+<div class="bill-summary" style="margin:12px 0;">
+  <div class="bill-card">
+    <div class="muted">Total encaissé</div>
+    <div style="font-size:20px;font-weight:800;">{{ total }} FCFA</div>
+  </div>
+  <div class="bill-card">
+    <div class="muted">Paiements</div>
+    <div style="font-size:20px;font-weight:800;">{{ payments|length }}</div>
+  </div>
+  <div class="bill-card">
+    <div class="muted">Remises</div>
+    <div style="font-size:20px;font-weight:800;">—</div>
+  </div>
+</div>
+
+<div class="card">
+  <table class="invoice-table">
+    <thead>
+      <tr>
+        <th>Facture</th>
+        <th>Commande</th>
+        <th>Client/Table</th>
+        {% if is_cashier or is_manager %}<th>Total</th>{% endif %}
+        <th>Mode</th>
+        <th style="text-align:right;padding-right:14px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in payments %}
+      <tr>
+        <td>#{{ p.id }}</td>
+        <td>#{{ p.order.id }}</td>
+        <td>{% if p.order.table %}Table {{ p.order.table.name }}{% else %}{{ p.order.customer.username|default:'Client' }}{% endif %}</td>
+        {% if is_cashier or is_manager %}<td><strong>{{ p.amount }} FCFA</strong></td>{% endif %}
+        <td>
+          {% if p.method == 'cash' %}<span class="pill pill-cash">Especes</span>
+          {% elif p.method == 'card' %}<span class="pill pill-card">Carte</span>
+          {% else %}<span class="pill pill-momo">Mobile Money</span>{% endif %}
+        </td>
+        <td><div class="actions"><a class="icon-btn" href="{% url 'billing:invoice_detail' p.order.id %}">Voir</a></div></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6">Aucune facture.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

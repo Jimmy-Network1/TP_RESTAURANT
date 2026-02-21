@@ -1,31 +1,37 @@
 {% extends "base_staff.html" %}
 {% block title %}Clients livraison — Saveur 237{% endblock %}
 {% block content %}
-<div class="section-title">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Livraison</p>
-    <h2>Clients livraison</h2>
-    <p class="muted">Clients enregistrés pour la livraison.</p>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">🏠 Livraison</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Clients livraison</h2>
+    <p class="muted">Clients ayant commandé en livraison.</p>
   </div>
+  <a class="btn-outline" href="{% url 'delivery:deliveries' %}">← Retour livraisons</a>
 </div>
 
-<div class="card">
-  <table class="ord-table">
+<div class="card" data-animate="fadeUp" style="overflow-x:auto;">
+  <table class="table">
     <thead>
       <tr>
-        <th>Nom</th><th>Telephone</th><th>Adresse principale</th><th>Commandes</th>
+        <th>Client</th>
+        <th>Téléphone</th>
+        <th>Adresse</th>
+        <th style="text-align:center;">Commandes</th>
+        <th>Dernière commande</th>
       </tr>
     </thead>
     <tbody>
       {% for c in clients %}
-        <tr>
-          <td>{{ c.user.get_full_name|default:c.user.username }}</td>
-          <td>{{ c.phone|default:'-' }}</td>
-          <td>{{ c.addresses.first|default:'-' }}</td>
-          <td>{{ c.order_count }}</td>
-        </tr>
+      <tr>
+        <td style="font-weight:600;">{{ c.name|default:'-' }}</td>
+        <td>{{ c.phone|default:'-' }}</td>
+        <td class="muted" style="font-size:13px;">{{ c.address|default:'-' }}</td>
+        <td style="text-align:center;font-weight:700;">{{ c.order_count|default:0 }}</td>
+        <td>{{ c.last_order_date|date:"d/m/Y"|default:'-' }}</td>
+      </tr>
       {% empty %}
-        <tr><td colspan="4">Aucun client.</td></tr>
+      <tr><td colspan="5" style="text-align:center;padding:30px;" class="muted">Aucun client enregistré.</td></tr>
       {% endfor %}
     </tbody>
   </table>

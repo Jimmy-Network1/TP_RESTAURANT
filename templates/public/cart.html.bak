@@ -1,0 +1,54 @@
+{% extends "base_public.html" %}
+{% block title %}Panier — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <h2>Votre panier</h2>
+    <p class="muted">Modifiez les quantités et validez.</p>
+  </div>
+</div>
+
+<div class="grid" style="grid-template-columns:1.4fr .6fr;gap:14px;">
+  <div class="card">
+    {% if items %}
+      <div class="cart-list" id="cart-items">
+        {% for it in items %}
+        <div class="cart-item" data-item-id="{{ it.dish.id }}">
+          <div>
+            <strong>{{ it.dish.name }}</strong>
+            <div class="muted">{{ it.dish.price }} FCFA</div>
+            {% if not it.available %}
+              <div class="muted" style="color:#b01022;font-weight:700;">Indisponible</div>
+            {% endif %}
+          </div>
+          <form method="post" action="{% url 'public:cart_update' it.dish.id %}" class="qty" data-ajax="1">
+            {% csrf_token %}
+            <input class="form-control" style="width:60px;" type="number" name="qty" value="{{ it.qty }}" min="0">
+            <button class="btn-outline" type="submit">Mettre à jour</button>
+          </form>
+          <form method="post" action="{% url 'public:cart_remove' it.dish.id %}" data-ajax="1">
+            {% csrf_token %}
+            <button class="btn-outline" type="submit">Supprimer</button>
+          </form>
+          <div class="muted js-line-total" data-line-total="{{ it.line_total }}">{{ it.line_total }} FCFA</div>
+        </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <p class="muted" id="cart-empty" {% if items %}style="display:none;"{% endif %}>Votre panier est vide.</p>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;" id="cart-actions">
+      <a class="btn-outline" href="{% url 'public:menu' %}">Continuer achats</a>
+      {% if items %}
+        <a class="btn" id="checkout-btn" href="{% url 'public:checkout' %}" {% if has_unavailable %}style="pointer-events:none;opacity:0.6;"{% endif %}>Passer commande</a>
+        {% if has_unavailable %}
+          <div class="muted" id="cart-unavailable" style="margin-top:6px;">Retirez les produits indisponibles pour continuer.</div>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
+  <div class="card">
+    <h3>Résumé</h3>
+    <p>Total: <strong id="cart-total" data-total="{{ total }}">{{ total }} FCFA</strong></p>
+  </div>
+</div>
+{% endblock %}

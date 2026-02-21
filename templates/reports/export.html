@@ -1,51 +1,60 @@
 {% extends "base_staff.html" %}
-{% block title %}Export rapports{% endblock %}
+{% block title %}Exporter — Saveur 237{% endblock %}
 {% block content %}
-<div class="section-title">
+{% if not is_manager %}<div class="card" style="text-align:center;padding:40px;"><h3>⛔ Accès réservé</h3><p class="muted">Seul le manager peut consulter les rapports.</p></div>{% else %}
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Reports</p>
-    <h2>Export rapports</h2>
-    <p class="muted">Générez un fichier PDF ou CSV.</p>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">📤 Rapports</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Exporter un rapport</h2>
+    <p class="muted">Téléchargez vos données en PDF ou CSV.</p>
   </div>
-  <a class="btn-outline" href="{% url 'reports:dashboard' %}">Retour</a>
+  <a class="btn-outline" href="{% url 'reports:dashboard' %}">← Retour</a>
 </div>
 
-{% if not is_manager %}
-  <div class="card" style="margin-top:12px;">
-    <p class="muted">Accès réservé au gérant.</p>
-  </div>
-{% else %}
-<div class="card">
-  <form>
-    <div class="grid">
-      <div class="form-row">
-        <label>Date début</label>
-        <input class="form-control" type="date">
+<div class="card" style="max-width:560px;" data-animate="fadeUp">
+  <form method="post">{% csrf_token %}
+    <div style="display:grid;gap:16px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <label style="display:flex;flex-direction:column;gap:4px;">
+          <span style="font-size:13px;font-weight:600;color:#555;">📅 Date début</span>
+          <input type="date" name="date_from" value="{{ date_from|default:'' }}" style="padding:10px 12px;border:1px solid #ddd;border-radius:8px;">
+        </label>
+        <label style="display:flex;flex-direction:column;gap:4px;">
+          <span style="font-size:13px;font-weight:600;color:#555;">📅 Date fin</span>
+          <input type="date" name="date_to" value="{{ date_to|default:'' }}" style="padding:10px 12px;border:1px solid #ddd;border-radius:8px;">
+        </label>
       </div>
-      <div class="form-row">
-        <label>Date fin</label>
-        <input class="form-control" type="date">
+
+      <label style="display:flex;flex-direction:column;gap:4px;">
+        <span style="font-size:13px;font-weight:600;color:#555;">📊 Type de rapport</span>
+        <select name="report_type" style="padding:10px 12px;border:1px solid #ddd;border-radius:8px;">
+          <option value="orders">📦 Commandes</option>
+          <option value="revenue">💰 Chiffre d'affaires</option>
+          <option value="products">🍽️ Produits</option>
+          <option value="deliveries">🛵 Livraisons</option>
+          <option value="payments">💳 Paiements</option>
+          <option value="inventory">📦 Inventaire</option>
+        </select>
+      </label>
+
+      <div>
+        <span style="font-size:13px;font-weight:600;color:#555;display:block;margin-bottom:8px;">📄 Format</span>
+        <div style="display:flex;gap:10px;">
+          <label class="card" style="cursor:pointer;border:2px solid transparent;transition:.2s;flex:1;text-align:center;padding:16px;" onclick="this.querySelector('input').checked=true;document.querySelectorAll('[name=format]').forEach(r=>{r.closest('label').style.borderColor='transparent'});this.style.borderColor='var(--green)';">
+            <input type="radio" name="format" value="pdf" checked style="display:none;">
+            <div style="font-size:28px;">📕</div>
+            <div style="font-weight:600;margin-top:4px;">PDF</div>
+          </label>
+          <label class="card" style="cursor:pointer;border:2px solid transparent;transition:.2s;flex:1;text-align:center;padding:16px;" onclick="this.querySelector('input').checked=true;document.querySelectorAll('[name=format]').forEach(r=>{r.closest('label').style.borderColor='transparent'});this.style.borderColor='var(--green)';">
+            <input type="radio" name="format" value="csv" style="display:none;">
+            <div style="font-size:28px;">📊</div>
+            <div style="font-weight:600;margin-top:4px;">CSV</div>
+          </label>
+        </div>
       </div>
     </div>
-    <div class="grid">
-      <div class="form-row">
-        <label>Rapport</label>
-        <select class="form-control">
-          <option>Ventes</option>
-          <option>Produits</option>
-          <option>Livraisons</option>
-          <option>Cuisine</option>
-        </select>
-      </div>
-      <div class="form-row">
-        <label>Format</label>
-        <select class="form-control">
-          <option>PDF</option>
-          <option>CSV</option>
-        </select>
-      </div>
-    </div>
-    <button class="btn" type="button">Exporter</button>
+
+    <button class="btn" type="submit" style="margin-top:20px;width:100%;">📤 Télécharger le rapport</button>
   </form>
 </div>
 {% endif %}

@@ -1,0 +1,70 @@
+{% extends "base_public.html" %}
+{% block title %}Saveur 237 — Accueil{% endblock %}
+{% block extra_head %}
+<style>
+.hero-home{display:grid;grid-template-columns:1.1fr 0.9fr;gap:26px;align-items:center;padding:36px 0;}
+.hero-panel{background:linear-gradient(135deg, rgba(62,39,35,0.18), rgba(0,135,81,0.14));border-radius:20px;padding:26px;border:1px solid rgba(255,255,255,0.1);box-shadow:0 16px 40px rgba(0,0,0,0.12);color:#1f1b1a;}
+.chips{display:flex;gap:8px;flex-wrap:wrap;}
+.chip{padding:6px 10px;border-radius:999px;border:1px solid var(--brown);color:var(--brown);font-weight:700;font-size:0.95rem;}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+.service-card{background:#fff;border:1px solid #eee;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,0.06);padding:16px;}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+@media(max-width:900px){.hero-home{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
+{% block content %}
+<section class="hero-home">
+  <div class="hero-panel">
+    <div class="chips">
+      <span class="chip">Cuisine camerounaise</span>
+      <span class="chip" style="border-color:var(--green);color:var(--green);">Commandes & Réservations</span>
+    </div>
+    <h1 style="font-size:2.5rem;margin:14px 0 10px;">Bienvenue chez Saveur 237</h1>
+    <p style="color:#333;">Commandez vos plats favoris, réservez une table, suivez vos livraisons en temps réel. Une seule expérience fluide pour les clients et le staff.</p>
+    <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;">
+      <a class="btn" href="{% url 'public:menu' %}">Commander maintenant</a>
+      <a class="btn-outline" href="{% url 'reservations:client_new' %}">Réserver</a>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Horaires & Contact</h3>
+    <p style="margin:6px 0;">Lun - Dim : 11h00 — 23h00</p>
+    <p style="margin:6px 0;">Tél : +237 6xx xx xx xx</p>
+    <p style="margin:6px 0;">Adresse : Douala — Bonapriso</p>
+    <div style="margin-top:12px;">
+      <a class="btn-outline" href="tel:+2376xxxxxxxx">Appeler</a>
+    </div>
+  </div>
+</section>
+
+<section style="padding:12px 0 6px;">
+  <div class="section-title">
+    <h2>Plats populaires</h2>
+    <a class="btn-outline" href="{% url 'public:menu' %}">Voir le menu</a>
+  </div>
+  <div class="services-grid">
+    <div class="service-card"><strong>Ndolé plantain</strong><p>Feuilles, arachides, crevettes.</p></div>
+    <div class="service-card"><strong>Poisson braisé</strong><p>Marinade verte, grillé au feu de bois.</p></div>
+    <div class="service-card"><strong>Ramen coco-gingembre</strong><p>Bouillon parfumé, poulet confit.</p></div>
+    <div class="service-card"><strong>Burger bœuf braisé</strong><p>Cheddar affiné, oignons caramélisés.</p></div>
+  </div>
+</section>
+
+<section style="padding:12px 0 6px;">
+  <h2>Nos services</h2>
+  <div class="services-grid">
+    <div class="service-card"><strong>Sur place</strong><p>Réservez votre table en avance.</p></div>
+    <div class="service-card"><strong>À emporter</strong><p>Commandez et récupérez au comptoir.</p></div>
+    <div class="service-card"><strong>Livraison</strong><p>Suivi de commande en temps réel.</p></div>
+  </div>
+</section>
+
+<section style="padding:12px 0 20px;">
+  <h2>Suivi & Compte</h2>
+  <div class="services-grid">
+    <div class="service-card"><strong>Mes commandes</strong><p>EN_ATTENTE → PRÉPARATION → EN_ROUTE → LIVRÉE.</p></div>
+    <div class="service-card"><strong>Mes réservations</strong><p>Créer, consulter, annuler si besoin.</p></div>
+    <div class="service-card"><strong>Mon profil</strong><p>Adresses par défaut et préférences.</p></div>
+  </div>
+</section>
+{% endblock %}

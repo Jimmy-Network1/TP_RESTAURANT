@@ -1,0 +1,81 @@
+{% extends "base_staff.html" %}
+{% block title %}Options — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .opt-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+  .opt-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
+  .opt-table td{background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;}
+  .opt-table td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
+  .opt-table td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
+</style>
+
+<div class="opt-head">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Supplements</p>
+    <h2>Options / Supplements</h2>
+    <p class="muted">Gestion des extras personnalisables.</p>
+  </div>
+  {% if is_manager %}
+    <a class="btn" href="#">Ajouter option</a>
+  {% endif %}
+</div>
+
+<div class="card" style="margin-top:12px;">
+  <form class="grid" method="get" style="grid-template-columns:1fr auto;gap:12px;align-items:end;">
+    <div>
+      <label>Recherche</label>
+      <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Nom d'option">
+    </div>
+    <div><button class="btn" type="submit">Filtrer</button></div>
+  </form>
+
+  {% if is_manager %}
+    <form method="post" class="form" style="margin-top:12px;">
+      {% csrf_token %}
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;">
+        {{ form.dish.label_tag }}{{ form.dish }}
+        {{ form.name.label_tag }}{{ form.name }}
+        {{ form.extra_price.label_tag }}{{ form.extra_price }}
+        <button class="btn" type="submit">Ajouter</button>
+      </div>
+    </form>
+  {% else %}
+    <div class="muted" style="margin-top:12px;">Accès restreint</div>
+  {% endif %}
+
+  <table class="opt-table" style="margin-top:12px;">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Type</th>
+        <th>Assignation</th>
+        <th>Prix +</th>
+        <th>Statut</th>
+        <th style="text-align:right;padding-right:14px;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for opt in options %}
+      <tr>
+        <td>{{ opt.name }}</td>
+        <td>Multi</td>
+        <td>{{ opt.dish.name }}</td>
+        <td>{{ opt.extra_price }} FCFA</td>
+        <td><span class="pill pill-ok">Active</span></td>
+        <td>
+          <div class="actions">
+            {% if is_manager %}
+              <a class="icon-btn" href="#">Edit</a><a class="icon-btn" href="#">Off</a>
+            {% else %}
+              <span class="muted">Accès restreint</span>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="empty">Aucune option.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

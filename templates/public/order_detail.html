@@ -1,42 +1,58 @@
 {% extends "base_public.html" %}
-{% block title %}Commande — Saveur 237{% endblock %}
+{% block title %}Commande #{{ order.id }} — Saveur 237{% endblock %}
+{% block extra_head %}
+<style>
+.order-header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:24px;}
+.order-header h2{font-family:'Playfair Display',serif;margin:0 0 4px;}
+.order-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:24px;}
+.order-items .item{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid rgba(0,0,0,0.05);}
+.order-items .item:last-child{border-bottom:none;}
+.total-box{display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-top:2px solid var(--green);margin-top:8px;font-size:1.2rem;}
+.status-big{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:12px;font-weight:800;font-size:0.95rem;background:var(--green-light);color:var(--green);}
+@media(max-width:768px){.order-grid{grid-template-columns:1fr;}}
+</style>
+{% endblock %}
 {% block content %}
-<div class="section-title">
+<div class="order-header">
   <div>
+    <p class="muted">{{ order.created_at|date:"d/m/Y H:i" }} · {{ order.get_order_type_display }}</p>
     <h2>Commande #{{ order.id }}</h2>
-    <p class="muted">{{ order.created_at|date:"d/m H:i" }} • {{ order.get_order_type_display }}</p>
   </div>
-  <span class="status status-ok">{{ order.get_status_display }}</span>
+  <span class="status-big">{{ order.get_status_display }}</span>
 </div>
 
-<div class="grid" style="grid-template-columns:1.4fr 1fr;gap:12px;">
-  <div class="card">
-    <h3 style="margin-top:0;">Articles</h3>
-    <div class="cart-list">
+<div class="order-grid">
+  <div class="card" data-animate="fadeUp">
+    <h3 style="margin:0 0 14px;font-family:'Playfair Display',serif;">Articles commandés</h3>
+    <div class="order-items">
       {% for item in items %}
-      <div class="cart-item">
+      <div class="item">
         <div>
           <strong>{{ item.dish.name }}</strong>
-          <div class="muted">{{ item.quantity }} x {{ item.unit_price }}</div>
+          <div class="muted">{{ item.quantity }} × {{ item.unit_price }} FCFA</div>
         </div>
-        <div><strong>{{ item.line_total }}</strong></div>
+        <strong>{{ item.line_total }} FCFA</strong>
       </div>
       {% empty %}
-        <p class="muted">Aucun article.</p>
+        <p class="muted" style="padding:20px 0;">Aucun article dans cette commande.</p>
       {% endfor %}
     </div>
     {% if order.delivery_address %}
-      <div style="margin-top:10px;">
-        <strong>Adresse:</strong> {{ order.delivery_address.details|default:'-' }}
+      <div style="margin-top:14px;padding:12px;background:var(--green-light);border-radius:10px;">
+        <strong>📍 Adresse de livraison</strong>
+        <p class="muted" style="margin:4px 0 0;">{{ order.delivery_address.details|default:'-' }}</p>
       </div>
     {% endif %}
   </div>
 
-  <div class="card">
-    <h3 style="margin-top:0;">Total</h3>
-    <div style="display:flex;justify-content:space-between;align-items:center;font-size:18px;margin-top:8px;">
-      <span>Total</span>
-      <strong>{{ order.total_amount }} FCFA</strong>
+  <div class="card" data-animate="fadeUp">
+    <h3 style="margin:0 0 14px;font-family:'Playfair Display',serif;">Total</h3>
+    <div class="total-box">
+      <span>Montant total</span>
+      <strong style="color:var(--green);">{{ order.total_amount }} FCFA</strong>
+    </div>
+    <div style="margin-top:20px;">
+      <a class="btn-outline" href="{% url 'public:orders' %}" style="width:100%;text-align:center;">← Toutes mes commandes</a>
     </div>
   </div>
 </div>

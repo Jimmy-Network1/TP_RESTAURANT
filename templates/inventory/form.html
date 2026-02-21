@@ -1,77 +1,50 @@
 {% extends "base_staff.html" %}
-{% block title %}Article stock — Saveur 237{% endblock %}
+{% block title %}{% if item %}Modifier article{% else %}Nouvel article{% endif %} — Saveur 237{% endblock %}
 {% block content %}
-<style>
-  .form-shell{display:grid;gap:14px;}
-  .switch{position:relative;display:inline-flex;align-items:center;gap:10px;}
-  .switch input{display:none;}
-  .switch .track{width:46px;height:26px;background:#ddd;border-radius:999px;position:relative;transition:background .2s ease;}
-  .switch .thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s ease;box-shadow:0 4px 10px rgba(0,0,0,0.2);} 
-  .switch input:checked + .track{background:var(--green);} 
-  .switch input:checked + .track .thumb{transform:translateX(20px);} 
-</style>
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;" data-animate="fadeUp">
+  <div>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">📦 Inventaire</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 0;">{% if item %}Modifier « {{ item.name }} »{% else %}Nouvel article{% endif %}</h2>
+  </div>
+  <a class="btn-outline" href="{% url 'inventory:stock' %}">← Retour</a>
+</div>
 
-<div class="form-shell">
-  <div class="section-title">
-    <div>
-      <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Stock</p>
-      <h2>{% if view.object %}Modifier article{% else %}Ajouter article{% endif %}</h2>
-      <p class="muted">Gerez vos ingredients avec des seuils clairs.</p>
-    </div>
-    <a class="btn-outline" href="{% url 'inventory:stock' %}">Retour</a>
+<div class="grid" data-animate="fadeUp">
+  <div class="card" style="flex:2;min-width:320px;">
+    <form method="post">{% csrf_token %}
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+        {% for field in form %}
+        <label style="display:flex;flex-direction:column;gap:4px;{% if field.name == 'active' %}justify-content:flex-end;{% endif %}">
+          <span style="font-size:13px;font-weight:600;color:#555;">{{ field.label }}</span>
+          {% if field.name == 'active' %}
+          <div style="display:flex;align-items:center;gap:8px;padding-top:4px;">
+            <label style="position:relative;display:inline-block;width:44px;height:24px;margin:0;">
+              <input type="checkbox" name="active" {% if field.value %}checked{% endif %} style="opacity:0;width:0;height:0;">
+              <span style="position:absolute;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:24px;transition:.3s;cursor:pointer;"></span>
+            </label>
+            <span class="muted" style="font-size:12px;">Actif</span>
+          </div>
+          {% else %}
+          {{ field }}
+          {% endif %}
+          {% if field.errors %}<small style="color:var(--red);font-size:12px;">{{ field.errors.0 }}</small>{% endif %}
+        </label>
+        {% endfor %}
+      </div>
+      <div style="margin-top:20px;display:flex;gap:10px;">
+        <button class="btn" type="submit">💾 {% if item %}Enregistrer{% else %}Créer{% endif %}</button>
+        <a class="btn-outline" href="{% url 'inventory:stock' %}">Annuler</a>
+      </div>
+    </form>
   </div>
 
-  <div class="grid">
-    <div class="card">
-      <form method="post">
-        {% csrf_token %}
-        <div class="form-row">
-          <label>Nom</label>
-          {{ form.name }}
-          {{ form.name.errors }}
-        </div>
-        <div class="form-row">
-          <label>Unite</label>
-          {{ form.unit }}
-          {{ form.unit.errors }}
-        </div>
-        <div class="form-row">
-          <label>Quantite initiale</label>
-          {{ form.quantity_in_stock }}
-          {{ form.quantity_in_stock.errors }}
-        </div>
-        <div class="form-row">
-          <label>Seuil d'alerte</label>
-          {{ form.alert_threshold }}
-          {{ form.alert_threshold.errors }}
-        </div>
-        <div class="form-row">
-          <label>Actif</label>
-          <label class="switch">
-            {{ form.is_active }}
-            <span class="track"><span class="thumb"></span></span>
-            <span class="muted">Disponible</span>
-          </label>
-          {{ form.is_active.errors }}
-        </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          {% if is_manager %}
-            <button class="btn" type="submit">{% if view.object %}Mettre a jour{% else %}Enregistrer{% endif %}</button>
-          {% else %}
-            <span class="muted">Accès restreint</span>
-          {% endif %}
-          <a class="btn-outline" href="{% url 'inventory:stock' %}">Annuler</a>
-        </div>
-      </form>
-    </div>
-
-    <div class="card">
-      <h4 style="margin-top:0;">Conseils</h4>
-      <ul style="margin:0;padding-left:18px;">
-        <li>Utilisez des unites coherentes (kg, L, unite).</li>
-        <li>Fixez un seuil pour activer les alertes.</li>
-      </ul>
-    </div>
+  <div class="card" style="flex:1;min-width:240px;max-width:320px;background:linear-gradient(135deg,var(--green-light),#fff);align-self:flex-start;">
+    <h4 style="margin-top:0;color:var(--green);">💡 Conseils</h4>
+    <ul style="padding-left:16px;color:#555;font-size:13px;line-height:1.7;">
+      <li>Définissez un <strong>seuil d'alerte</strong> pour être prévenu avant la rupture.</li>
+      <li>Choisissez l'<strong>unité</strong> adaptée (kg, L, pièces…).</li>
+      <li>Regroupez par <strong>catégorie</strong> pour mieux organiser.</li>
+    </ul>
   </div>
 </div>
 {% endblock %}

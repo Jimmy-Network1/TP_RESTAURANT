@@ -1,4 +1,3 @@
-from django.contrib import messages
 from django.contrib.auth import logout
 from django.shortcuts import redirect
 
@@ -23,6 +22,5 @@ class RoleGuardMiddleware:
                 groups = {g.name.strip().lower() for g in user.groups.all()}
                 if not groups.intersection(self.VALID_GROUPS):
                     logout(request)
-                    messages.error(request, "Accès bloqué : rôle invalide.")
                     return redirect("accounts:login")
         return self.get_response(request)

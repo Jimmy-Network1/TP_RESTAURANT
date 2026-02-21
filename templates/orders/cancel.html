@@ -1,22 +1,21 @@
 {% extends "base_staff.html" %}
 {% block title %}Annuler commande — Saveur 237{% endblock %}
 {% block content %}
-<div class="section-title">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:20px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(206,17,38,0.12);color:var(--red);">Annulation</p>
-    <h2>Annuler commande #{{ order.id }}</h2>
+    <span class="pill" style="background:rgba(206,17,38,0.12);color:var(--red);">❌ Annulation</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Annuler commande #{{ order.id }}</h2>
     <p class="muted">Raison obligatoire. L'annulation est tracée.</p>
   </div>
-  <a class="btn-outline" href="{% url 'orders:detail' order.id %}">Retour</a>
+  <a class="btn-outline" href="{% url 'orders:detail' order.id %}">← Retour</a>
 </div>
 
-<div class="card">
+<div class="card" data-animate="fadeUp">
   <form method="post">
     {% csrf_token %}
-    <label>Raison d'annulation</label>
-    <input class="form-control" type="text" name="reason" placeholder="Ex: client absent, erreur commande">
-    <div style="display:flex;gap:8px;margin-top:12px;">
-      <button class="btn" type="submit">Confirmer l'annulation</button>
+    <div class="form-row"><label>⚠️ Raison d'annulation</label><input class="form-control" type="text" name="reason" placeholder="Ex: client absent, erreur commande" required></div>
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button class="btn" type="submit" style="background:var(--red);">Confirmer l'annulation</button>
       <a class="btn-outline" href="{% url 'orders:detail' order.id %}">Annuler</a>
     </div>
   </form>

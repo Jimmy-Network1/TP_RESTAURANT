@@ -1,0 +1,31 @@
+{% extends "base_public.html" %}
+{% block title %}Notifications — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <h2>Notifications</h2>
+    <p class="muted">Vos alertes et mises à jour récentes.</p>
+  </div>
+</div>
+
+<div class="card">
+  <table class="ord-table">
+    <thead>
+      <tr>
+        <th>Heure</th>
+        <th>Message</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for n in notifications %}
+      <tr>
+        <td>{{ n.created_at|date:"H:i" }}</td>
+        <td>{{ n.message }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="2" class="muted" style="text-align:center;padding:20px;">Aucune notification.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

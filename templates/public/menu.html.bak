@@ -1,0 +1,80 @@
+{% extends "base_public.html" %}
+{% block title %}Menu — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <h2>Menu</h2>
+    <p class="muted">Choisissez vos plats et ajoutez-les au panier.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:12px;">
+  <form method="get" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;">
+    <div>
+      <label>Recherche</label>
+      <input class="form-control" type="search" name="q" value="{{ q }}" placeholder="Plat...">
+    </div>
+    <div>
+      <label>Categorie</label>
+      <select class="form-control" name="category">
+        <option value="">Toutes</option>
+        {% for c in categories %}
+          <option value="{{ c.id }}" {% if cat|default:'' == c.id|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Prix min</label>
+      <input class="form-control" type="number" name="min" placeholder="0" value="{{ min_price }}">
+    </div>
+    <div>
+      <label>Prix max</label>
+      <input class="form-control" type="number" name="max" placeholder="10000" value="{{ max_price }}">
+    </div>
+    <div>
+      <label>Tri</label>
+      <select class="form-control" name="sort">
+        <option value="" {% if not sort %}selected{% endif %}>Populaire</option>
+        <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Prix croissant</option>
+        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Prix decroissant</option>
+      </select>
+    </div>
+    <div><button class="btn" type="submit">Filtrer</button></div>
+  </form>
+</div>
+
+<div class="grid">
+  {% for dish in dishes %}
+  <div class="card menu-card">
+    {% if dish.photo %}
+      <img src="{{ dish.photo.url }}">
+    {% endif %}
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <strong>{{ dish.name }}</strong>
+      <span class="price">{{ dish.price }} FCFA</span>
+    </div>
+    <p class="muted">{{ dish.description|default:'Description a venir.' }}</p>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      {% if dish.can_order %}
+        <span class="status status-ok">Disponible</span>
+      {% else %}
+        <span class="status status-off">Rupture</span>
+      {% endif %}
+
+      {% if not dish.can_order %}
+        <button class="btn" type="button" disabled>Indisponible</button>
+      {% elif dish.options.all|length > 0 %}
+        <a class="btn" href="{% url 'public:menu_detail' dish.pk %}">Voir detail</a>
+      {% else %}
+        <form method="post" action="{% url 'public:cart_add' dish.id %}" data-ajax="1">
+          {% csrf_token %}
+          <button class="btn" type="submit">Ajouter</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+    <div class="card">Aucun plat trouve.</div>
+  {% endfor %}
+</div>
+{% endblock %}

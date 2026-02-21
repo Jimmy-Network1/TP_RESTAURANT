@@ -1,80 +1,79 @@
 {% extends "base_staff.html" %}
-{% block title %}Facture — Saveur 237{% endblock %}
-{% block content %}
+{% block title %}Facture #{{ order.id }} — Saveur 237{% endblock %}
+{% block extra_css %}
 <style>
-  .invoice-shell{display:grid;gap:12px;}
-  .invoice-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
-  .invoice-card{border:1px solid #eee;border-radius:16px;background:#fff;padding:14px;box-shadow:0 12px 24px rgba(0,0,0,0.06);} 
-  .invoice-table{width:100%;border-collapse:separate;border-spacing:0 8px;}
-  .invoice-table td{background:#fff;border-top:1px solid #eee;border-bottom:1px solid #eee;}
-  .invoice-table td:first-child{border-left:1px solid #eee;border-top-left-radius:10px;border-bottom-left-radius:10px;}
-  .invoice-table td:last-child{border-right:1px solid #eee;border-top-right-radius:10px;border-bottom-right-radius:10px;}
-  .totals{display:grid;gap:6px;margin-top:10px;}
-  .totals div{display:flex;justify-content:space-between;}
+@media print{body *{visibility:hidden;}.invoice-print,.invoice-print *{visibility:visible;}.invoice-print{position:absolute;top:0;left:0;width:100%;font-size:12px;}}
 </style>
+{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;" data-animate="fadeUp">
+  <div>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">🧾 Facturation</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 0;">Facture #{{ order.id }}</h2>
+  </div>
+  <div style="display:flex;gap:8px;">
+    <button class="btn" onclick="window.print()">🖨️ Imprimer</button>
+    <a class="btn-outline" href="{% url 'billing:invoices' %}">← Retour</a>
+  </div>
+</div>
 
-<div class="invoice-shell">
-  <div class="invoice-head">
+<div class="card invoice-print" data-animate="fadeUp">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;padding-bottom:16px;border-bottom:2px solid var(--green);margin-bottom:16px;">
     <div>
-      <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Facture</p>
-      <h2>Facture #F-1024</h2>
-      <p class="muted">Commande #1024 • Table 5 • 20/02 12:42</p>
+      <h2 style="font-family:'Playfair Display',serif;margin:0;color:var(--green);">Saveur 237</h2>
+      <p class="muted" style="font-size:13px;">Restaurant • Saveurs du Cameroun</p>
     </div>
-    <div style="display:flex;gap:8px;">
-      <a class="btn-outline" href="{% url 'billing:invoices' %}">Retour</a>
-      {% if is_cashier or is_manager %}
-        <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
-      {% endif %}
+    <div style="text-align:right;">
+      <div style="font-weight:700;font-size:18px;">#{{ order.id }}</div>
+      <div class="muted" style="font-size:13px;">{{ order.created_at|date:"d/m/Y H:i" }}</div>
     </div>
   </div>
 
-  <div class="invoice-card">
-    <table class="invoice-table">
-      <thead>
-        <tr>
-          <th>Produit</th>
-          <th>Quantite</th>
-          <th>Prix unitaire</th>
-          <th>Sous-total</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Burger classique</td>
-          <td>2</td>
-          <td>8 000 FCFA</td>
-          <td>16 000 FCFA</td>
-        </tr>
-        <tr>
-          <td>Frites</td>
-          <td>1</td>
-          <td>4 000 FCFA</td>
-          <td>4 000 FCFA</td>
-        </tr>
-        <tr>
-          <td>Coca-Cola</td>
-          <td>2</td>
-          <td>6 000 FCFA</td>
-          <td>12 000 FCFA</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="totals">
-      <div><span>Taxes</span><strong>0 FCFA</strong></div>
-      <div><span>Remise</span><strong>0 FCFA</strong></div>
-      <div style="font-size:18px;"><span>Total</span><strong>32 000 FCFA</strong></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:18px;">
+    <div><strong style="font-size:12px;color:#888;">Client</strong><br>
+      {% if order.customer_profile %}{{ order.customer_profile }}{% elif order.customer %}{{ order.customer.get_full_name|default:order.customer.username }}{% else %}Client anonyme{% endif %}
     </div>
-
-    <div style="display:flex;gap:8px;margin-top:12px;">
-      {% if is_manager %}
-        <a class="btn-outline" href="#">Ajouter remise</a>
-      {% endif %}
-      <a class="btn-outline" href="#">Generer facture</a>
-      {% if is_cashier or is_manager %}
-        <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
-      {% endif %}
+    <div><strong style="font-size:12px;color:#888;">Commande</strong><br>#{{ order.id }}</div>
+    <div><strong style="font-size:12px;color:#888;">Table</strong><br>{{ order.table.name|default:'Livraison' }}</div>
+    <div><strong style="font-size:12px;color:#888;">Méthode</strong><br>
+      {% if payment %}{% if payment.method == 'cash' %}💵 Espèces{% elif payment.method == 'card' %}💳 Carte{% elif payment.method == 'momo' %}📱 MoMo{% else %}{{ payment.get_method_display }}{% endif %}{% else %}—{% endif %}
     </div>
+  </div>
+
+  <table class="table" style="margin-bottom:18px;">
+    <thead>
+      <tr>
+        <th>Article</th>
+        <th style="text-align:center;">Qté</th>
+        <th style="text-align:right;">P.U.</th>
+        <th style="text-align:right;">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.dish.name }}</td>
+        <td style="text-align:center;">{{ item.quantity }}</td>
+        <td style="text-align:right;">{{ item.unit_price }} FCFA</td>
+        <td style="text-align:right;font-weight:600;">{{ item.line_total }} FCFA</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="display:flex;justify-content:flex-end;">
+    <div style="min-width:220px;">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;">
+        <span>Sous-total</span><span>{{ order.total_amount }} FCFA</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:10px 0;font-size:18px;font-weight:800;color:var(--green);border-top:2px solid var(--green);">
+        <span>Total</span><span>{{ order.total_amount }} FCFA</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:24px;color:#aaa;font-size:12px;">
+    Merci pour votre visite ! 🇨🇲 Saveur 237
   </div>
 </div>
 {% endblock %}

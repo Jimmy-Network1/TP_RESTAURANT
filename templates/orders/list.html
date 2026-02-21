@@ -62,7 +62,27 @@
         <td>{% if o.table %}TABLE{% else %}ONLINE{% endif %}</td>
         <td>{% if o.table %}Table {{ o.table.name }}{% else %}{{ o.customer.username|default:'Client' }}{% endif %}</td>
         <td>{{ o.get_order_type_display }}</td>
-        <td><span class="pill pill-ok">{{ o.get_status_display }}</span></td>
+        <td>
+          {% if o.status == 'EN_ATTENTE' %}
+            <span class="pill pill-pending">{{ o.get_status_display }}</span>
+          {% elif o.status == 'PREPARATION' %}
+            <span class="pill pill-route">{{ o.get_status_display }}</span>
+          {% elif o.status == 'PRETE' %}
+            <span class="pill pill-ok">{{ o.get_status_display }}</span>
+          {% elif o.status == 'SERVIE' %}
+            <span class="pill pill-done">{{ o.get_status_display }}</span>
+          {% elif o.status == 'EN_ROUTE' %}
+            <span class="pill pill-route">{{ o.get_status_display }}</span>
+          {% elif o.status == 'LIVREE' %}
+            <span class="pill pill-done">{{ o.get_status_display }}</span>
+          {% elif o.status == 'PAYEE' %}
+            <span class="pill pill-cash">{{ o.get_status_display }}</span>
+          {% elif o.status == 'ANNULEE' %}
+            <span class="pill pill-off">{{ o.get_status_display }}</span>
+          {% else %}
+            <span class="pill">{{ o.get_status_display }}</span>
+          {% endif %}
+        </td>
         {% if is_manager or is_cashier %}<td>{{ o.total_amount }} FCFA</td>{% endif %}
         <td>{{ o.created_at|date:"H:i" }}</td>
         <td><div class="actions">

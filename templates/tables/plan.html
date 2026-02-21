@@ -2,81 +2,58 @@
 {% block title %}Plan des tables — Saveur 237{% endblock %}
 {% block content %}
 <style>
-  .tables-shell{display:grid;gap:16px;}
-  .tables-hero{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
-  .chip-row{display:flex;gap:8px;flex-wrap:wrap;}
-  .chip{border:1px solid #e4e4e4;background:#fff;padding:6px 12px;border-radius:999px;font-weight:600;font-size:13px;text-decoration:none;color:#333;}
-  .chip.active{border-color:var(--green);color:var(--green);box-shadow:0 4px 10px rgba(0,135,81,0.12);} 
-  .legend{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-  .legend .dot{width:10px;height:10px;border-radius:50%;display:inline-block;}
-  .board{background:linear-gradient(135deg,#ffffff 0%,#faf8f6 100%);border:1px solid #eee;border-radius:16px;padding:14px;}
-  .tables-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;}
-  .table-card{position:relative;background:#fff;border:1px solid #eee;border-radius:14px;padding:12px;box-shadow:0 10px 24px rgba(0,0,0,0.06);transition:transform .15s ease, box-shadow .15s ease;}
-  .table-card:hover{transform:translateY(-2px);box-shadow:0 16px 30px rgba(0,0,0,0.12);} 
-  .table-card.inactive{opacity:.5;filter:grayscale(.2);} 
-  .status-pill{position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:999px;font-weight:700;font-size:12px;}
-  .status-free{background:rgba(0,135,81,0.12);color:var(--green);} 
-  .status-occupied{background:rgba(206,17,38,0.12);color:var(--red);} 
-  .status-reserved{background:rgba(252,209,22,0.2);color:#9b6a00;} 
-  .status-cleaning{background:#f0f0f0;color:#555;} 
-  .mini-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;}
+  .table-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;}
+  .table-card{position:relative;background:#fff;border:1px solid #eee;border-radius:16px;padding:14px;box-shadow:var(--shadow-sm);transition:transform .2s ease,box-shadow .2s ease;text-decoration:none;color:var(--brown);display:block;}
+  .table-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+  .table-card.inactive{opacity:.5;filter:grayscale(.2);}
+  .status-dot{position:absolute;top:12px;right:12px;padding:4px 10px;border-radius:999px;font-weight:700;font-size:12px;}
+  .st-free{background:var(--green-light);color:var(--green);}
+  .st-occupied{background:rgba(206,17,38,0.12);color:var(--red);}
+  .st-reserved{background:rgba(252,209,22,0.2);color:#9b6a00;}
+  .st-cleaning{background:#f0f0f0;color:#555;}
 </style>
 
-<div class="tables-shell">
-  <div class="tables-hero">
-    <div>
-      <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Salle</p>
-      <h2>Plan des tables</h2>
-      <p class="muted">Vue en temps reel avec actions rapides.</p>
-    </div>
-    <a class="btn" href="{% url 'tables:new' %}">Créer table</a>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:20px;" data-animate="fadeUp">
+  <div>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">🪑 Salle</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Plan des tables</h2>
+    <p class="muted">Vue en temps réel avec actions rapides.</p>
   </div>
+  <a class="btn" href="{% url 'tables:new' %}">+ Créer table</a>
+</div>
 
-  <div class="mini-cards">
-    <div class="card"><strong>Tables libres</strong><div class="muted">{{ count_free }}</div></div>
-    <div class="card"><strong>Tables occupées</strong><div class="muted">{{ count_occupied }}</div></div>
-    <div class="card"><strong>Tables réservées</strong><div class="muted">{{ count_reserved }}</div></div>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;" data-animate="fadeUp">
+  <div class="card" style="border-left:4px solid var(--green);"><strong>🟢 Libres</strong><div class="muted">{{ count_free }}</div></div>
+  <div class="card" style="border-left:4px solid var(--red);"><strong>🔴 Occupées</strong><div class="muted">{{ count_occupied }}</div></div>
+  <div class="card" style="border-left:4px solid var(--yellow);"><strong>🟡 Réservées</strong><div class="muted">{{ count_reserved }}</div></div>
+</div>
+
+<div class="card" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px;" data-animate="fadeUp">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a class="pill {% if not zone_filter %}active{% endif %}" href="{% url 'tables:plan' %}" style="{% if not zone_filter %}background:var(--green);color:#fff;{% endif %}text-decoration:none;">Toutes zones</a>
+    {% for z in zones %}<a class="pill {% if zone_filter == z %}active{% endif %}" href="{% url 'tables:plan' %}?zone={{ z|urlencode }}" style="{% if zone_filter == z %}background:var(--green);color:#fff;{% endif %}text-decoration:none;">{{ z }}</a>{% endfor %}
   </div>
-
-  <div class="card" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
-    <div class="chip-row">
-      <a class="chip {% if not zone_filter %}active{% endif %}" href="{% url 'tables:plan' %}">Toutes zones</a>
-      {% for z in zones %}
-        <a class="chip {% if zone_filter == z %}active{% endif %}" href="{% url 'tables:plan' %}?zone={{ z|urlencode }}">{{ z }}</a>
-      {% endfor %}
-    </div>
-    <div class="chip-row">
-      <a class="chip {% if not status_filter %}active{% endif %}" href="{% url 'tables:plan' %}">Tous statuts</a>
-      <a class="chip {% if status_filter == 'free' %}active{% endif %}" href="{% url 'tables:plan' %}?status=free">Libre</a>
-      <a class="chip {% if status_filter == 'occupied' %}active{% endif %}" href="{% url 'tables:plan' %}?status=occupied">Occupée</a>
-      <a class="chip {% if status_filter == 'reserved' %}active{% endif %}" href="{% url 'tables:plan' %}?status=reserved">Réservée</a>
-    </div>
-    <div class="legend">
-      <span><i class="dot" style="background:var(--green)"></i> Libre</span>
-      <span><i class="dot" style="background:var(--red)"></i> Occupée</span>
-      <span><i class="dot" style="background:var(--yellow)"></i> Réservée</span>
-    </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a class="pill" href="{% url 'tables:plan' %}" style="{% if not status_filter %}background:var(--brown);color:#fff;{% endif %}text-decoration:none;">Tous</a>
+    <a class="pill" href="{% url 'tables:plan' %}?status=free" style="{% if status_filter == 'free' %}background:var(--green);color:#fff;{% endif %}text-decoration:none;">Libre</a>
+    <a class="pill" href="{% url 'tables:plan' %}?status=occupied" style="{% if status_filter == 'occupied' %}background:var(--red);color:#fff;{% endif %}text-decoration:none;">Occupée</a>
+    <a class="pill" href="{% url 'tables:plan' %}?status=reserved" style="{% if status_filter == 'reserved' %}background:var(--yellow);color:#333;{% endif %}text-decoration:none;">Réservée</a>
   </div>
+</div>
 
-  <div class="board">
-    <div class="tables-grid">
-      {% for t in tables %}
-      <a class="table-card {% if not t.active %}inactive{% endif %}" href="{% url 'tables:detail' t.pk %}">
-        {% if t.status == 'free' %}<span class="status-pill status-free">Libre</span>{% endif %}
-        {% if t.status == 'occupied' %}<span class="status-pill status-occupied">Occupée</span>{% endif %}
-        {% if t.status == 'reserved' %}<span class="status-pill status-reserved">Réservée</span>{% endif %}
-        {% if t.status == 'cleaning' %}<span class="status-pill status-cleaning">Nettoyage</span>{% endif %}
-        <div style="font-weight:800;font-size:18px;">Table {{ t.name }}</div>
-        <div class="muted">{{ t.capacity }} places • {{ t.zone|default:'Zone' }}</div>
-        {% if t.next_reservation %}
-          <div class="muted" style="margin-top:6px;">Réservation {{ t.next_reservation.reservation_datetime|date:"H:i" }} — {{ t.next_reservation.party_size }} pers</div>
-        {% endif %}
-        <div class="muted" style="margin-top:6px;">Ouvrir le détail</div>
-      </a>
-      {% empty %}
-      <div class="card">Aucune table.</div>
-      {% endfor %}
-    </div>
+<div style="background:linear-gradient(135deg,#faf8f6,#fff);border:1px solid #eee;border-radius:18px;padding:18px;" data-animate="fadeUp">
+  <div class="table-grid">
+    {% for t in tables %}
+    <a class="table-card {% if not t.active %}inactive{% endif %}" href="{% url 'tables:detail' t.pk %}">
+      {% if t.status == 'free' %}<span class="status-dot st-free">Libre</span>{% endif %}
+      {% if t.status == 'occupied' %}<span class="status-dot st-occupied">Occupée</span>{% endif %}
+      {% if t.status == 'reserved' %}<span class="status-dot st-reserved">Réservée</span>{% endif %}
+      {% if t.status == 'cleaning' %}<span class="status-dot st-cleaning">Nettoyage</span>{% endif %}
+      <div style="font-weight:800;font-size:18px;">Table {{ t.name }}</div>
+      <div class="muted">{{ t.capacity }} places • {{ t.zone|default:'Zone' }}</div>
+      {% if t.next_reservation %}<div class="muted" style="margin-top:6px;">📅 {{ t.next_reservation.reservation_datetime|date:"H:i" }} — {{ t.next_reservation.party_size }} pers</div>{% endif %}
+    </a>
+    {% empty %}<div class="card">Aucune table.</div>{% endfor %}
   </div>
 </div>
 {% endblock %}

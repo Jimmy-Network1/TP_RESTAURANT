@@ -88,6 +88,11 @@ class OrderNotification(models.Model):
     message = models.CharField(max_length=255)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
+    read_by = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="order_notifications_read",
+    )
 
     class Meta:
         ordering = ["-created_at"]

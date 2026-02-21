@@ -1,76 +1,102 @@
 {% extends "base_staff.html" %}
 {% block title %}Table {{ table.name }} — Saveur 237{% endblock %}
 {% block content %}
-<style>
-  .status-pill{padding:6px 12px;border-radius:999px;font-weight:700;font-size:12px;}
-  .status-free{background:rgba(0,135,81,0.12);color:var(--green);} 
-  .status-occupied{background:rgba(206,17,38,0.12);color:var(--red);} 
-  .status-reserved{background:rgba(252,209,22,0.2);color:#9b6a00;} 
-  .status-cleaning{background:#f0f0f0;color:#555;} 
-  .item-row{display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:8px 10px;background:#fafafa;}
-</style>
-
-<div class="section-title">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:20px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Salle</p>
-    <h2>Table {{ table.name }}</h2>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">🪑 Salle</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Table {{ table.name }}</h2>
     <p class="muted">Zone : {{ table.zone|default:'-' }} • {{ table.capacity }} places</p>
   </div>
   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-    {% if table.status == 'free' %}<span class="status-pill status-free">Libre</span>{% endif %}
-    {% if table.status == 'occupied' %}<span class="status-pill status-occupied">Occupée</span>{% endif %}
-    {% if table.status == 'reserved' %}<span class="status-pill status-reserved">Réservée</span>{% endif %}
-    {% if table.status == 'cleaning' %}<span class="status-pill status-cleaning">Nettoyage</span>{% endif %}
-    <a class="btn-outline" href="{% url 'tables:plan' %}">Retour plan</a>
+    {% if table.status == 'free' %}<span class="pill" style="background:var(--green-light);color:var(--green);padding:6px 14px;">🟢 Libre</span>{% endif %}
+    {% if table.status == 'occupied' %}<span class="pill" style="background:rgba(206,17,38,0.12);color:var(--red);padding:6px 14px;">🔴 Occupée</span>{% endif %}
+    {% if table.status == 'reserved' %}<span class="pill" style="background:rgba(252,209,22,0.2);color:#9b6a00;padding:6px 14px;">🟡 Réservée</span>{% endif %}
+    {% if table.status == 'cleaning' %}<span class="pill" style="background:#f0f0f0;color:#555;padding:6px 14px;">🧹 Nettoyage</span>{% endif %}
+    <a class="btn-outline" href="{% url 'tables:plan' %}">← Retour plan</a>
   </div>
 </div>
 
-<div class="grid">
+<div class="grid" data-animate="fadeUp">
   <div class="card">
-    <h4>Commande active</h4>
+    <h3 style="margin-top:0;">📦 Commande active</h3>
     {% if active_order %}
-      <div style="display:grid;gap:8px;">
-        {% for item in active_items %}
-          <div class="item-row">
-            <span>{{ item.dish.name }} x{{ item.quantity }}</span>
-            <strong>{{ item.line_total }} FCFA</strong>
-          </div>
-        {% endfor %}
+    <div style="display:grid;gap:8px;">
+      {% for item in active_items %}
+      <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid #eee;border-radius:10px;padding:10px 12px;">
+        <span>{{ item.dish.name }} × {{ item.quantity }}</span>
+        <strong>{{ item.line_total }} FCFA</strong>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
-        <strong>Total</strong><strong>{{ active_order.total_amount }} FCFA</strong>
-      </div>
-    {% else %}
-      <p class="muted">Aucune commande active.</p>
-    {% endif %}
+      {% endfor %}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;padding-top:14px;border-top:2px solid var(--green);">
+      <strong>Total</strong><strong style="color:var(--green);">{{ active_order.total_amount }} FCFA</strong>
+    </div>
     <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-      <a class="btn" href="{% url 'orders:new' %}?table={{ table.id }}">Ouvrir commande</a>
-      <a class="btn-outline" href="{% url 'tables:transfer' %}?from={{ table.id }}">Transférer table</a>
-      <a class="btn-outline" href="#">Fermer table</a>
+      <a class="btn-outline" href="{% url 'orders:detail' active_order.id %}">Voir commande</a>
+      {% if is_server or is_manager %}
+        <a class="btn-outline" href="{% url 'orders:edit' active_order.id %}">Modifier</a>
+      {% endif %}
+    </div>
+    {% else %}<p class="muted">Aucune commande active.</p>{% endif %}
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+      {% if table.status == 'free' %}
+        <a class="btn" href="{% url 'orders:new' %}?table={{ table.id }}">+ Ouvrir commande</a>
+      {% else %}
+        <a class="btn" href="#" style="opacity:.5;pointer-events:none;">+ Ouvrir commande</a>
+      {% endif %}
+      <a class="btn-outline" href="{% url 'tables:transfer' %}?from={{ table.id }}">🔄 Transférer</a>
+      <form method="post" action="{% url 'tables:status' table.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="free">
+        <button class="btn-outline" type="submit">🔓 Marquer libre</button>
+      </form>
     </div>
   </div>
 
   <div class="card">
-    <h4>Réservation associée</h4>
+    <h3 style="margin-top:0;">📅 Réservation associée</h3>
     {% if reservation %}
       <p><strong>{{ reservation.customer_name }}</strong> — {{ reservation.customer_phone }}</p>
       <p>{{ reservation.reservation_datetime|date:"d/m H:i" }} • {{ reservation.party_size }} pers</p>
-      <p>Statut: {{ reservation.get_status_display }}</p>
+      <p>Statut: <span class="pill" style="background:var(--green-light);color:var(--green);">{{ reservation.get_status_display }}</span></p>
       <a class="btn-outline" href="{% url 'reservations:staff_detail' reservation.id %}">Voir réservation</a>
-    {% else %}
-      <p class="muted">Aucune réservation associée.</p>
-    {% endif %}
+    {% else %}<p class="muted">Aucune réservation associée.</p>{% endif %}
   </div>
 </div>
 
-<div class="card" style="margin-top:12px;">
-  <h4>Historique rapide</h4>
+<div class="card" style="margin-top:16px;" data-animate="fadeUp">
+  <h3 style="margin-top:0;">🔧 Changer statut</h3>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <form method="post" action="{% url 'tables:status' table.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="status" value="free">
+      <button class="btn-outline" type="submit">🟢 Libre</button>
+    </form>
+    <form method="post" action="{% url 'tables:status' table.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="status" value="occupied">
+      <button class="btn-outline" type="submit">🔴 Occupée</button>
+    </form>
+    <form method="post" action="{% url 'tables:status' table.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="status" value="reserved">
+      <button class="btn-outline" type="submit">🟡 Réservée</button>
+    </form>
+    <form method="post" action="{% url 'tables:status' table.id %}">
+      {% csrf_token %}
+      <input type="hidden" name="status" value="cleaning">
+      <button class="btn-outline" type="submit">🧹 Nettoyage</button>
+    </form>
+  </div>
+  <p class="muted" style="margin-top:8px;">Le serveur peut changer le statut. La libération est bloquée si une commande est active (sauf gérant).</p>
+</div>
+
+<div class="card" style="margin-top:16px;" data-animate="fadeUp">
+  <h3 style="margin-top:0;">📜 Historique rapide</h3>
   <ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px;">
     {% for h in history %}
-      <li>#{{ h.id }} • {{ h.get_status_display }} • {{ h.created_at|date:"d/m H:i" }}</li>
-    {% empty %}
-      <li class="muted">Pas d'historique.</li>
-    {% endfor %}
+    <li style="background:#fafafa;border:1px solid #eee;border-radius:8px;padding:8px 10px;font-size:13px;">#{{ h.id }} • {{ h.get_status_display }} • {{ h.created_at|date:"d/m H:i" }}</li>
+    {% empty %}<li class="muted">Pas d'historique.</li>{% endfor %}
   </ul>
 </div>
 {% endblock %}

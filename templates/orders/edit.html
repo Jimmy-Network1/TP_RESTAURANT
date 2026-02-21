@@ -1,52 +1,28 @@
 {% extends "base_staff.html" %}
 {% block title %}Modifier commande — Saveur 237{% endblock %}
 {% block content %}
-<div class="section-title">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:20px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Orders</p>
-    <h2>Modifier commande #{{ order.id }}</h2>
-    <p class="muted">Cuisine deja notifiee. Modifications journalisees.</p>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">📋 Orders</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Modifier commande #{{ order.id }}</h2>
+    <p class="muted">Cuisine déjà notifiée. Modifications journalisées.</p>
   </div>
-  <a class="btn-outline" href="{% url 'orders:detail' order.id %}">Retour</a>
+  <a class="btn-outline" href="{% url 'orders:detail' order.id %}">← Retour</a>
 </div>
 
-<div class="card">
+<div class="card" data-animate="fadeUp">
   <form method="post">
     {% csrf_token %}
     <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
-      <div>
-        <label>Type</label>
-        {{ form.order_type }}
-      </div>
-      <div>
-        <label>Table</label>
-        {{ form.table }}
-      </div>
-      <div>
-        <label>Client</label>
-        {{ form.customer }}
-      </div>
-      {% if form.status and is_manager %}
-      <div>
-        <label>Statut</label>
-        {{ form.status }}
-      </div>
-      {% endif %}
+      <div class="form-row"><label>Type</label>{{ form.order_type }}</div>
+      <div class="form-row"><label>Table</label>{{ form.table }}</div>
+      <div class="form-row"><label>Client</label>{{ form.customer }}</div>
+      {% if form.status and is_manager %}<div class="form-row"><label>Statut</label>{{ form.status }}</div>{% endif %}
     </div>
-    <div style="margin-top:12px;">
-      <label>Raison d'annulation (si annulation)</label>
-      <input class="form-control" type="text" name="cancel_reason" placeholder="Ex: client absent, erreur commande">
-    </div>
-    <div style="margin-top:12px;">
-      <label>Note</label>
-      {{ form.note }}
-    </div>
-    <div style="display:flex;gap:8px;margin-top:12px;">
-      {% if is_manager or is_server or is_cook %}
-        <button class="btn" type="submit">Sauvegarder</button>
-      {% else %}
-        <span class="muted">Accès restreint</span>
-      {% endif %}
+    <div class="form-row" style="margin-top:12px;"><label>Raison d'annulation (si annulation)</label><input class="form-control" type="text" name="cancel_reason" placeholder="Ex: client absent, erreur commande"></div>
+    <div class="form-row" style="margin-top:12px;"><label>Note</label>{{ form.note }}</div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      {% if is_manager or is_server or is_cook %}<button class="btn" type="submit">💾 Sauvegarder</button>{% else %}<span class="muted">Accès restreint</span>{% endif %}
       <a class="btn-outline" href="{% url 'orders:detail' order.id %}">Annuler</a>
     </div>
   </form>

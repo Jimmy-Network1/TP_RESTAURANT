@@ -1,0 +1,38 @@
+{% extends "base_public.html" %}
+{% block title %}Mon profil — Saveur 237{% endblock %}
+{% block content %}
+<div class="grid">
+  <div class="card">
+    <h2>Informations personnelles</h2>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-row">
+        <label>Nom</label>
+        <input class="form-control" value="{{ request.user.get_full_name }}" readonly>
+      </div>
+      <div class="form-row">
+        <label>Email</label>
+        <input class="form-control" value="{{ request.user.email }}" readonly>
+      </div>
+      <div class="form-row">
+        <label>Téléphone</label>
+        {{ form.phone }}
+      </div>
+      <div class="form-row">
+        <label>Préférences</label>
+        {{ form.preferences }}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn" type="submit">Mettre à jour</button>
+        <a class="btn-outline" href="{% url 'accounts:addresses' %}">Gérer mes adresses</a>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3>Adresses</h3>
+    <p class="muted">{{ profile.addresses.count }} adresse(s) enregistrée(s).</p>
+    <a class="btn" href="{% url 'accounts:addresses' %}">Voir mes adresses</a>
+  </div>
+</div>
+{% endblock %}

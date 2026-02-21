@@ -95,6 +95,9 @@ class DashboardView(RoleProtectedView):
             "pending_orders": Order.objects.filter(status=Order.STATUS_PENDING).count(),
             "preparing_orders": Order.objects.filter(status=Order.STATUS_PREPARING).count(),
             "ready_orders": Order.objects.filter(status=Order.STATUS_READY).count(),
+            "kitchen_pending": Order.objects.filter(status=Order.STATUS_PENDING).count(),
+            "kitchen_preparing": Order.objects.filter(status=Order.STATUS_PREPARING).count(),
+            "kitchen_ready": Order.objects.filter(status=Order.STATUS_READY).count(),
             "tables_occupied": Table.objects.filter(status=Table.STATUS_OCCUPIED).count(),
             "tables_free": Table.objects.filter(status=Table.STATUS_FREE).count(),
             "tables_reserved": Table.objects.filter(status=Table.STATUS_RESERVED).count(),
@@ -111,6 +114,7 @@ class DashboardView(RoleProtectedView):
         ctx["to_cash"] = Order.objects.filter(status__in=[Order.STATUS_READY, Order.STATUS_SERVED]).exclude(status=Order.STATUS_PAID)[:6]
         ctx["ready_to_serve"] = Order.objects.filter(status=Order.STATUS_READY).order_by("-updated_at")[:8]
         ctx["pending_kitchen"] = Order.objects.filter(status=Order.STATUS_PENDING).order_by("-updated_at")[:8]
+        ctx["kitchen_queue"] = Order.objects.filter(status__in=[Order.STATUS_PENDING, Order.STATUS_PREPARING]).order_by("created_at")[:12]
         ctx["tables"] = Table.objects.filter(active=True).order_by("name")
         cash_session = CashSession.objects.filter(status=CashSession.STATUS_OPEN).order_by("-opened_at").first()
         cash_totals = {"count": 0, "sum": 0}

@@ -1,0 +1,64 @@
+{% extends "base_public.html" %}
+{% block title %}Reservations — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <h2>Reserver une table</h2>
+    <p class="muted">Choisissez une date, une zone et confirmez.</p>
+  </div>
+</div>
+
+<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:12px;">
+  <div class="card">
+    <form>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
+        <div>
+          <label>Date</label>
+          <input class="form-control" type="date">
+        </div>
+        <div>
+          <label>Heure</label>
+          <input class="form-control" type="time">
+        </div>
+        <div>
+          <label>Personnes</label>
+          <input class="form-control" type="number" min="1" value="2">
+        </div>
+        <div>
+          <label>Zone</label>
+          <select class="form-control">
+            <option>Terrasse</option>
+            <option>Salle VIP</option>
+            <option>Interieur</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label>Note</label>
+        <textarea class="form-control" rows="3" placeholder="Ex: table pres de la fenetre"></textarea>
+      </div>
+      <button class="btn" style="margin-top:12px;" type="button">Envoyer demande</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top:0;">Mes reservations</h3>
+    <div class="cart-list">
+      <div class="cart-item">
+        <div>
+          <strong>20/02 20:00 • 4 pers</strong>
+          <div class="muted">Terrasse</div>
+        </div>
+        <span class="status status-ok">PENDING</span>
+      </div>
+      <div class="cart-item">
+        <div>
+          <strong>18/02 19:30 • 2 pers</strong>
+          <div class="muted">Interieur</div>
+        </div>
+        <span class="status" style="background:rgba(0,135,81,0.12);color:var(--green);">CONFIRMED</span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

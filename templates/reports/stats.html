@@ -1,39 +1,63 @@
 {% extends "base_staff.html" %}
-{% block title %}Statistiques générales{% endblock %}
+{% block title %}Statistiques — Saveur 237{% endblock %}
 {% block content %}
-<div class="section-title">
+{% if not is_manager %}<div class="card" style="text-align:center;padding:40px;"><h3>⛔ Accès réservé</h3><p class="muted">Seul le manager peut consulter les rapports.</p></div>{% else %}
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;" data-animate="fadeUp">
   <div>
-    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Reports</p>
-    <h2>Statistiques générales</h2>
-    <p class="muted">Période: {{ start }} → {{ end }}</p>
+    <span class="pill" style="background:var(--green-light);color:var(--green);">📈 Rapports</span>
+    <h2 style="font-family:'Playfair Display',serif;margin:8px 0 4px;">Statistiques</h2>
+    <p class="muted">Analyse des performances.</p>
   </div>
-  <a class="btn-outline" href="{% url 'reports:dashboard' %}">Retour</a>
+  <a class="btn-outline" href="{% url 'reports:dashboard' %}">← Retour</a>
 </div>
 
-{% if not is_manager %}
-  <div class="card" style="margin-top:12px;">
-    <p class="muted">Accès réservé au gérant.</p>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;" data-animate="fadeUp">
+  <a class="pill" href="?period=today" style="{% if period == 'today' %}background:var(--green);color:#fff;{% else %}background:#f0f0f0;color:#555;{% endif %}padding:6px 14px;text-decoration:none;">Aujourd'hui</a>
+  <a class="pill" href="?period=week" style="{% if period == 'week' %}background:var(--green);color:#fff;{% else %}background:#f0f0f0;color:#555;{% endif %}padding:6px 14px;text-decoration:none;">Semaine</a>
+  <a class="pill" href="?period=month" style="{% if period == 'month' %}background:var(--green);color:#fff;{% else %}background:#f0f0f0;color:#555;{% endif %}padding:6px 14px;text-decoration:none;">Mois</a>
+  <a class="pill" href="?period=year" style="{% if period == 'year' %}background:var(--green);color:#fff;{% else %}background:#f0f0f0;color:#555;{% endif %}padding:6px 14px;text-decoration:none;">Année</a>
+</div>
+
+<div class="grid" data-animate="fadeUp" style="margin-bottom:18px;">
+  <div class="card" style="text-align:center;">
+    <div style="font-size:28px;font-weight:800;font-family:'Playfair Display',serif;color:var(--green);">{{ revenue|default:0 }} <small>FCFA</small></div>
+    <div class="muted" style="font-size:12px;">💰 Chiffre d'affaires</div>
   </div>
-{% else %}
-<div class="card" style="margin-bottom:12px;">
-  <div class="menu-filters">
-    <a class="chip" href="{% url 'reports:stats' %}?period=month">Mois</a>
-    <a class="chip" href="{% url 'reports:stats' %}?period=week">Semaine</a>
-    <a class="chip" href="{% url 'reports:stats' %}?period=today">Aujourd’hui</a>
+  <div class="card" style="text-align:center;">
+    <div style="font-size:28px;font-weight:800;font-family:'Playfair Display',serif;">{{ orders_count|default:0 }}</div>
+    <div class="muted" style="font-size:12px;">📦 Commandes</div>
   </div>
 </div>
 
-<div class="grid">
-  <div class="card"><strong>Revenus</strong><div class="muted">{{ revenue }} FCFA</div></div>
-  <div class="card"><strong>Commandes par type</strong>
-    <ul style="margin:0;padding-left:18px;">
-      {% for t in type_counts %}
-        <li>{{ t.order_type }} : {{ t.c }}</li>
-      {% empty %}
-        <li>Aucune donnée</li>
-      {% endfor %}
-    </ul>
+{% if type_counts %}
+<div class="card" style="margin-bottom:18px;" data-animate="fadeUp">
+  <h3 style="margin-top:0;">📊 Répartition par type</h3>
+  <div style="display:grid;gap:8px;">
+    {% for tc in type_counts %}
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;padding-bottom:8px;">
+      <span>{{ tc.type }}</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="background:#eee;border-radius:6px;height:8px;width:120px;overflow:hidden;"><div style="width:{{ tc.pct }}%;height:100%;background:var(--green);border-radius:6px;"></div></div>
+        <strong>{{ tc.count }}</strong>
+      </div>
+    </div>
+    {% endfor %}
   </div>
 </div>
+{% endif %}
+
+{% if daily_revenue %}
+<div class="card" data-animate="fadeUp">
+  <h3 style="margin-top:0;">📅 CA quotidien</h3>
+  <div style="display:grid;gap:4px;">
+    {% for dr in daily_revenue %}
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee;">
+      <span>{{ dr.date|date:"d/m" }}</span>
+      <strong style="color:var(--green);">{{ dr.total }} FCFA</strong>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
 {% endif %}
 {% endblock %}

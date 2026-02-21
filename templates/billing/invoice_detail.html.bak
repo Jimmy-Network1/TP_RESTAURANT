@@ -1,0 +1,89 @@
+{% extends "base_staff.html" %}
+{% block title %}Facture — Saveur 237{% endblock %}
+{% block content %}
+<style>
+  .invoice-shell{max-width:920px;margin:0 auto;display:grid;gap:12px;}
+  .invoice-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;}
+  .invoice-card{border:1px solid #eee;border-radius:16px;background:#fff;padding:18px;box-shadow:0 12px 24px rgba(0,0,0,0.06);}
+  .invoice-meta{display:grid;gap:4px;font-size:13px;color:#444;}
+  .invoice-table{width:100%;border-collapse:separate;border-spacing:0 6px;}
+  .invoice-table th{font-size:12px;text-transform:uppercase;letter-spacing:0.6px;color:#666;text-align:left;padding:6px 10px;}
+  .invoice-table td{background:#fff;border:1px solid #eee;padding:10px;}
+  .invoice-table td:first-child{border-top-left-radius:10px;border-bottom-left-radius:10px;}
+  .invoice-table td:last-child{border-top-right-radius:10px;border-bottom-right-radius:10px;text-align:right;}
+  .right{text-align:right;}
+  .totals{display:grid;gap:6px;margin-top:12px;max-width:340px;margin-left:auto;}
+  .totals div{display:flex;justify-content:space-between;}
+  .totals strong{font-size:18px;}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;}
+  @media print{
+    .btn,.btn-outline,.topbar,.sidebar,.nav,.actions,.back-btn{display:none !important;}
+    .invoice-card{box-shadow:none;border:1px solid #111;}
+    body{background:#fff;}
+  }
+</style>
+
+<div class="invoice-shell">
+  <div class="invoice-head">
+    <div>
+      <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Facture</p>
+      <h2>Facture #{{ order.id }}</h2>
+      <div class="invoice-meta">
+        <span>Commande #{{ order.id }}</span>
+        <span>{% if order.table %}Table {{ order.table.name }}{% else %}{{ order.customer.username|default:'Client' }}{% endif %}</span>
+        <span>{{ order.created_at|date:"d/m H:i" }}</span>
+        {% if payment %}<span>Statut paiement : PAYÉ</span>{% endif %}
+      </div>
+    </div>
+    <div class="actions">
+      <a class="btn-outline" href="{% url 'billing:invoices' %}">Retour</a>
+      {% if is_cashier or is_manager %}
+        <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
+      {% endif %}
+      <a class="btn-outline" href="javascript:window.print()">Imprimer</a>
+    </div>
+  </div>
+
+  <div class="invoice-card">
+    <table class="invoice-table">
+      <thead>
+        <tr>
+          <th>Produit</th>
+          <th>Quantite</th>
+          <th class="right">Prix unitaire</th>
+          <th class="right">Sous-total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for it in items %}
+        <tr>
+          <td>{{ it.dish.name }}</td>
+          <td>{{ it.quantity }}</td>
+          <td class="right">{{ it.unit_price }} FCFA</td>
+          <td class="right">{{ it.line_total }} FCFA</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">Aucun article.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <div><span>Taxes</span><strong>0 FCFA</strong></div>
+      <div><span>Remise</span><strong>0 FCFA</strong></div>
+      <div><span>Total</span><strong>{{ order.total_amount }} FCFA</strong></div>
+      {% if payment %}<div><span>Payé</span><strong>{{ payment.amount }} FCFA</strong></div>{% endif %}
+    </div>
+
+    <div class="actions" style="margin-top:12px;">
+      {% if is_manager %}
+        <a class="btn-outline" href="#">Ajouter remise</a>
+      {% endif %}
+      <a class="btn-outline" href="javascript:window.print()">Generer facture</a>
+      {% if is_cashier or is_manager %}
+        <a class="btn" href="{% url 'billing:payment_new' %}">Aller au paiement</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

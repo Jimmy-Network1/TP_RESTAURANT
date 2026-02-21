@@ -1,0 +1,52 @@
+{% extends "base_staff.html" %}
+{% block title %}Export rapports{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <p class="badge" style="background:rgba(0,135,81,0.12);color:var(--green);">Reports</p>
+    <h2>Export rapports</h2>
+    <p class="muted">Générez un fichier PDF ou CSV.</p>
+  </div>
+  <a class="btn-outline" href="{% url 'reports:dashboard' %}">Retour</a>
+</div>
+
+{% if not is_manager %}
+  <div class="card" style="margin-top:12px;">
+    <p class="muted">Accès réservé au gérant.</p>
+  </div>
+{% else %}
+<div class="card">
+  <form>
+    <div class="grid">
+      <div class="form-row">
+        <label>Date début</label>
+        <input class="form-control" type="date">
+      </div>
+      <div class="form-row">
+        <label>Date fin</label>
+        <input class="form-control" type="date">
+      </div>
+    </div>
+    <div class="grid">
+      <div class="form-row">
+        <label>Rapport</label>
+        <select class="form-control">
+          <option>Ventes</option>
+          <option>Produits</option>
+          <option>Livraisons</option>
+          <option>Cuisine</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Format</label>
+        <select class="form-control">
+          <option>PDF</option>
+          <option>CSV</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn" type="button">Exporter</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

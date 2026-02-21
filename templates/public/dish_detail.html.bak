@@ -1,0 +1,72 @@
+{% extends "base_public.html" %}
+{% block title %}Plat — Saveur 237{% endblock %}
+{% block content %}
+<div class="section-title">
+  <div>
+    <h2>{{ dish.name|default:"Plat signature" }}</h2>
+    <p class="muted">{{ dish.category.name|default:"Categorie" }}</p>
+  </div>
+  <a class="btn-outline" href="{% url 'public:menu' %}">Retour au menu</a>
+</div>
+
+{% if not dish %}
+  <div class="card">Produit introuvable.</div>
+{% else %}
+<div class="grid" style="grid-template-columns:1.2fr 1fr;gap:12px;">
+  <div class="card">
+    {% if dish.photo %}
+      <img src="{{ dish.photo.url }}" style="width:100%;height:260px;object-fit:cover;border-radius:12px;border:1px solid #eee;">
+    {% endif %}
+    <p class="muted" style="margin-top:10px;">{{ dish.description|default:"Description a venir." }}</p>
+
+    {% if dish.options.all|length %}
+    <div style="margin-top:12px;">
+      <strong>Options / Supplements</strong>
+      <div id="option-error" class="muted" style="color:var(--red);margin-top:6px;display:none;">Veuillez choisir vos options.</div>
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:8px;">
+        {% for opt in dish.options.all %}
+          <label class="card" style="padding:10px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <span>{{ opt.name }}</span>
+            <span>
+              <input type="checkbox" data-group="extras" data-extra="{{ opt.extra_price }}">
+              <span class="muted">+{{ opt.extra_price }} FCFA</span>
+            </span>
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div style="margin-top:12px;">
+      <label>Notes</label>
+      <textarea id="note" class="form-control" rows="3" maxlength="200" placeholder="sans piment, bien cuit..."></textarea>
+      <div class="muted" id="note-count">0/200</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span>Prix de base</span>
+      <strong id="base-price" data-base="{{ dish.price }}">{{ dish.price }} FCFA</strong>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+      <span>Quantite</span>
+      <div class="qty">
+        <button type="button" data-qty="dec">-</button>
+        <strong id="qty">1</strong>
+        <button type="button" data-qty="inc">+</button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:18px;">
+      <span>Total estime</span>
+      <strong id="total-price">{{ dish.price }}</strong>
+    </div>
+    {% if dish.can_order %}
+      <button class="btn" style="width:100%;margin-top:12px;" type="button" data-add-detail data-id="{{ dish.id }}" data-name="{{ dish.name }}" data-price="{{ dish.price }}">Ajouter au panier</button>
+    {% else %}
+      <button class="btn" style="width:100%;margin-top:12px;opacity:0.6;" type="button" disabled>Indisponible</button>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -47,7 +47,23 @@
           <td>{{ o.customer.username|default:'Client' }}</td>
           <td>{{ o.delivery_address|default:'-' }}</td>
           <td>{{ o.assigned_delivery.username|default:'Non assigne' }}</td>
-          <td><span class="pill pill-route">{{ o.get_status_display }}</span></td>
+          <td>
+            {% if o.status == 'PREPARATION' %}
+              <span class="pill pill-route">{{ o.get_status_display }}</span>
+            {% elif o.status == 'PRETE' %}
+              <span class="pill pill-pending">{{ o.get_status_display }}</span>
+            {% elif o.status == 'EN_ROUTE' %}
+              <span class="pill pill-route">{{ o.get_status_display }}</span>
+            {% elif o.status == 'LIVREE' %}
+              <span class="pill pill-done">{{ o.get_status_display }}</span>
+            {% elif o.status == 'PAYEE' %}
+              <span class="pill pill-cash">{{ o.get_status_display }}</span>
+            {% elif o.status == 'ANNULEE' %}
+              <span class="pill pill-off">{{ o.get_status_display }}</span>
+            {% else %}
+              <span class="pill">{{ o.get_status_display }}</span>
+            {% endif %}
+          </td>
           <td><div class="actions">
             <a class="icon-btn" href="{% url 'delivery:detail' o.id %}">Voir</a>
             {% if is_manager %}

@@ -6,7 +6,9 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.utils import timezone
 
 from accounts.models import CustomerProfile
-from orders.models import Order, OrderItem, OrderStatusLog
+from orders.models import Order, OrderItem, OrderStatusLog, OrderNotification
+from accounts.models import Notification
+from accounts.notifications import create_notification
 from orders.utils import can_transition, log_transition
 from billing.models import CashSession
 from billing.models import Payment
@@ -74,6 +76,8 @@ def courier_dashboard(request):
         order_type=Order.TYPE_DELIVERY,
         assigned_delivery=request.user,
     ).select_related("customer", "delivery_address", "customer_profile")
+    if _is_courier(request.user) and not _is_manager(request.user):
+        qs = qs.filter(status__in=[Order.STATUS_READY, Order.STATUS_ON_ROUTE, Order.STATUS_DONE])
 
     status = request.GET.get("status", "")
     if status in [Order.STATUS_READY, Order.STATUS_ON_ROUTE]:
@@ -86,12 +90,19 @@ def courier_dashboard(request):
         "active": qs.filter(status__in=[Order.STATUS_READY, Order.STATUS_ON_ROUTE]).count(),
         "done_today": qs.filter(status=Order.STATUS_DONE, updated_at__date=now.date()).count(),
     }
+    notifications = Notification.objects.filter(
+        target_role=Notification.ROLE_DELIVERY
+    ).order_by("-created_at")[:10]
     return render(request, "delivery/dashboard.html", {
         "orders": active,
         "history": history,
         "status": status,
         "counters": counters,
         "now": now,
+        "notifications": notifications,
+        "is_delivery": _is_courier(request.user),
+        "is_manager": _is_manager(request.user),
+        "can_update_delivery": courier_required(request.user),
     })
 
 
@@ -167,7 +178,14 @@ def delivery_detail(request, pk):
             messages.warning(request, "Probleme enregistre.")
             return redirect("delivery:detail", pk=order.id)
     logs = order.status_logs.all()
-    return render(request, "delivery/detail.html", {"order": order, "items": items, "logs": logs})
+    return render(request, "delivery/detail.html", {
+        "order": order,
+        "items": items,
+        "logs": logs,
+        "is_delivery": _is_courier(request.user),
+        "is_manager": _is_manager(request.user),
+        "can_update_delivery": courier_required(request.user),
+    })
 
 
 @login_required
@@ -194,15 +212,24 @@ def assign_view(request):
             if Order.objects.filter(assigned_delivery=courier, status=Order.STATUS_ON_ROUTE).exists():
                 messages.error(request, "Livreur déjà en livraison.")
                 return redirect("delivery:assign")
-            if can_transition(request.user, order, Order.STATUS_ON_ROUTE):
-                old_status = order.status
-                order.assigned_delivery = courier
-                order.status = Order.STATUS_ON_ROUTE
-                order.save(update_fields=["assigned_delivery", "status"])
-                log_transition(order, request.user, old_status, order.status, reason=f"Assigné à {courier.username}")
-                messages.success(request, "Livreur attribue.")
-            else:
-                messages.error(request, "Transition non autorisée.")
+            # Assign courier but keep status PRETE until courier starts delivery
+            old_status = order.status
+            order.assigned_delivery = courier
+            order.save(update_fields=["assigned_delivery"])
+            log_transition(order, request.user, old_status, order.status, reason=f"Assigné à {courier.username}")
+            create_notification(
+                target_role="delivery",
+                message=f"Livraison assignée: commande #{order.id}",
+                url=f"/delivery/deliveries/{order.id}/",
+            )
+            if order.customer_id:
+                create_notification(
+                    target_role="client",
+                    message=f"Livreur assigné à la commande #{order.id}",
+                    user=order.customer,
+                    url=f"/my/orders/{order.id}/",
+                )
+            messages.success(request, "Livreur attribué.")
             return redirect("delivery:deliveries")
 
     return render(request, "delivery/assign.html", {"orders": ready_orders, "couriers": couriers})

@@ -21,6 +21,7 @@
     {% if is_cashier or is_manager %}
       <a class="btn" href="{% url 'billing:invoices' %}">Facture / Paiement</a>
     {% endif %}
+    <a class="btn-outline" href="javascript:window.print()">Imprimer ticket</a>
   </div>
 </div>
 
@@ -44,7 +45,25 @@
   <div class="card">
     <h4 style="margin-top:0;">Statut</h4>
     <div class="menu-filters">
-      <span class="chip active">{{ order.get_status_display }}</span>
+      {% if order.status == 'EN_ATTENTE' %}
+        <span class="pill pill-pending">{{ order.get_status_display }}</span>
+      {% elif order.status == 'PREPARATION' %}
+        <span class="pill pill-route">{{ order.get_status_display }}</span>
+      {% elif order.status == 'PRETE' %}
+        <span class="pill pill-ok">{{ order.get_status_display }}</span>
+      {% elif order.status == 'SERVIE' %}
+        <span class="pill pill-done">{{ order.get_status_display }}</span>
+      {% elif order.status == 'EN_ROUTE' %}
+        <span class="pill pill-route">{{ order.get_status_display }}</span>
+      {% elif order.status == 'LIVREE' %}
+        <span class="pill pill-done">{{ order.get_status_display }}</span>
+      {% elif order.status == 'PAYEE' %}
+        <span class="pill pill-cash">{{ order.get_status_display }}</span>
+      {% elif order.status == 'ANNULEE' %}
+        <span class="pill pill-off">{{ order.get_status_display }}</span>
+      {% else %}
+        <span class="pill">{{ order.get_status_display }}</span>
+      {% endif %}
     </div>
     <div style="margin-top:10px;">
       <h4 style="margin:0 0 6px;">Historique</h4>
@@ -59,6 +78,17 @@
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
       {% if is_manager or is_server or is_cook %}
         <a class="btn-outline" href="{% url 'orders:edit' order.id %}">Modifier</a>
+      {% endif %}
+      {% if can_serve and is_server %}
+        <form method="post" action="{% url 'orders:serve' order.id %}">
+          {% csrf_token %}
+          <button class="btn" type="submit">Marquer servie</button>
+        </form>
+      {% elif can_serve and is_manager %}
+        <form method="post" action="{% url 'orders:serve' order.id %}">
+          {% csrf_token %}
+          <button class="btn" type="submit">Marquer servie</button>
+        </form>
       {% endif %}
       {% if can_cancel and is_manager %}
         <a class="btn-outline" href="{% url 'orders:cancel' order.id %}">Annuler la commande</a>
